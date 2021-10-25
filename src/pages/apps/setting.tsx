@@ -37,7 +37,7 @@ const Content = observer(() => {
 
   return (
     <Form layout="vertical">
-      <Form.Item label="应用名">
+      <Form.Item label="App Name">
         <Typography.Paragraph
           type="secondary"
           style={style.item}
@@ -46,12 +46,12 @@ const Content = observer(() => {
           {app.name}
         </Typography.Paragraph>
       </Form.Item>
-      <Form.Item label="应用 Key">
+      <Form.Item label="App Key">
         <Typography.Paragraph style={style.item} type="secondary" copyable>
           {app.appKey}
         </Typography.Paragraph>
       </Form.Item>
-      <Form.Item label="下载地址">
+      <Form.Item label="Download Url">
         <Typography.Paragraph
           type="secondary"
           style={style.item}
@@ -62,8 +62,8 @@ const Content = observer(() => {
       </Form.Item>
       <Form.Item>
         <Switch
-          checkedChildren="启用"
-          unCheckedChildren="暂停"
+          checkedChildren="Resume"
+          unCheckedChildren="Pause"
           checked={app.status !== "paused"}
           onChange={(checked) => runInAction(() => (app.status = checked ? "normal" : "paused"))}
         />

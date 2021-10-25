@@ -13,10 +13,10 @@ export default function () {
     content: (
       <Form initialValues={{ platform }}>
         <br />
-        <Form.Item label="应用名称" name="name">
-          <Input placeholder="请输入应用名称" onChange={({ target }) => (name = target.value)} />
+        <Form.Item label="App Name" name="name">
+          <Input placeholder="Please enter the app name" onChange={({ target }) => (name = target.value)} />
         </Form.Item>
-        <Form.Item label="选择平台" name="platform">
+        <Form.Item label="Platform" name="platform">
           <Select
             // @ts-ignore
             onSelect={(value) => (platform = value)}
@@ -33,7 +33,7 @@ export default function () {
     ),
     onOk(_) {
       if (!name) {
-        message.warn("请输入应用名称");
+        message.warn("Please enter the app name");
         return false;
       }
       return request("post", "app/create", { name, platform })

@@ -21,11 +21,11 @@ export default observer(() => {
         <Col flex={1}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/apps">应用列表</Link>
+              <Link to="/apps">Apps</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               {app?.name}
-              {app?.status == "paused" && <Tag style={{ marginLeft: 8 }}>暂停</Tag>}
+              {app?.status == "paused" && <Tag style={{ marginLeft: 8 }}>Pause</Tag>}
             </Breadcrumb.Item>
           </Breadcrumb>
         </Col>
@@ -37,7 +37,7 @@ export default observer(() => {
             onClick={() => removeApp(app)}
             danger
           >
-            删除
+            Remove
           </Button>
           <Button
             size="small"
@@ -45,20 +45,20 @@ export default observer(() => {
             icon={<SettingFilled />}
             onClick={() => settingApp(app)}
           >
-            设置
+            Settings
           </Button>
         </Button.Group>
       </Row>
       <Layout>
         <Layout.Sider theme="light" style={style.sider} width={240}>
           <div className="ant-table-title" style={style.title}>
-            原生包
+            Native Package
           </div>
           <Tabs>
-            <Tabs.TabPane tab="全部" key="all">
+            <Tabs.TabPane tab="All" key="all">
               <PackageList dataSource={packages} />
             </Tabs.TabPane>
-            <Tabs.TabPane tab="未使用" key="unused">
+            <Tabs.TabPane tab="Unused" key="unused">
               <PackageList dataSource={unused} />
             </Tabs.TabPane>
           </Tabs>

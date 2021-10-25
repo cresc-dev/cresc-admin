@@ -28,7 +28,7 @@ export default observer(() => {
       subTitle="如未收到激活邮件，请点击"
       extra={
         <Button type="primary" onClick={sendEmail} loading={state.loading}>
-          重新发送
+          Resend
         </Button>
       }
     />

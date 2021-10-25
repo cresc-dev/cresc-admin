@@ -8,7 +8,7 @@ import {
 import { Layout, Menu, message, Row, Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { Redirect, Route, RouteProps, Switch, useHistory } from "react-router-dom";
-import { Footer } from "./components";
+import Footer from "./components/footer";
 import * as pages from "./pages";
 import Login from "./pages/login";
 import Sider from "./sider";
@@ -26,17 +26,17 @@ export default observer(() => {
           <Row style={{ height: "100%" }} justify="end">
             <Menu mode="horizontal" selectable={false}>
               <Menu.Item key="issues" icon={<CommentOutlined />}>
-                <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
-                  讨论
+                <ExtLink href="https://github.com/cresc-dev/cresc/issues">
+                  Discussion
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="document" icon={<ReadOutlined />}>
-                <ExtLink href="https://pushy.reactnative.cn/docs/getting-started.html">
-                  文档
+                <ExtLink href="https://cresc.dev/docs/getting-started.html">
+                  Docs
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="about" icon={<InfoCircleOutlined />}>
-                <ExtLink href="https://reactnative.cn/about.html">关于我们</ExtLink>
+                <ExtLink href="https://cresc.dev/about">About us</ExtLink>
               </Menu.Item>
               {store.token && (
                 <Menu.SubMenu key="user" icon={<UserOutlined />} title={store.user?.name}>
@@ -44,11 +44,10 @@ export default observer(() => {
                     key="logout"
                     onClick={() => {
                       logout();
-                      message.info("您已退出登录");
                     }}
                     icon={<LogoutOutlined />}
                   >
-                    退出登录
+                    Log Out
                   </Menu.Item>
                 </Menu.SubMenu>
               )}

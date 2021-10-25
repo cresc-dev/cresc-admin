@@ -30,7 +30,7 @@ export default () => {
   }
   return (
     <Layout.Sider width={240} theme="light" style={style.sider}>
-      <Layout.Header style={style.logo}>Pushy</Layout.Header>
+      <Layout.Header style={style.logo}>Cresc</Layout.Header>
       <SiderMenu />
     </Layout.Sider>
   );

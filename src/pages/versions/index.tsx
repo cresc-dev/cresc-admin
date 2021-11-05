@@ -25,7 +25,7 @@ export default observer(() => {
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               {app?.name}
-              {app?.status == "paused" && <Tag style={{ marginLeft: 8 }}>Pause</Tag>}
+              {app?.status == "paused" && <Tag style={{ marginLeft: 8 }}>Paused</Tag>}
             </Breadcrumb.Item>
           </Breadcrumb>
         </Col>

@@ -2,6 +2,8 @@ import { Form, message, Modal, Spin, Typography, Switch } from "antd";
 import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import request, { RequestError } from "../../request";
+import store from "../../store";
+import { default as versionPageState } from "../versions/state";
 
 const state = observable.object<{ app?: AppDetail }>({});
 
@@ -25,8 +27,15 @@ export default function (app: App) {
       } catch (error) {
         message.success((error as RequestError).message);
       }
-      runInAction(() => (app.name = state.app!.name));
-      message.success("修改成功");
+      runInAction(() => {
+        app.name = state.app!.name;
+        versionPageState.app = state.app;
+        Object.assign(
+          store.apps.find((i) => i.id == app.id),
+          state.app
+        );
+      });
+      message.success("Updated");
     },
   });
 }

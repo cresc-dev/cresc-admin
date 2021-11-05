@@ -27,11 +27,11 @@ export default observer(() => {
       <form style={style.form} onSubmit={submit}>
         <div style={style.logo}>
           <img src={logo} />
-          <div style={style.slogan}>极速热更新框架 for React Native</div>
+          <div style={style.slogan}>Always up to date</div>
         </div>
         <Form.Item>
           <Input
-            placeholder="邮箱"
+            placeholder="Email"
             size="large"
             type="email"
             autoComplete=""
@@ -42,7 +42,7 @@ export default observer(() => {
         <Form.Item>
           <Input
             type="password"
-            placeholder="密码"
+            placeholder="Password"
             size="large"
             autoComplete=""
             onChange={({ target }) => (password = target.value)}
@@ -51,13 +51,13 @@ export default observer(() => {
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" size="large" loading={loading} block>
-            登录
+            Sign in
           </Button>
         </Form.Item>
         <Form.Item>
           <Row justify="space-between">
-            <Link to="/register">注册</Link>
-            <Link to="/reset-password/0">忘记密码？</Link>
+            <Link to="/register">Register</Link>
+            <Link to="/reset-password/0">Forgot password?</Link>
           </Row>
         </Form.Item>
       </form>

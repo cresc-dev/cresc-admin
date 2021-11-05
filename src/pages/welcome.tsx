@@ -17,15 +17,15 @@ export default observer(() => {
     <Result
       title={
         <>
-          感谢您关注由 React Native 中文网提供的热更新服务
+          Thank you for signing up.
           <br />
-          我们已经往您的邮箱发送了一封激活邮件
+          We've just sent a mail to {store.email} for verification.
           <br />
-          请点击邮件内的激活链接激活您的帐号
+          Please click the link in that mail to activate your account.
           <div style={{ height: 24 }} />
         </>
       }
-      subTitle="如未收到激活邮件，请点击"
+      subTitle="If you did not receive the mail, please click the Resend button"
       extra={
         <Button type="primary" onClick={sendEmail} loading={state.loading}>
           Resend
@@ -40,9 +40,9 @@ async function sendEmail() {
   state.loading = true;
   try {
     await request("post", "user/active/sendmail", { email });
-    message.info("邮件发送成功，请注意查收");
+    message.info(`The mail has been sent successfully`);
   } catch (_) {
-    message.error("邮件发送失败");
+    message.error("Failed to send the verification mail. Please try again.");
   }
   state.loading = false;
 }

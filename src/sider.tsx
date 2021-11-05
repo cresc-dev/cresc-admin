@@ -48,9 +48,9 @@ const SiderMenu = observer(() => {
       mode="inline"
     >
       <Menu.Item key="user" icon={<UserOutlined />}>
-        <Link to="/user">账户设置</Link>
+        <Link to="/user">Account</Link>
       </Menu.Item>
-      <Menu.SubMenu key="apps" title="应用管理" icon={<AppstoreOutlined />}>
+      <Menu.SubMenu key="apps" title="Apps" icon={<AppstoreOutlined />}>
         {store.apps.map((i) => (
           <Menu.Item
             key={i.id}

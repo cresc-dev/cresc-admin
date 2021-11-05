@@ -19,7 +19,7 @@ async function submit(values: { [key: string]: string }) {
     await request("post", "user/register", values);
     store.history.replace("/welcome");
   } catch (_) {
-    message.error("该邮箱已被注册");
+    message.error("This email is already registered");
   }
   runInAction(() => (state.loading = false));
 }
@@ -31,13 +31,13 @@ export default observer(() => {
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
           <img src={logo} />
-          <div style={style.slogan}>极速热更新框架 for React Native</div>
+          <div style={style.slogan}>Always up to date</div>
         </div>
         <Form.Item name="name" hasFeedback>
-          <Input placeholder="用户名" size="large" required />
+          <Input placeholder="Username" size="large" required />
         </Form.Item>
         <Form.Item name="email" hasFeedback>
-          <Input placeholder="邮箱" size="large" type="email" required />
+          <Input placeholder="Email" size="large" type="email" required />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -47,13 +47,13 @@ export default observer(() => {
             () => ({
               async validator(_, value) {
                 if (value && !isPasswordValid(value)) {
-                  throw "密码中需要同时包含大、小写字母和数字，且长度不少于6位";
+                  throw "Use 8 or more characters with a mix of numbers, uppercase and lowercase letters";
                 }
               },
             }),
           ]}
         >
-          <Input type="password" placeholder="密码" size="large" autoComplete="" required />
+          <Input type="password" placeholder="Password" size="large" autoComplete="" required />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -63,23 +63,23 @@ export default observer(() => {
             ({ getFieldValue }) => ({
               async validator(_, value) {
                 if (getFieldValue("pwd") != value) {
-                  throw "两次输入的密码不一致";
+                  throw "Those passwords didn’t match. Try again.";
                 }
               },
             }),
           ]}
         >
-          <Input type="password" placeholder="再次输入密码" size="large" autoComplete="" required />
+          <Input type="password" placeholder="Confirm password" size="large" autoComplete="" required />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" size="large" loading={loading} block>
-            注册
+            Register
           </Button>
         </Form.Item>
         <Form.Item>
           <Row justify="space-between">
             <span />
-            <Link to="/login">已有帐号？</Link>
+            <Link to="/login">Sign in？</Link>
           </Row>
         </Form.Item>
       </Form>

@@ -1,6 +1,4 @@
 import * as React from "react";
-import { ConfigProvider } from "antd";
-import zhCN from "antd/lib/locale/zh_CN";
 import { render } from "react-dom";
 import { HashRouter as Router } from "react-router-dom";
 import { DndProvider } from "react-dnd";
@@ -12,11 +10,9 @@ window.React = React;
 
 render(
   <DndProvider backend={HTML5Backend}>
-    <ConfigProvider locale={zhCN}>
-      <Router>
-        <Main />
-      </Router>
-    </ConfigProvider>
+    <Router>
+      <Main />
+    </Router>
   </DndProvider>,
   document.getElementById("main")
 );

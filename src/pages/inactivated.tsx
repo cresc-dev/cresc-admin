@@ -15,11 +15,11 @@ export default observer(() => {
   }, []);
   return (
     <Result
-      title="您的账号还未激活，请查看您的邮箱"
-      subTitle="如未收到激活邮件，请点击"
+      title="Please check your mailbox for the activation mail."
+      subTitle="If you did not receive the mail, please click the Resend button"
       extra={
         <Button type="primary" onClick={sendEmail} loading={state.loading}>
-          再次发送
+          Resend
         </Button>
       }
     />
@@ -31,9 +31,9 @@ async function sendEmail() {
   state.loading = true;
   try {
     await request("post", "user/active/sendmail", { email });
-    message.info("邮件发送成功，请注意查收");
+    message.info("The mail has been sent successfully.");
   } catch (_) {
-    message.error("邮件发送失败");
+    message.error("Failed to send the verification mail.");
   }
   state.loading = false;
 }

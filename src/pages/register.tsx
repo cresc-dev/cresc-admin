@@ -63,7 +63,7 @@ export default observer(() => {
             ({ getFieldValue }) => ({
               async validator(_, value) {
                 if (getFieldValue("pwd") != value) {
-                  throw "Those passwords didn’t match. Try again.";
+                  throw "Please make sure your passwords match.";
                 }
               },
             }),

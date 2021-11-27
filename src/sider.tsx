@@ -69,7 +69,7 @@ const SiderMenu = observer(() => {
           </Menu.Item>
         ))}
         <Menu.Item key="add-app" icon={<PlusOutlined />} onClick={addApp}>
-          添加应用
+          Add new app
         </Menu.Item>
       </Menu.SubMenu>
     </Menu>

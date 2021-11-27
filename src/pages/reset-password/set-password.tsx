@@ -37,7 +37,7 @@ export default observer(() => {
           () => ({
             async validator(_, value) {
               if (value && !isPasswordValid(value)) {
-                throw "Password must be at least 8 characters in length and must contain uppercase, lowercase letters and numbers.";
+                throw "Use 8 or more characters with a mix of numbers, uppercase and lowercase letters.";
               }
             },
           }),

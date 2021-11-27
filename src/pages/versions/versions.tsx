@@ -8,7 +8,7 @@ import request from "../../request";
 import state, { bindPackage, fetchVersions, removeSelectedVersions } from "./state";
 
 const columns: ColumnType<Version>[] = [
-  { title: "版本", dataIndex: "name", render: (_, record) => renderTextCol(record, "name") },
+  { title: "Version", dataIndex: "name", render: (_, record) => renderTextCol(record, "name") },
   {
     title: "Descoription",
     dataIndex: "descoription",
@@ -111,7 +111,7 @@ export default observer(() => {
     <Table
       className="versions"
       rowKey="id"
-      title={() => "热更新包"}
+      title={() => "OTA Update"}
       columns={columns}
       components={{ body: { row: TableRow } }}
       dataSource={versions}
@@ -126,7 +126,7 @@ export default observer(() => {
         selected.length
           ? () => (
               <Button onClick={removeSelectedVersions} danger>
-                删除
+                Delete
               </Button>
             )
           : undefined

@@ -29,8 +29,10 @@ export async function login(email: string, password: string) {
     const { token } = await request("post", "user/login", params);
     runInAction(() => (store.token = token));
     localStorage.setItem("token", token);
-    message.success("登录成功");
-    fetchUserInfo();
+    const user = await fetchUserInfo();
+    if (user) {
+      message.success("Welcome back, " + user.name);
+    }
   } catch (e) {
     if (e instanceof RequestError) {
       if (e.code == 423) {
@@ -52,9 +54,10 @@ async function fetchUserInfo() {
     const user = await request("get", "user/me");
     await fetchApps();
     runInAction(() => (store.user = user));
+    return user;
   } catch (_) {
     logout();
-    message.error("登录已失效，请重新登录");
+    message.error("Invalid session. Please sign in again.");
   }
 }
 

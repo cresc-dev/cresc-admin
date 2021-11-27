@@ -18,7 +18,7 @@ const state = observable.object<State>({
   ...initState,
   pagination: {
     pageSize: 10,
-    showTotal: (total) => `共 ${total} 个 `,
+    showTotal: (total) => `Total: ${total}`,
     onChange(page, size) {
       if (size) {
         state.pagination.pageSize = size;
@@ -81,7 +81,10 @@ export function removeSelectedVersions() {
     return map;
   }, {});
   Modal.confirm({
-    title: "删除所选热更新包：",
+
+    title: "Are you sure to delete the update(s):",
+    okText: "Delete",
+    cancelText: "Cancel",
     content: selected.map((i) => map[i]).join("，"),
     maskClosable: true,
     okButtonProps: { danger: true },

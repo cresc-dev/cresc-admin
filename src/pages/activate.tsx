@@ -15,23 +15,23 @@ export default observer(() => {
     request("post", "user/active", { token })
       .then(() => runInAction(() => (state.loading = false)))
       .catch(({ message }: RequestError) =>
-        runInAction(() => (state.error = message ?? "激活失败"))
+        runInAction(() => (state.error = message ?? "Activation failed"))
       );
   }, []);
   if (state.error) {
     return <Result status="error" title={state.error} />;
   }
   if (state.loading) {
-    return <Result icon={<LoadingOutlined />} title="激活中，请稍等" />;
+    return <Result icon={<LoadingOutlined />} title="Activating..." />;
   }
   return (
     <Result
       status="success"
-      title="激活成功"
+      title="Activated"
       extra={
         <Link to="/login" replace>
           <Button type="primary" loading={state.loading}>
-            请登录
+            Sign in now
           </Button>
         </Link>
       }

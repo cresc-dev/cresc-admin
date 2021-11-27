@@ -24,7 +24,7 @@ export default observer(() => {
           store.history.replace("/reset-password/3");
         } catch (e) {
           console.log(e);
-          message.error((e as RequestError).message ?? "网络错误");
+          message.error((e as RequestError).message ?? "Network error");
         }
         runInAction(() => (state.loading = false));
       }}

@@ -15,9 +15,9 @@ export default () => {
   return (
     <Card style={{ width: 760, margin: "auto" }}>
       <Steps style={{ marginBottom: 48 }} current={Number(step)}>
-        <Steps.Step title="输入绑定邮箱"></Steps.Step>
-        <Steps.Step title="设置新密码"></Steps.Step>
-        <Steps.Step title="设置成功"></Steps.Step>
+        <Steps.Step title="Enter your email"></Steps.Step>
+        <Steps.Step title="Set up new password"></Steps.Step>
+        <Steps.Step title="Password updated"></Steps.Step>
       </Steps>
       {body[step]}
     </Card>

@@ -10,8 +10,9 @@ export default observer(() => {
     return (
       <Result
         status="success"
-        title="验证邮件已发送至您的邮箱，请点击邮件中的链接完成操作"
-        subTitle="验证邮件 24 小时有效，请尽快验证！"
+        title={`We've sent a password reset email to your mailbox. 
+        Please click the link in that email to reset your password.`}
+        subTitle="The reset link expires in 24 hours."
       />
     );
   }
@@ -24,17 +25,17 @@ export default observer(() => {
           await request("post", "user/resetpwd/sendmail", values);
           runInAction(() => (state.sent = true));
         } catch (e) {
-          message.error((e as RequestError).message ?? "网络错误");
+          message.error((e as RequestError).message ?? "Network error");
         }
         runInAction(() => (state.loading = false));
       }}
     >
       <Form.Item name="email">
-        <Input placeholder="输入绑定邮箱" type="email" required />
+        <Input placeholder="Enter your email" type="email" required />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={state.loading} block>
-          发送邮件
+          Send me the reset link
         </Button>
       </Form.Item>
     </Form>

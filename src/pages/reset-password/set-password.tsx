@@ -37,13 +37,13 @@ export default observer(() => {
           () => ({
             async validator(_, value) {
               if (value && !isPasswordValid(value)) {
-                throw "密码中需要同时包含大、小写字母和数字，且长度不少于6位";
+                throw "Password must be at least 8 characters in length and must contain uppercase, lowercase letters and numbers.";
               }
             },
           }),
         ]}
       >
-        <Input type="password" placeholder="新密码" autoComplete="" required />
+        <Input type="password" placeholder="New password" autoComplete="" required />
       </Form.Item>
       <Form.Item
         hasFeedback
@@ -53,17 +53,17 @@ export default observer(() => {
           ({ getFieldValue }) => ({
             async validator(_, value) {
               if (getFieldValue("newPwd") != value) {
-                throw "两次输入的密码不一致";
+                throw "Please make sure your passwords match.";
               }
             },
           }),
         ]}
       >
-        <Input type="password" placeholder="再次输入密码" autoComplete="" required />
+        <Input type="password" placeholder="Confirm password" autoComplete="" required />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={state.loading} block>
-          确认修改
+          Submit
         </Button>
       </Form.Item>
     </Form>

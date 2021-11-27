@@ -15,7 +15,10 @@ export default ({ dataSource }: { dataSource: Package[] }) => (
 
 function remove(item: Package) {
   Modal.confirm({
-    title: `删除后无法恢复，确定删除原生包“${item.name}”？`,
+    title: "Are you sure?",
+    content: `Do you really want to delete the package "${item.name}"? It cannot be undone.`,
+    okText: "Delete",
+    cancelText: "Cancel",
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
@@ -34,22 +37,22 @@ function edit(item: Package) {
     maskClosable: true,
     content: (
       <Form layout="vertical" initialValues={item}>
-        <Form.Item name="note" label="备注">
+        <Form.Item name="note" label="Note">
           <Input
-            placeholder="添加原生包备注"
+            placeholder="Add note for this package"
             onChange={({ target }) => (item.note = target.value)}
           />
         </Form.Item>
-        <Form.Item name="status" label="状态">
+        <Form.Item name="status" label="Status">
           <Select
             onSelect={(value) => {
               // @ts-ignore
               item.status = value;
             }}
           >
-            <Select.Option value="normal">正常</Select.Option>
-            <Select.Option value="paused">暂停</Select.Option>
-            <Select.Option value="expired">过期</Select.Option>
+            <Select.Option value="normal">Normal</Select.Option>
+            <Select.Option value="paused">Paused</Select.Option>
+            <Select.Option value="expired">Expired</Select.Option>
           </Select>
         </Form.Item>
       </Form>
@@ -88,10 +91,10 @@ const Item = ({ item }: { item: Package }) => {
                   type="secondary"
                   ellipsis={{ tooltip: item.note }}
                 >
-                  备注：{item.note}
+                  Note: {item.note}
                 </Typography.Paragraph>
               )}
-              编译时间：{item.buildTime}
+              BuildTime: {item.buildTime}
             </>
           }
         />
@@ -101,6 +104,6 @@ const Item = ({ item }: { item: Package }) => {
 };
 
 const status = {
-  paused: "暂停",
-  expired: "过期",
+  paused: "Paused",
+  expired: "Expired",
 };

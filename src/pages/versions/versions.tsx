@@ -10,8 +10,8 @@ import state, { bindPackage, fetchVersions, removeSelectedVersions } from "./sta
 const columns: ColumnType<Version>[] = [
   { title: "Version", dataIndex: "name", render: (_, record) => renderTextCol(record, "name") },
   {
-    title: "Descoription",
-    dataIndex: "descoription",
+    title: "Description",
+    dataIndex: "description",
     render: (_, record) => renderTextCol(record, "description"),
   },
   {

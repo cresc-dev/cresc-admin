@@ -3,7 +3,7 @@ import { Form, Input, message, Modal, Select } from "antd";
 import request from "../../request";
 import { fetchApps } from "../../store";
 
-export default function () {
+export default function add() {
   let name = "";
   let platform = "android";
   Modal.confirm({

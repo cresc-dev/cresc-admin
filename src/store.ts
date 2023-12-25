@@ -1,14 +1,14 @@
-import { message } from "antd";
-import { History } from "history";
-import md5 from "md5";
-import { observable, runInAction } from "mobx";
-import request, { RequestError } from "./request";
+import { message } from 'antd';
+import { History } from 'history';
+import md5 from 'blueimp-md5';
+import { observable, runInAction } from 'mobx';
+import request, { RequestError } from './request';
 
 const noop = () => {};
 const initState = {
   apps: observable.array<App>(),
-  token: localStorage.getItem("token"),
-  email: "",
+  token: localStorage.getItem('token'),
+  email: '',
   history: {
     push: noop,
     replace: noop,
@@ -16,6 +16,7 @@ const initState = {
     goBack: noop,
   } as any as History,
 };
+
 type Store = typeof initState & { user?: User; history: History };
 
 const store = observable.object<Store>(initState);
@@ -36,7 +37,7 @@ export async function login(email: string, password: string) {
   } catch (e) {
     if (e instanceof RequestError) {
       if (e.code == 423) {
-        store.history.push("/inactivated");
+        store.history.push('/inactivated');
       } else {
         message.error(e.message);
       }
@@ -46,15 +47,14 @@ export async function login(email: string, password: string) {
 
 export function logout() {
   store.token = null;
-  localStorage.removeItem("token");
+  localStorage.removeItem('token');
 }
 
 async function fetchUserInfo() {
   try {
-    const user = await request("get", "user/me");
+    const user = await request('get', 'user/me');
     await fetchApps();
     runInAction(() => (store.user = user));
-    return user;
   } catch (_) {
     logout();
     message.error("Invalid session. Please sign in again.");
@@ -62,7 +62,7 @@ async function fetchUserInfo() {
 }
 
 export async function fetchApps() {
-  const { data } = await request("get", "app/list");
+  const { data } = await request('get', 'app/list');
   runInAction(() => (store.apps = data));
 }
 

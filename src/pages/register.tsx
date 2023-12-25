@@ -1,23 +1,24 @@
-import { Button, Form, Input, message, Row } from "antd";
-import md5 from "md5";
-import { observable, runInAction } from "mobx";
-import { observer } from "mobx-react-lite";
-import { Link } from "react-router-dom";
-import logo from "../assets/logo.svg";
-import request from "../request";
-import store from "../store";
-import { isPasswordValid } from "../utils";
+import { Button, Form, Input, message, Row, Checkbox } from 'antd';
+import md5 from 'blueimp-md5';
+import { observable, runInAction } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { Link } from 'react-router-dom';
+import logo from '../assets/logo.svg';
+import request from '../request';
+import store from '../store';
+import { isPasswordValid } from '../utils';
 
-const state = observable.object({ loading: false });
+const state = observable.object({ loading: false, agreed: false });
 
 async function submit(values: { [key: string]: string }) {
   delete values.pwd2;
+  delete values.agreed;
   values.pwd = md5(values.pwd);
   runInAction(() => (state.loading = true));
   store.email = values.email;
   try {
-    await request("post", "user/register", values);
-    store.history.replace("/welcome");
+    await request('post', 'user/register', values);
+    store.history.replace('/welcome');
   } catch (_) {
     message.error("This email is already registered");
   }
@@ -25,7 +26,7 @@ async function submit(values: { [key: string]: string }) {
 }
 
 export default observer(() => {
-  const { loading } = state;
+  const { loading, agreed } = state;
   return (
     <div style={style.body}>
       <Form style={style.form} onFinish={(values) => submit(values)}>
@@ -77,7 +78,34 @@ export default observer(() => {
           </Button>
         </Form.Item>
         <Form.Item>
-          <Row justify="space-between">
+          <Row justify='space-between'>
+            <Form.Item
+              name='agreed'
+              valuePropName='checked'
+              rules={[
+                {
+                  validator: (_, value) =>
+                    value
+                      ? Promise.resolve()
+                      : Promise.reject(new Error('请阅读并同意后勾选此处')),
+                },
+              ]}
+              hasFeedback
+              noStyle
+            >
+              <Checkbox>
+                <span>
+                  已阅读并同意
+                  <a
+                    target='_blank'
+                    href='https://pushy.reactnative.cn/agreement/'
+                    rel='noreferrer'
+                  >
+                    用户协议
+                  </a>
+                </span>
+              </Checkbox>
+            </Form.Item>
             <span />
             <Link to="/login">Sign in？</Link>
           </Row>
@@ -88,8 +116,8 @@ export default observer(() => {
 });
 
 const style: Style = {
-  body: { display: "flex", flexDirection: "column", height: "100%" },
-  form: { width: 320, margin: "auto", paddingTop: 16, flex: 1 },
-  logo: { textAlign: "center", margin: "48px 0" },
-  slogan: { marginTop: 16, color: "#00000073", fontSize: 18 },
+  body: { display: 'flex', flexDirection: 'column', height: '100%' },
+  form: { width: 320, margin: 'auto', paddingTop: 16, flex: 1 },
+  logo: { textAlign: 'center', margin: '48px 0' },
+  slogan: { marginTop: 16, color: '#00000073', fontSize: 18 },
 };

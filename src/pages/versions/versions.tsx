@@ -3,7 +3,7 @@ import { Button, Dropdown, Input, Menu, Modal, Table, Tag, Tooltip, Typography }
 import { ColumnType } from "antd/lib/table";
 import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useDrag, useDrop } from "react-dnd";
+// import { useDrag, useDrop } from "react-dnd";
 import request from "../../request";
 import state, { bindPackage, fetchVersions, removeSelectedVersions } from "./state";
 
@@ -67,7 +67,8 @@ function renderTextCol(record: Version, key: string, isEditable: boolean = true)
   if (key === "createdAt") {
     const t = new Date(value);
     const y = t.getFullYear();
-    const M = t.getMonth() < 10 ? "0" + t.getMonth() : t.getMonth();
+    const month = t.getMonth() + 1;
+    const M = month < 10 ? "0" + month : month;
     const d = t.getDate() < 10 ? "0" + t.getDate() : t.getDate();
     const h = t.getHours() < 10 ? "0" + t.getHours() : t.getHours();
     const m = t.getMinutes() < 10 ? "0" + t.getMinutes() : t.getMinutes();
@@ -80,7 +81,7 @@ function renderTextCol(record: Version, key: string, isEditable: boolean = true)
       onStart() {
         Modal.confirm({
           icon: null,
-          title: columns.find((i) => i.dataIndex == key)?.title,
+          title: columns.find((i) => i.dataIndex == key)?.title as string,
           closable: true,
           maskClosable: true,
           content: (
@@ -136,29 +137,33 @@ export default observer(() => {
 });
 
 const TableRow = (props: any) => {
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: "package",
-    async drop(pack: PackageBase) {
-      const { id, packages = [] } = state.versions.find((i) => i.id == props["data-row-key"]) ?? {};
-      if (!packages.some(({ id }) => pack.id == id)) {
-        bindPackage(pack.id, id!);
-      }
-    },
-    collect: (monitor) => ({ isOver: monitor.isOver(), canDrop: monitor.canDrop() }),
-  }));
+  // const [{ canDrop, isOver }, drop] = useDrop(() => ({
+  //   accept: "package",
+  //   async drop(pack: PackageBase) {
+  //     const { id, packages = [] } = state.versions.find((i) => i.id == props["data-row-key"]) ?? {};
+  //     if (!packages.some(({ id }) => pack.id == id)) {
+  //       bindPackage(pack.id, id!);
+  //     }
+  //   },
+  //   collect: (monitor) => ({ isOver: monitor.isOver(), canDrop: monitor.canDrop() }),
+  // }));
   let className = "";
-  if (canDrop) className = "can-drop";
-  if (isOver) className = "is-over";
-  return <tr ref={drop} {...props} className={`ant-table-row ${className}`} />;
+  // if (canDrop) className = "can-drop";
+  // if (isOver) className = "is-over";
+  return (
+    <tr
+      // ref={drop}
+      {...props}
+      className={`ant-table-row ${className}`}
+    />
+  );
 };
 
 const PackageItem = ({ item }: { item: PackageBase }) => {
-  const [_, drag] = useDrag(() => ({ item, type: "package" }));
+  // const [_, drag] = useDrag(() => ({ item, type: "package" }));
   return (
     <Tooltip title={item.note}>
-      <Tag ref={drag} color="#1890ff" draggable>
-        {item.name}
-      </Tag>
+      <Tag color="#1890ff">{item.name}</Tag>
     </Tooltip>
   );
 };

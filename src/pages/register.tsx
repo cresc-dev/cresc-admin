@@ -1,12 +1,12 @@
-import { Button, Form, Input, message, Row, Checkbox } from 'antd';
-import md5 from 'blueimp-md5';
-import { observable, runInAction } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.svg';
-import request from '../request';
-import store from '../store';
-import { isPasswordValid } from '../utils';
+import { Button, Form, Input, message, Row, Checkbox } from "antd";
+import md5 from "blueimp-md5";
+import { observable, runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.svg";
+import request from "../request";
+import store from "../store";
+import { isPasswordValid } from "../utils";
 
 const state = observable.object({ loading: false, agreed: false });
 
@@ -17,8 +17,8 @@ async function submit(values: { [key: string]: string }) {
   runInAction(() => (state.loading = true));
   store.email = values.email;
   try {
-    await request('post', 'user/register', values);
-    store.history.replace('/welcome');
+    await request("post", "user/register", values);
+    store.history.replace("/welcome");
   } catch (_) {
     message.error("This email is already registered");
   }
@@ -54,7 +54,13 @@ export default observer(() => {
             }),
           ]}
         >
-          <Input type="password" placeholder="Password" size="large" autoComplete="" required />
+          <Input
+            type="password"
+            placeholder="Password"
+            size="large"
+            autoComplete=""
+            required
+          />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -70,24 +76,36 @@ export default observer(() => {
             }),
           ]}
         >
-          <Input type="password" placeholder="Confirm password" size="large" autoComplete="" required />
+          <Input
+            type="password"
+            placeholder="Confirm password"
+            size="large"
+            autoComplete=""
+            required
+          />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" size="large" loading={loading} block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            loading={loading}
+            block
+          >
             Register
           </Button>
         </Form.Item>
         <Form.Item>
-          <Row justify='space-between'>
+          <Row justify="space-between">
             <Form.Item
-              name='agreed'
-              valuePropName='checked'
+              name="agreed"
+              valuePropName="checked"
               rules={[
                 {
                   validator: (_, value) =>
                     value
                       ? Promise.resolve()
-                      : Promise.reject(new Error('请阅读并同意后勾选此处')),
+                      : Promise.reject(new Error("请阅读并同意后勾选此处")),
                 },
               ]}
               hasFeedback
@@ -95,13 +113,13 @@ export default observer(() => {
             >
               <Checkbox>
                 <span>
-                  已阅读并同意
+                  I've read and agreed to
                   <a
-                    target='_blank'
-                    href='https://pushy.reactnative.cn/agreement/'
-                    rel='noreferrer'
+                    target="_blank"
+                    href="https://pushy.reactnative.cn/agreement/"
+                    rel="noreferrer"
                   >
-                    用户协议
+                    the terms of use
                   </a>
                 </span>
               </Checkbox>
@@ -116,8 +134,8 @@ export default observer(() => {
 });
 
 const style: Style = {
-  body: { display: 'flex', flexDirection: 'column', height: '100%' },
-  form: { width: 320, margin: 'auto', paddingTop: 16, flex: 1 },
-  logo: { textAlign: 'center', margin: '48px 0' },
-  slogan: { marginTop: 16, color: '#00000073', fontSize: 18 },
+  body: { display: "flex", flexDirection: "column", height: "100%" },
+  form: { width: 320, margin: "auto", paddingTop: 16, flex: 1 },
+  logo: { textAlign: "center", margin: "48px 0" },
+  slogan: { marginTop: 16, color: "#00000073", fontSize: 18 },
 };

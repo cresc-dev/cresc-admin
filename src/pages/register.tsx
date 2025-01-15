@@ -1,44 +1,43 @@
-import { Button, Form, Input, message, Row, Checkbox } from "antd";
+import { api } from "@/services/api";
+import { setUserEmail } from "@/services/auth";
+import { Button, Checkbox, Form, Input, Row, message } from "antd";
 import md5 from "blueimp-md5";
-import { observable, runInAction } from "mobx";
-import { observer } from "mobx-react-lite";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.svg";
-import request from "../request";
-import store from "../store";
-import { isPasswordValid } from "../utils";
+import { ReactComponent as Logo } from "../assets/logo.svg";
+import { rootRouterPath, router } from "../router";
+import { isPasswordValid } from "../utils/helper";
 
-const state = observable.object({ loading: false, agreed: false });
+export const Register = () => {
+  const [loading, setLoading] = useState<boolean>(false);
 
-async function submit(values: { [key: string]: string }) {
-  delete values.pwd2;
-  delete values.agreed;
-  values.pwd = md5(values.pwd);
-  runInAction(() => (state.loading = true));
-  store.email = values.email;
-  try {
-    await request("post", "user/register", values);
-    store.history.replace("/welcome");
-  } catch (_) {
-    message.error("This email is already registered");
+  async function submit(values: { [key: string]: string }) {
+    delete values.pwd2;
+    delete values.agreed;
+    values.pwd = md5(values.pwd);
+    setLoading(true);
+    try {
+      await api.register(values);
+      setUserEmail(values.email);
+      router.navigate(rootRouterPath.welcome);
+    } catch (_) {
+      message.error("该邮箱已被注册");
+    }
+    setLoading(false);
   }
-  runInAction(() => (state.loading = false));
-}
 
-export default observer(() => {
-  const { loading, agreed } = state;
   return (
     <div style={style.body}>
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
-          <img src={logo} />
-          <div style={style.slogan}>Always up to date</div>
+          <Logo className="mx-auto" />
+          <div style={style.slogan}>极速热更新框架 for React Native</div>
         </div>
         <Form.Item name="name" hasFeedback>
-          <Input placeholder="Username" size="large" required />
+          <Input placeholder="用户名" size="large" required />
         </Form.Item>
         <Form.Item name="email" hasFeedback>
-          <Input placeholder="Email" size="large" type="email" required />
+          <Input placeholder="邮箱" size="large" type="email" required />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -46,9 +45,9 @@ export default observer(() => {
           validateTrigger="onBlur"
           rules={[
             () => ({
-              async validator(_, value) {
+              async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw "Use 8 or more characters with a mix of numbers, uppercase and lowercase letters";
+                  throw "密码中需要同时包含大、小写字母和数字，且长度不少于6位";
                 }
               },
             }),
@@ -56,7 +55,7 @@ export default observer(() => {
         >
           <Input
             type="password"
-            placeholder="Password"
+            placeholder="密码"
             size="large"
             autoComplete=""
             required
@@ -68,9 +67,9 @@ export default observer(() => {
           validateTrigger="onBlur"
           rules={[
             ({ getFieldValue }) => ({
-              async validator(_, value) {
-                if (getFieldValue("pwd") != value) {
-                  throw "Please make sure your passwords match.";
+              async validator(_, value: string) {
+                if (getFieldValue("pwd") !== value) {
+                  throw "两次输入的密码不一致";
                 }
               },
             }),
@@ -78,7 +77,7 @@ export default observer(() => {
         >
           <Input
             type="password"
-            placeholder="Confirm password"
+            placeholder="再次输入密码"
             size="large"
             autoComplete=""
             required
@@ -90,9 +89,8 @@ export default observer(() => {
             htmlType="submit"
             size="large"
             loading={loading}
-            block
           >
-            Register
+            注册
           </Button>
         </Form.Item>
         <Form.Item>
@@ -113,25 +111,27 @@ export default observer(() => {
             >
               <Checkbox>
                 <span>
-                  I've read and agreed to
+                  已阅读并同意
                   <a
                     target="_blank"
                     href="https://pushy.reactnative.cn/agreement/"
                     rel="noreferrer"
                   >
-                    the terms of use
+                    用户协议
                   </a>
                 </span>
               </Checkbox>
             </Form.Item>
             <span />
-            <Link to="/login">Sign in？</Link>
+            <Link to="/login">已有帐号？</Link>
           </Row>
         </Form.Item>
       </Form>
     </div>
   );
-});
+};
+
+export const Component = Register;
 
 const style: Style = {
   body: { display: "flex", flexDirection: "column", height: "100%" },

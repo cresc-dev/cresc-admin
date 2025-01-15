@@ -1,48 +1,47 @@
-import { Button, message, Result } from "antd";
-import { observable } from "mobx";
-import { observer } from "mobx-react-lite";
+import { api } from "@/services/api";
+import { getUserEmail } from "@/services/auth";
+import { useMutation } from "@tanstack/react-query";
+import { Button, Result, message } from "antd";
 import { useEffect } from "react";
-import request from "../request";
-import store from "../store";
+import { rootRouterPath, router } from "../router";
 
-const state = observable.object({ loading: false });
-
-export default observer(() => {
+export const Welcome = () => {
   useEffect(() => {
-    if (!store.email) {
-      store.history.replace("/login");
+    if (!getUserEmail()) {
+      router.navigate(rootRouterPath.login);
     }
   }, []);
+
+  const { mutate: sendEmail, isPending } = useMutation({
+    mutationFn: () => api.sendEmail({ email: getUserEmail() }),
+    onSuccess: () => {
+      message.info("邮件发送成功，请注意查收");
+    },
+    onError: () => {
+      message.error("邮件发送失败");
+    },
+  });
+
   return (
     <Result
       title={
         <>
-          Thank you for signing up.
+          感谢您关注由 React Native 中文网提供的热更新服务
           <br />
-          We've just sent a mail to {store.email} for verification.
+          我们已经往您的邮箱发送了一封激活邮件
           <br />
-          Please click the link in that mail to activate your account.
-          <div style={{ height: 24 }} />
+          请点击邮件内的激活链接激活您的帐号
+          <div className="h-6" />
         </>
       }
-      subTitle="If you did not receive the mail, please click the Resend button"
+      subTitle="如未收到激活邮件，请点击"
       extra={
-        <Button type="primary" onClick={sendEmail} loading={state.loading}>
-          Resend
+        <Button type="primary" onClick={() => sendEmail()} loading={isPending}>
+          重新发送
         </Button>
       }
     />
   );
-});
+};
 
-async function sendEmail() {
-  const { email } = store;
-  state.loading = true;
-  try {
-    await request("post", "user/active/sendmail", { email });
-    message.info(`The mail has been sent successfully`);
-  } catch (_) {
-    message.error("Failed to send the verification mail. Please try again.");
-  }
-  state.loading = false;
-}
+export const Component = Welcome;

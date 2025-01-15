@@ -1,40 +1,34 @@
+import { api } from "@/services/api";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Result } from "antd";
-import { observable, runInAction } from "mobx";
-import { observer } from "mobx-react-lite";
-import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import request, { RequestError } from "../request";
 
-const state = observable.object({ loading: true, error: "" });
-
-export default observer(() => {
+export const Activate = () => {
   const { search } = useLocation();
-  const token = new URLSearchParams(search).get("code");
-  useEffect(() => {
-    request("post", "user/active", { token })
-      .then(() => runInAction(() => (state.loading = false)))
-      .catch(({ message }: RequestError) =>
-        runInAction(() => (state.error = message ?? "Activation failed"))
-      );
-  }, []);
-  if (state.error) {
-    return <Result status="error" title={state.error} />;
+  const token = new URLSearchParams(search).get("code") || "";
+  const { isLoading, error } = useQuery({
+    queryKey: ["activate", token],
+    queryFn: () => api.activate({ token }),
+    enabled: !!token,
+  });
+  if (error) {
+    return <Result status="error" title={error.message} />;
   }
-  if (state.loading) {
-    return <Result icon={<LoadingOutlined />} title="Activating..." />;
+  if (isLoading) {
+    return <Result icon={<LoadingOutlined />} title="激活中，请稍等" />;
   }
   return (
     <Result
       status="success"
-      title="Activated"
+      title="激活成功"
       extra={
         <Link to="/login" replace>
-          <Button type="primary" loading={state.loading}>
-            Sign in now
-          </Button>
+          <Button type="primary">请登录</Button>
         </Link>
       }
     />
   );
-});
+};
+
+export const Component = Activate;

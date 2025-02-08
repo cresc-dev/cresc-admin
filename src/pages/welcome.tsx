@@ -15,10 +15,10 @@ export const Welcome = () => {
   const { mutate: sendEmail, isPending } = useMutation({
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
-      message.info("邮件发送成功，请注意查收");
+      message.info("Email sent successfully, please check your inbox");
     },
     onError: () => {
-      message.error("邮件发送失败");
+      message.error("Email sending failed");
     },
   });
 
@@ -26,18 +26,18 @@ export const Welcome = () => {
     <Result
       title={
         <>
-          感谢您关注由 React Native 中文网提供的热更新服务
+          Thank you for your attention to the hot update service provided by React Native Chinese Website
           <br />
-          我们已经往您的邮箱发送了一封激活邮件
+          We have sent an activation email to your email address
           <br />
-          请点击邮件内的激活链接激活您的帐号
+          Please click the activation link in the email to activate your account
           <div className="h-6" />
         </>
       }
-      subTitle="如未收到激活邮件，请点击"
+      subTitle="If you do not receive the activation email, please click"
       extra={
         <Button type="primary" onClick={() => sendEmail()} loading={isPending}>
-          重新发送
+          Resend
         </Button>
       }
     />

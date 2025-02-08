@@ -15,9 +15,9 @@ export const ResetPassword = () => {
   return (
     <Card className="w-max mx-auto">
       <Steps className="mb-12" current={Number(step)}>
-        <Steps.Step title="输入绑定邮箱" />
-        <Steps.Step title="设置新密码" />
-        <Steps.Step title="设置成功" />
+        <Steps.Step title="Enter your email" />
+        <Steps.Step title="Set a new password" />
+        <Steps.Step title="Success" />
       </Steps>
       {body[step]}
     </Card>

@@ -22,11 +22,11 @@ export const Login = () => {
       >
         <div style={style.logo}>
           <Logo className="mx-auto" />
-          <div style={style.slogan}>极速热更新框架 for React Native</div>
+          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
         </div>
         <Form.Item>
           <Input
-            placeholder="邮箱"
+            placeholder="Email"
             size="large"
             type="email"
             autoComplete=""
@@ -37,7 +37,7 @@ export const Login = () => {
         <Form.Item>
           <Input
             type="password"
-            placeholder="密码"
+            placeholder="Password"
             size="large"
             autoComplete=""
             onChange={({ target }) => (password = target.value)}
@@ -52,13 +52,13 @@ export const Login = () => {
             loading={loading}
             block
           >
-            登录
+            Login
           </Button>
         </Form.Item>
         <Form.Item>
           <Row justify="space-between">
-            <Link to="/register">注册</Link>
-            <Link to="/reset-password/0">忘记密码？</Link>
+            <Link to="/register">Register</Link>
+            <Link to="/reset-password/0">Forgot password?</Link>
           </Row>
         </Form.Item>
       </form>

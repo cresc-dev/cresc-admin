@@ -1,8 +1,7 @@
 import { TEST_QR_CODE_DOC } from "@/constants/links";
 import { api } from "@/services/api";
 import { useVersions } from "@/utils/hooks";
-/* eslint-disable react/no-unstable-nested-components */
-import { InfoCircleOutlined, QrcodeOutlined } from "@ant-design/icons";
+import { QrcodeOutlined } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -46,14 +45,14 @@ const TestQrCode = ({ name, hash }: { name: string; hash: string }) => {
       content={
         <div>
           <div className="text-center my-1 mx-auto">
-            测试二维码 <br />
+            Test QR Code <br />
             <a
               target="_blank"
               className="ml-1 text-xs"
               href={TEST_QR_CODE_DOC}
               rel="noreferrer"
             >
-              如何使用？
+              How to use?
             </a>
           </div>
           <QRCode value={codeValue} bordered={false} className="my-0 mx-auto" />
@@ -74,10 +73,10 @@ const TestQrCode = ({ name, hash }: { name: string; hash: string }) => {
                   setEnableDeepLink(target.checked);
                 }}
               >
-                使用 Deep Link：
+                Use Deep Link:
               </Checkbox>
               <Input
-                placeholder="例如 pushy://"
+                placeholder="e.g. cresc://"
                 className="flex-1"
                 value={deepLink}
                 onChange={({ target }) => {
@@ -110,8 +109,8 @@ function removeSelectedVersions({
     }
   }
   Modal.confirm({
-    title: "删除所选热更新包：",
-    content: versionNames.join("，"),
+    title: "Delete selected versions:",
+    content: versionNames.join(", "),
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
@@ -124,7 +123,7 @@ function removeSelectedVersions({
 
 const columns: ColumnType<Version>[] = [
   {
-    title: "版本",
+    title: "Version",
     dataIndex: "name",
     render: (_, record) => (
       <TextColumn
@@ -135,33 +134,19 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: "描述",
+    title: "Description",
     dataIndex: "description",
     render: (_, record) => (
       <TextColumn record={record} recordKey="description" />
     ),
   },
   {
-    title: "自定义元信息",
+    title: "Meta Info",
     dataIndex: "metaInfo",
     render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
   },
   {
-    title: (
-      <Popover
-        content={
-          <>
-            灰度发布测试中，需要 pushy 版本 v10.15.0 +。
-            <br />
-            低于此版本的只能全量发布。
-            <br />
-            取消绑定不会导致已更新的用户回滚。
-          </>
-        }
-      >
-        绑定原生包 <InfoCircleOutlined />
-      </Popover>
-    ),
+    title: 'Publish',
     dataIndex: "packages",
     width: "100%",
     render: (_, { packages, id, config }) => (
@@ -169,7 +154,7 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: "上传时间",
+    title: "Upload Time",
     dataIndex: "createdAt",
     render: (_, record) => (
       <TextColumn record={record} recordKey="createdAt" isEditable={false} />

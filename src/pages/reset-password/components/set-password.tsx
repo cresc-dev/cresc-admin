@@ -22,7 +22,7 @@ export default function SetPassword() {
           router.navigate(rootRouterPath.resetPassword("3"));
         } catch (e) {
           console.log(e);
-          message.error((e as Error).message ?? "网络错误");
+          message.error((e as Error).message ?? "Network error");
         }
         setLoading(false);
       }}
@@ -37,7 +37,7 @@ export default function SetPassword() {
               if (value && !isPasswordValid(value)) {
                 return Promise.reject(
                   new Error(
-                    "密码中需要同时包含大、小写字母和数字，且长度不少于6位",
+                    "The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long",
                   ),
                 );
               }
@@ -46,7 +46,7 @@ export default function SetPassword() {
           }),
         ]}
       >
-        <Input type="password" placeholder="新密码" autoComplete="" required />
+        <Input type="password" placeholder="New Password" autoComplete="" required />
       </Form.Item>
       <Form.Item
         hasFeedback
@@ -56,7 +56,7 @@ export default function SetPassword() {
           ({ getFieldValue }) => ({
             validator(_, value: string) {
               if (getFieldValue("newPwd") !== value) {
-                return Promise.reject(new Error("两次输入的密码不一致"));
+                return Promise.reject(new Error("The passwords you entered do not match"));
               }
               return Promise.resolve();
             },
@@ -65,14 +65,14 @@ export default function SetPassword() {
       >
         <Input
           type="password"
-          placeholder="再次输入密码"
+          placeholder="Enter the password again"
           autoComplete=""
           required
         />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading} block>
-          确认修改
+          Confirm Change
         </Button>
       </Form.Item>
     </Form>

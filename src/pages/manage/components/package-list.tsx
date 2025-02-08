@@ -31,7 +31,7 @@ export default PackageList;
 
 function remove(item: Package, appId: number) {
   Modal.confirm({
-    title: `删除后无法恢复，确定删除原生包“${item.name}”？`,
+    title: `It CANNOT be recovered after the deletion. Are you sure you want to delete "${item.name}"?`,
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
@@ -48,21 +48,21 @@ function edit(item: Package, appId: number) {
     maskClosable: true,
     content: (
       <Form layout="vertical" initialValues={item}>
-        <Form.Item name="note" label="备注">
+        <Form.Item name="note" label="Remark">
           <Input
-            placeholder="添加原生包备注"
+            placeholder="Add Remark"
             onChange={({ target }) => (note = target.value)}
           />
         </Form.Item>
-        <Form.Item name="status" label="状态">
+        <Form.Item name="status" label="Status">
           <Select
             onSelect={(value: Package["status"]) => {
               status = value;
             }}
           >
-            <Select.Option value="normal">正常</Select.Option>
-            <Select.Option value="paused">暂停</Select.Option>
-            <Select.Option value="expired">过期</Select.Option>
+            <Select.Option value="normal">Normal</Select.Option>
+            <Select.Option value="paused">Paused</Select.Option>
+            <Select.Option value="expired">Expired</Select.Option>
           </Select>
         </Form.Item>
       </Form>
@@ -113,10 +113,10 @@ const Item = ({ item }: { item: Package }) => {
                   type="secondary"
                   ellipsis={{ tooltip: item.note }}
                 >
-                  备注：{item.note}
+                  Remark: {item.note}
                 </Typography.Paragraph>
               )}
-              编译时间：{item.buildTime}
+              Build Time: {item.buildTime}
             </>
           }
         />
@@ -125,6 +125,6 @@ const Item = ({ item }: { item: Package }) => {
   );
 };
 const status = {
-  paused: "暂停",
-  expired: "过期",
+  paused: "Paused",
+  expired: "Expired",
 };

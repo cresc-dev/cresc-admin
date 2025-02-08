@@ -35,7 +35,7 @@ const BindPackage = ({
         : [
             {
               key: "full",
-              label: "全量",
+              label: "Full Release",
               icon: <CloudDownloadOutlined />,
               onClick: () => {
                 api.updateVersion({
@@ -56,7 +56,7 @@ const BindPackage = ({
     if (rolloutConfigNumber < 50 && !isFull) {
       menu.items!.push({
         key: "gray",
-        label: "灰度",
+        label: "Canary Release",
         icon: <ExperimentOutlined />,
         onClick: () =>
           api.updatePackage({ appId, packageId: p.id, params: { versionId } }),
@@ -79,7 +79,7 @@ const BindPackage = ({
     }
     menu.items!.push({
       key: "unpublish",
-      label: "取消绑定",
+      label: "Unpublish",
       icon: <RestOutlined />,
       onClick: () => {
         api.updateVersion({
@@ -129,7 +129,7 @@ const BindPackage = ({
               children: [
                 {
                   key: "full",
-                  label: "全量",
+                  label: "Full Release",
                   icon: <CloudDownloadOutlined />,
                   onClick: () =>
                     api.updateVersion({
@@ -140,7 +140,7 @@ const BindPackage = ({
                 },
                 {
                   key: "gray",
-                  label: "灰度",
+                  label: "Canary Release",
                   icon: <ExperimentOutlined />,
                   children: [1, 2, 5, 10, 20, 50].map((percentage) => ({
                     key: `${percentage}`,
@@ -161,7 +161,7 @@ const BindPackage = ({
           className="ant-typography-edit"
         >
           <Button type="link" size="small" icon={<LinkOutlined />}>
-            绑定
+            Publish
           </Button>
         </Dropdown>
       )}

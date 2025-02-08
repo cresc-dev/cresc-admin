@@ -33,12 +33,12 @@ const ManageDashBoard = () => {
         className="p-4 pt-0 mr-4 h-full rounded-lg"
         width={240}
       >
-        <div className="py-4">原生包</div>
+        <div className="py-4">Native Packages</div>
         <Tabs>
-          <Tabs.TabPane tab="全部" key="all">
+          <Tabs.TabPane tab="All" key="all">
             <PackageList dataSource={packages} loading={packagesLoading} />
           </Tabs.TabPane>
-          <Tabs.TabPane tab="未使用" key="unused">
+          <Tabs.TabPane tab="Unused" key="unused">
             <PackageList
               dataSource={unusedPackages}
               loading={packagesLoading}
@@ -71,12 +71,12 @@ export const Manage = () => {
         <Col flex={1}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/apps">应用列表</Link>
+              <Link to="/apps">App List</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <PlatformIcon platform={app?.platform} className="mr-1" />
               {app?.name}
-              {app?.status === "paused" && <Tag className="ml-2">暂停</Tag>}
+              {app?.status === "paused" && <Tag className="ml-2">Paused</Tag>}
             </Breadcrumb.Item>
           </Breadcrumb>
         </Col>
@@ -106,12 +106,12 @@ export const Manage = () => {
                     message.error((e as Error).message);
                     return;
                   }
-                  message.success("修改成功");
+                  message.success("Successfully updated");
                 },
               });
             }}
           >
-            应用设置
+            App Settings
           </Button>
         </Button.Group>
       </Row>

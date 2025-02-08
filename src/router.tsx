@@ -67,7 +67,7 @@ export const router = createHashRouter([
       {
         path: "apps",
         loader: needAuthLoader,
-        element: <Alert message="请选择应用" showIcon />,
+        element: <Alert message="Please select an app" showIcon />,
       },
       {
         path: "apps/:id",

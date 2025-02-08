@@ -24,17 +24,17 @@ const MainLayout = () => {
             <Menu mode="horizontal" selectable={false}>
               <Menu.Item key="issues" icon={<CommentOutlined />}>
                 <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
-                  讨论
+                  Discussion
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="document" icon={<ReadOutlined />}>
                 <ExtLink href="https://pushy.reactnative.cn/docs/getting-started.html">
-                  文档
+                  Documentation
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="about" icon={<InfoCircleOutlined />}>
                 <ExtLink href="https://reactnative.cn/about.html">
-                  关于我们
+                  About Us
                 </ExtLink>
               </Menu.Item>
               {user && (
@@ -47,11 +47,11 @@ const MainLayout = () => {
                     key="logout"
                     onClick={() => {
                       logout();
-                      message.info("您已退出登录");
+                      message.info("You have logged out");
                     }}
                     icon={<LogoutOutlined />}
                   >
-                    退出登录
+                    Logout
                   </Menu.Item>
                 </Menu.SubMenu>
               )}

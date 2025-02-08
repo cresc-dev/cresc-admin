@@ -16,15 +16,15 @@ export const Activate = () => {
     return <Result status="error" title={error.message} />;
   }
   if (isLoading) {
-    return <Result icon={<LoadingOutlined />} title="激活中，请稍等" />;
+    return <Result icon={<LoadingOutlined />} title="Activating, please wait" />;
   }
   return (
     <Result
       status="success"
-      title="激活成功"
+      title="Activation successful"
       extra={
         <Link to="/login" replace>
-          <Button type="primary">请登录</Button>
+          <Button type="primary">Please login</Button>
         </Link>
       }
     />

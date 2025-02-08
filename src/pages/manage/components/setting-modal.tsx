@@ -23,11 +23,11 @@ const SettingModal = () => {
           {appKey}
         </Typography.Paragraph>
       </Form.Item>
-      <Form.Item label="应用名" name="name" layout="vertical">
+      <Form.Item label="App Name" name="name" layout="vertical">
         <Input />
       </Form.Item>
       <Form.Item
-        label="原生包下载地址（当用户端的原生版本过期时，会使用此地址下载）"
+        label="Native Package Download URL (When the native version on the user side expires, it will use this address to download)"
         name="downloadUrl"
         layout="vertical"
       >
@@ -35,18 +35,18 @@ const SettingModal = () => {
       </Form.Item>
       <Form.Item
         layout="vertical"
-        label="启用热更新"
+        label="Enable Hot Update"
         name="status"
         normalize={(value) => (value ? "normal" : "paused")}
         getValueProps={(value) => ({
           value: value === "normal" || value === null,
         })}
       >
-        <Switch checkedChildren="已启用" unCheckedChildren="已暂停" />
+        <Switch checkedChildren="Enabled" unCheckedChildren="Paused" />
       </Form.Item>
       <Form.Item
         layout="vertical"
-        label="忽略编译时间戳（高级版以上可启用）"
+        label="Ignore Build Time Check (Only available for Premium and above)"
         name="ignoreBuildTime"
         normalize={(value) => (value ? "enabled" : "disabled")}
         getValueProps={(value) => ({ value: value === "enabled" })}
@@ -56,18 +56,18 @@ const SettingModal = () => {
             (user?.tier === "free" || user?.tier === "standard") &&
             ignoreBuildTime !== "enabled"
           }
-          checkedChildren="启用"
-          unCheckedChildren="不启用"
+          checkedChildren="Enabled"
+          unCheckedChildren="Disabled"
         />
       </Form.Item>
-      <Form.Item label="删除应用" layout="vertical">
+      <Form.Item label="Delete App" layout="vertical">
         <Button
           type="primary"
           icon={<DeleteFilled />}
           onClick={() => {
             Modal.confirm({
-              title: "应用删除后无法恢复",
-              okText: "确认删除",
+              title: "The app cannot be recovered after deletion",
+              okText: "Confirm Delete",
               okButtonProps: { danger: true },
               async onOk() {
                 await api.deleteApp(appId);

@@ -11,9 +11,9 @@ export const setToken = (token: string) => {
 
 export const getToken = () => _token;
 
-const baseUrl = `http://localhost:8787`;
+// const baseUrl = `http://localhost:8787`;
 
-// const baseUrl = `https://api.cresc.dev`;
+const baseUrl = "https://api.cresc.dev";
 
 interface PushyResponse {
   message?: string;

@@ -14,16 +14,16 @@ export const Inactivated = () => {
   const { mutate: sendEmail, isPending } = useMutation({
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
-      message.info("邮件发送成功，请注意查收");
+      message.info("Email sent successfully, please check your email");
     },
     onError: () => {
-      message.error("邮件发送失败");
+      message.error("Email sending failed");
     },
   });
   return (
     <Result
-      title="您的账号还未激活，请查看您的邮箱"
-      subTitle="如未收到激活邮件，请点击"
+      title="Your account is not activated, please check your email"
+      subTitle="If you did not receive the activation email, please click"
       extra={[
         <Button
           key="resend"
@@ -31,10 +31,10 @@ export const Inactivated = () => {
           onClick={() => sendEmail()}
           loading={isPending}
         >
-          再次发送
+          Resend
         </Button>,
         <Button key="back" href="/user">
-          返回登录
+          Back to login
         </Button>,
       ]}
     />

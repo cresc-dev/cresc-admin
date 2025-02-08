@@ -31,13 +31,13 @@ export const Register = () => {
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
           <Logo className="mx-auto" />
-          <div style={style.slogan}>极速热更新框架 for React Native</div>
+          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
         </div>
         <Form.Item name="name" hasFeedback>
-          <Input placeholder="用户名" size="large" required />
+          <Input placeholder="Username" size="large" required />
         </Form.Item>
         <Form.Item name="email" hasFeedback>
-          <Input placeholder="邮箱" size="large" type="email" required />
+          <Input placeholder="Email" size="large" type="email" required />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -47,7 +47,7 @@ export const Register = () => {
             () => ({
               async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw "密码中需要同时包含大、小写字母和数字，且长度不少于6位";
+                  throw "The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long";
                 }
               },
             }),
@@ -55,7 +55,7 @@ export const Register = () => {
         >
           <Input
             type="password"
-            placeholder="密码"
+            placeholder="Password"
             size="large"
             autoComplete=""
             required
@@ -69,7 +69,7 @@ export const Register = () => {
             ({ getFieldValue }) => ({
               async validator(_, value: string) {
                 if (getFieldValue("pwd") !== value) {
-                  throw "两次输入的密码不一致";
+                  throw "The passwords you entered do not match";
                 }
               },
             }),
@@ -77,7 +77,7 @@ export const Register = () => {
         >
           <Input
             type="password"
-            placeholder="再次输入密码"
+            placeholder="Enter the password again"
             size="large"
             autoComplete=""
             required
@@ -90,7 +90,7 @@ export const Register = () => {
             size="large"
             loading={loading}
           >
-            注册
+            Register
           </Button>
         </Form.Item>
         <Form.Item>
@@ -103,7 +103,7 @@ export const Register = () => {
                   validator: (_, value) =>
                     value
                       ? Promise.resolve()
-                      : Promise.reject(new Error("请阅读并同意后勾选此处")),
+                      : Promise.reject(new Error("Please read and agree to the terms before checking here")),
                 },
               ]}
               hasFeedback
@@ -111,19 +111,19 @@ export const Register = () => {
             >
               <Checkbox>
                 <span>
-                  已阅读并同意
+                  I have read and agree to
                   <a
                     target="_blank"
                     href="https://pushy.reactnative.cn/agreement/"
                     rel="noreferrer"
                   >
-                    用户协议
+                    User Agreement
                   </a>
                 </span>
               </Checkbox>
             </Form.Item>
             <span />
-            <Link to="/login">已有帐号？</Link>
+            <Link to="/login">Already have an account?</Link>
           </Row>
         </Form.Item>
       </Form>

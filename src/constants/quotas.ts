@@ -1,6 +1,6 @@
 export const quotas = {
   free: {
-    title: "免费版",
+    title: "Free",
     app: 3,
     package: 30,
     packageSize: "30m",
@@ -9,7 +9,7 @@ export const quotas = {
     pv: 1000,
   },
   standard: {
-    title: "标准版",
+    title: "Standard",
     app: 5,
     package: 50,
     packageSize: "150m",
@@ -18,7 +18,7 @@ export const quotas = {
     pv: 10000,
   },
   premium: {
-    title: "高级版",
+    title: "Premium",
     app: 10,
     package: 60,
     packageSize: "500m",
@@ -27,7 +27,7 @@ export const quotas = {
     pv: 100000,
   },
   pro: {
-    title: "专业版",
+    title: "Pro",
     app: 50,
     package: 100,
     packageSize: "2000m",
@@ -36,7 +36,7 @@ export const quotas = {
     pv: 1000000,
   },
   vip1: {
-    title: "大客户VIP1",
+    title: "VIP1",
     app: 50,
     package: 100,
     packageSize: "2000m",
@@ -45,7 +45,7 @@ export const quotas = {
     pv: 10000000,
   },
   vip2: {
-    title: "大客户VIP2",
+    title: "VIP2",
     app: 50,
     package: 100,
     packageSize: "2000m",
@@ -54,7 +54,7 @@ export const quotas = {
     pv: 50000000,
   },
   vip3: {
-    title: "大客户VIP3",
+    title: "VIP3",
     app: 50,
     package: 100,
     packageSize: "2000m",

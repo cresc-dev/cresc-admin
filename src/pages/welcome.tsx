@@ -1,48 +1,47 @@
-import { Button, message, Result } from "antd";
-import { observable } from "mobx";
-import { observer } from "mobx-react-lite";
+import { api } from "@/services/api";
+import { getUserEmail } from "@/services/auth";
+import { useMutation } from "@tanstack/react-query";
+import { Button, Result, message } from "antd";
 import { useEffect } from "react";
-import request from "../request";
-import store from "../store";
+import { rootRouterPath, router } from "../router";
 
-const state = observable.object({ loading: false });
-
-export default observer(() => {
+export const Welcome = () => {
   useEffect(() => {
-    if (!store.email) {
-      store.history.replace("/login");
+    if (!getUserEmail()) {
+      router.navigate(rootRouterPath.login);
     }
   }, []);
+
+  const { mutate: sendEmail, isPending } = useMutation({
+    mutationFn: () => api.sendEmail({ email: getUserEmail() }),
+    onSuccess: () => {
+      message.info("Email sent successfully, please check your inbox");
+    },
+    onError: () => {
+      message.error("Email sending failed");
+    },
+  });
+
   return (
     <Result
       title={
         <>
-          Thank you for signing up.
+          Thank you for your attention to the hot update service provided by React Native Chinese Website
           <br />
-          We've just sent a mail to {store.email} for verification.
+          We have sent an activation email to your email address
           <br />
-          Please click the link in that mail to activate your account.
-          <div style={{ height: 24 }} />
+          Please click the activation link in the email to activate your account
+          <div className="h-6" />
         </>
       }
-      subTitle="If you did not receive the mail, please click the Resend button"
+      subTitle="If you do not receive the activation email, please click"
       extra={
-        <Button type="primary" onClick={sendEmail} loading={state.loading}>
+        <Button type="primary" onClick={() => sendEmail()} loading={isPending}>
           Resend
         </Button>
       }
     />
   );
-});
+};
 
-async function sendEmail() {
-  const { email } = store;
-  state.loading = true;
-  try {
-    await request("post", "user/active/sendmail", { email });
-    message.info(`The mail has been sent successfully`);
-  } catch (_) {
-    message.error("Failed to send the verification mail. Please try again.");
-  }
-  state.loading = false;
-}
+export const Component = Welcome;

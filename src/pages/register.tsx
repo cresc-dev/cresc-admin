@@ -1,38 +1,37 @@
-import { Button, Form, Input, message, Row, Checkbox } from 'antd';
-import md5 from 'blueimp-md5';
-import { observable, runInAction } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.svg';
-import request from '../request';
-import store from '../store';
-import { isPasswordValid } from '../utils';
+import { api } from "@/services/api";
+import { setUserEmail } from "@/services/auth";
+import { Button, Checkbox, Form, Input, Row, message } from "antd";
+import md5 from "blueimp-md5";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ReactComponent as Logo } from "../assets/logo.svg";
+import { rootRouterPath, router } from "../router";
+import { isPasswordValid } from "../utils/helper";
 
-const state = observable.object({ loading: false, agreed: false });
+export const Register = () => {
+  const [loading, setLoading] = useState<boolean>(false);
 
-async function submit(values: { [key: string]: string }) {
-  delete values.pwd2;
-  delete values.agreed;
-  values.pwd = md5(values.pwd);
-  runInAction(() => (state.loading = true));
-  store.email = values.email;
-  try {
-    await request('post', 'user/register', values);
-    store.history.replace('/welcome');
-  } catch (_) {
-    message.error("This email is already registered");
+  async function submit(values: { [key: string]: string }) {
+    delete values.pwd2;
+    delete values.agreed;
+    values.pwd = md5(values.pwd);
+    setLoading(true);
+    try {
+      await api.register(values);
+      setUserEmail(values.email);
+      router.navigate(rootRouterPath.welcome);
+    } catch (_) {
+      message.error("该邮箱已被注册");
+    }
+    setLoading(false);
   }
-  runInAction(() => (state.loading = false));
-}
 
-export default observer(() => {
-  const { loading, agreed } = state;
   return (
     <div style={style.body}>
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
-          <img src={logo} />
-          <div style={style.slogan}>Always up to date</div>
+          <Logo className="mx-auto" />
+          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
         </div>
         <Form.Item name="name" hasFeedback>
           <Input placeholder="Username" size="large" required />
@@ -46,15 +45,21 @@ export default observer(() => {
           validateTrigger="onBlur"
           rules={[
             () => ({
-              async validator(_, value) {
+              async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw "Use 8 or more characters with a mix of numbers, uppercase and lowercase letters";
+                  throw "The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long";
                 }
               },
             }),
           ]}
         >
-          <Input type="password" placeholder="Password" size="large" autoComplete="" required />
+          <Input
+            type="password"
+            placeholder="Password"
+            size="large"
+            autoComplete=""
+            required
+          />
         </Form.Item>
         <Form.Item
           hasFeedback
@@ -62,32 +67,43 @@ export default observer(() => {
           validateTrigger="onBlur"
           rules={[
             ({ getFieldValue }) => ({
-              async validator(_, value) {
-                if (getFieldValue("pwd") != value) {
-                  throw "Please make sure your passwords match.";
+              async validator(_, value: string) {
+                if (getFieldValue("pwd") !== value) {
+                  throw "The passwords you entered do not match";
                 }
               },
             }),
           ]}
         >
-          <Input type="password" placeholder="Confirm password" size="large" autoComplete="" required />
+          <Input
+            type="password"
+            placeholder="Enter the password again"
+            size="large"
+            autoComplete=""
+            required
+          />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" size="large" loading={loading} block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            loading={loading}
+          >
             Register
           </Button>
         </Form.Item>
         <Form.Item>
-          <Row justify='space-between'>
+          <Row justify="space-between">
             <Form.Item
-              name='agreed'
-              valuePropName='checked'
+              name="agreed"
+              valuePropName="checked"
               rules={[
                 {
                   validator: (_, value) =>
                     value
                       ? Promise.resolve()
-                      : Promise.reject(new Error('请阅读并同意后勾选此处')),
+                      : Promise.reject(new Error("Please read and agree to the terms before checking here")),
                 },
               ]}
               hasFeedback
@@ -95,29 +111,31 @@ export default observer(() => {
             >
               <Checkbox>
                 <span>
-                  已阅读并同意
+                  I have read and agree to
                   <a
-                    target='_blank'
-                    href='https://pushy.reactnative.cn/agreement/'
-                    rel='noreferrer'
+                    target="_blank"
+                    href="https://pushy.reactnative.cn/agreement/"
+                    rel="noreferrer"
                   >
-                    用户协议
+                    User Agreement
                   </a>
                 </span>
               </Checkbox>
             </Form.Item>
             <span />
-            <Link to="/login">Sign in？</Link>
+            <Link to="/login">Already have an account?</Link>
           </Row>
         </Form.Item>
       </Form>
     </div>
   );
-});
+};
+
+export const Component = Register;
 
 const style: Style = {
-  body: { display: 'flex', flexDirection: 'column', height: '100%' },
-  form: { width: 320, margin: 'auto', paddingTop: 16, flex: 1 },
-  logo: { textAlign: 'center', margin: '48px 0' },
-  slogan: { marginTop: 16, color: '#00000073', fontSize: 18 },
+  body: { display: "flex", flexDirection: "column", height: "100%" },
+  form: { width: 320, margin: "auto", paddingTop: 16, flex: 1 },
+  logo: { textAlign: "center", margin: "48px 0" },
+  slogan: { marginTop: 16, color: "#00000073", fontSize: 18 },
 };

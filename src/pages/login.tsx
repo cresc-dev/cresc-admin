@@ -1,33 +1,28 @@
+import { login } from "@/services/auth";
 import { Button, Form, Input, Row } from "antd";
-import { observable, runInAction } from "mobx";
-import { observer } from "mobx-react-lite";
-import { FormEvent } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.svg";
-import { login } from "../store";
-
-const state = observable.object({ loading: false });
-
-async function submit(event: FormEvent) {
-  event.preventDefault();
-  runInAction(async () => {
-    state.loading = true;
-    await login(email, password);
-    state.loading = false;
-  });
-}
+import { ReactComponent as Logo } from "../assets/logo.svg";
 
 let email: string;
 let password: string;
 
-export default observer(() => {
-  const { loading } = state;
+export const Login = () => {
+  const [loading, setLoading] = useState(false);
   return (
     <div style={style.body}>
-      <form style={style.form} onSubmit={submit}>
+      <form
+        style={style.form}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setLoading(true);
+          await login(email, password);
+          setLoading(false);
+        }}
+      >
         <div style={style.logo}>
-          <img src={logo} />
-          <div style={style.slogan}>Always up to date</div>
+          <Logo className="mx-auto" />
+          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
         </div>
         <Form.Item>
           <Input
@@ -50,8 +45,14 @@ export default observer(() => {
           />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" size="large" loading={loading} block>
-            Sign in
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            loading={loading}
+            block
+          >
+            Login
           </Button>
         </Form.Item>
         <Form.Item>
@@ -63,7 +64,9 @@ export default observer(() => {
       </form>
     </div>
   );
-});
+};
+
+export const Component = Login;
 
 const style: Style = {
   body: { display: "flex", flexDirection: "column", height: "100%" },

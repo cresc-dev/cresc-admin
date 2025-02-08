@@ -1,21 +1,21 @@
-// import * as React from "react";
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
-import { createRoot } from 'react-dom/client';
-import { HashRouter as Router } from 'react-router-dom';
+import { ConfigProvider } from "antd";
+import zhCN from "antd/locale/zh_CN";
+import { createRoot } from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
 // import { DndProvider } from "react-dnd";
 // import { HTML5Backend } from "react-dnd-html5-backend";
-import './index.css';
-import Main from './main';
+import "./index.scss";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { router } from "./router";
+import { queryClient } from "./utils/queryClient";
 
-// window.React = React;
-const root = document.getElementById('main');
+const root = document.getElementById("main");
 if (root) {
   createRoot(root).render(
     <ConfigProvider locale={zhCN}>
-      <Router>
-        <Main />
-      </Router>
-    </ConfigProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ConfigProvider>,
   );
 }

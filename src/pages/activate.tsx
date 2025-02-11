@@ -16,7 +16,9 @@ export const Activate = () => {
     return <Result status="error" title={error.message} />;
   }
   if (isLoading) {
-    return <Result icon={<LoadingOutlined />} title="Activating, please wait" />;
+    return (
+      <Result icon={<LoadingOutlined />} title="Activating your account ..." />
+    );
   }
   return (
     <Result
@@ -24,7 +26,7 @@ export const Activate = () => {
       title="Activation successful"
       extra={
         <Link to="/login" replace>
-          <Button type="primary">Please login</Button>
+          <Button type="primary">Go to login</Button>
         </Link>
       }
     />

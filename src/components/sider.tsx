@@ -132,7 +132,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
             <div className="text-center py-1">
               <span className="">{user?.email}</span>
               <br />
-              <span className="font-normal">Today's remaining query times</span>
+              <span className="font-normal">Today's query balance</span>
             </div>
           }
           size="small"
@@ -148,13 +148,13 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
             }
           />
           <div className="text-xs mt-2 text-center">
-            7-day average remaining times: {user?.last7dAvg?.toLocaleString()}
+            7-day average balance: {user?.last7dAvg?.toLocaleString()}
           </div>
           <div className="text-xs mt-2 text-center">
             <a target="_blank" href={PRICING_LINK} rel="noreferrer">
               {quota?.title}
-            </a>
-            Available: {pvQuota?.toLocaleString()} times/day
+            </a>{" "}
+            Available: {pvQuota?.toLocaleString()} per day
           </div>{" "}
           {user?.tier !== "free" && (
             <div className="text-xs mt-2 text-center">
@@ -177,7 +177,11 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
         <Menu.Item key="user" icon={<UserOutlined />}>
           <Link to={rootRouterPath.user}>Account Settings</Link>
         </Menu.Item>
-        <Menu.SubMenu key="apps" title="App Management" icon={<AppstoreOutlined />}>
+        <Menu.SubMenu
+          key="apps"
+          title="App Management"
+          icon={<AppstoreOutlined />}
+        >
           {apps?.map((i) => (
             <Menu.Item key={i.id} className="!h-16">
               <div className="flex flex-row items-center gap-4">
@@ -190,7 +194,9 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
                 >
                   <div className="flex flex-row items-center font-bold">
                     {i.name}
-                    {i.status === "paused" && <Tag className="ml-2">Paused</Tag>}
+                    {i.status === "paused" && (
+                      <Tag className="ml-2">Paused</Tag>
+                    )}
                   </div>
                   {i.checkCount && (
                     <div className="text-xs text-gray-500 mb-2">

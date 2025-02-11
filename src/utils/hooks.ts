@@ -19,7 +19,7 @@ export const useUserInfo = () => {
     : null;
   const isExpiringSoon = remainingDays !== null && remainingDays <= 90;
   const displayRemainingDays = isExpiringSoon
-    ? `(Remaining ${remainingDays} days)`
+    ? `(Expires in ${remainingDays} days)`
     : "";
   return {
     user: getToken() ? data : null,

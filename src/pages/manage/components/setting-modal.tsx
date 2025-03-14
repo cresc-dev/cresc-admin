@@ -39,7 +39,7 @@ const SettingModal = () => {
         name="status"
         normalize={(value) => (value ? "normal" : "paused")}
         getValueProps={(value) => ({
-          value: value === "normal" || value === null,
+          value: value === "normal" || value === null || value === undefined,
         })}
       >
         <Switch checkedChildren="Enabled" unCheckedChildren="Paused" />

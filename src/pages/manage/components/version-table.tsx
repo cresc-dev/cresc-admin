@@ -18,7 +18,9 @@ import { type ReactNode, useEffect, useState } from "react";
 import type { TextContent } from "vanilla-jsoneditor";
 import { useManageContext } from "../hooks/useManageContext";
 import BindPackage from "./bind-package";
-import MetaInfoEditor from "./metainfo-editor";
+import JsonEditor from "./json-editor";
+import { Commit } from "./commit";
+import { DepsTable } from "./deps-table";
 
 const TestQrCode = ({ name, hash }: { name: string; hash: string }) => {
   const { appId, deepLink, setDeepLink } = useManageContext();
@@ -115,7 +117,7 @@ function removeSelectedVersions({
     okButtonProps: { danger: true },
     async onOk() {
       await Promise.all(
-        selected.map((id) => api.deleteVersion({ appId, versionId: id })),
+        selected.map((id) => api.deleteVersion({ appId, versionId: id }))
       );
     },
   });
@@ -129,7 +131,13 @@ const columns: ColumnType<Version>[] = [
       <TextColumn
         record={record}
         recordKey="name"
-        extra={<TestQrCode name={record.name} hash={record.hash} />}
+        extra={
+          <>
+            <DepsTable deps={record.deps} name={"Version " + record.name} />
+            <Commit commit={record.commit} />
+            <TestQrCode name={record.name} hash={record.hash} />
+          </>
+        }
       />
     ),
   },
@@ -146,7 +154,7 @@ const columns: ColumnType<Version>[] = [
     render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
   },
   {
-    title: 'Publish',
+    title: "Publish",
     dataIndex: "packages",
     width: "100%",
     render: (_, { packages, id, config }) => (
@@ -200,7 +208,7 @@ const TextColumn = ({
           maskClosable: true,
           content:
             key === "metaInfo" ? (
-              <MetaInfoEditor
+              <JsonEditor
                 className="h-96"
                 content={{ text: value }}
                 onChange={(content) => {

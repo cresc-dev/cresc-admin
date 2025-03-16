@@ -39,34 +39,47 @@ interface App {
 interface PackageBase {
   id: number;
   name: string;
-  note: string;
-  status: "normal" | "paused" | "expired" | null;
+  note?: string;
+  status?: "normal" | "paused" | "expired" | null;
 }
 
 interface Package extends PackageBase {
-  buildTime: string;
+  buildTime?: string;
+  buildNumber?: string;
+  deps?: Record<string, string>;
+  commit?: Commit;
   hash: string;
-  version: Version;
+  version?: Version;
+}
+
+interface Commit {
+  hash: string;
+  message: string;
+  author: string;
+  timestamp: string;
+  origin?: string;
 }
 
 interface Version {
-  description: string;
+  description?: string;
   hash: string;
   id: number;
-  metaInfo: string;
+  metaInfo?: string;
   name: string;
-  packages: PackageBase[];
+  packages?: PackageBase[];
   config?: {
     rollout?: {
       [packageVersion: string]: number | null;
     };
   };
+  deps?: Record<string, string>;
+  commit?: Commit;
 }
 
 interface AppDetail extends App {
   appKey: string;
   appSecret: string;
-  downloadUrl: string;
+  downloadUrl?: string;
 }
 
 interface SiderMenuProps {

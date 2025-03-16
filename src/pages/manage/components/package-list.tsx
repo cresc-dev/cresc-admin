@@ -14,6 +14,8 @@ import {
   Typography,
 } from "antd";
 import { useManageContext } from "../hooks/useManageContext";
+import { DepsTable } from "./deps-table";
+import { Commit } from "./commit";
 
 const PackageList = ({
   dataSource,
@@ -92,6 +94,8 @@ const Item = ({ item }: { item: Package }) => {
                   <Tag className="ml-2">{status[item.status]}</Tag>
                 )}
               </Col>
+              <DepsTable deps={item.deps} name={"Package " + item.name} />
+              <Commit commit={item.commit} />
               <Button
                 type="link"
                 icon={<EditOutlined />}

@@ -5,12 +5,12 @@ import {
   createJSONEditor,
 } from "vanilla-jsoneditor";
 
-export default function MetaInfoEditor({
+export default function JsonEditor({
   className,
   ...props
 }: JSONEditorPropsOptional & { className?: string }) {
   const refContainer = useRef<HTMLDivElement>(null);
-  const refEditor = useRef<ReturnType<typeof createJSONEditor>>();
+  const refEditor = useRef<ReturnType<typeof createJSONEditor>>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
@@ -18,15 +18,14 @@ export default function MetaInfoEditor({
     refEditor.current = createJSONEditor({
       target: refContainer.current!,
       props: {
-        ...props,
         mode: Mode.text,
+        ...props,
       },
     });
 
     return () => {
       if (refEditor.current) {
         refEditor.current.destroy();
-        refEditor.current = undefined;
       }
     };
   }, []);

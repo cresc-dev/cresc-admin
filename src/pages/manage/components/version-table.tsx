@@ -22,7 +22,7 @@ import JsonEditor from "./json-editor";
 import { Commit } from "./commit";
 import { DepsTable } from "./deps-table";
 
-const TestQrCode = ({ name, hash }: { name: string; hash: string }) => {
+const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const { appId, deepLink, setDeepLink } = useManageContext();
   const [enableDeepLink, setEnableDeepLink] = useState(!!deepLink);
 
@@ -133,7 +133,7 @@ const columns: ColumnType<Version>[] = [
         recordKey="name"
         extra={
           <>
-            <DepsTable deps={record.deps} name={"Version " + record.name} />
+            <DepsTable deps={record.deps} name={"OTA Version " + record.name} />
             <Commit commit={record.commit} />
             <TestQrCode name={record.name} hash={record.hash} />
           </>
@@ -157,7 +157,7 @@ const columns: ColumnType<Version>[] = [
     title: "Publish",
     dataIndex: "packages",
     width: "100%",
-    render: (_, { packages, id, config }) => (
+    render: (_, { packages = [], id, config }) => (
       <BindPackage config={config} packages={packages} versionId={id} />
     ),
   },
@@ -183,7 +183,7 @@ const TextColumn = ({
 }) => {
   const key = recordKey;
   const { appId } = useManageContext();
-  let value = record[key as keyof Version] as string;
+  let value = (record[key as keyof Version] as string) ?? "";
   if (key === "createdAt") {
     const t = new Date(value);
     const y = t.getFullYear();
@@ -292,8 +292,7 @@ export default function VersionTable() {
       loading={isLoading}
       footer={
         selected.length
-          ? // eslint-disable-next-line react/no-unstable-nested-components
-            () => (
+          ? () => (
               <Button
                 onClick={() =>
                   removeSelectedVersions({ selected, versions, appId })

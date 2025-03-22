@@ -116,10 +116,13 @@ export const DepsTable = ({
                       content={{
                         json: Object.keys(deps)
                           .sort() // Sort the keys alphabetically
-                          .reduce((obj, key) => {
-                            obj[key] = deps[key]; // Rebuild the object with sorted keys
-                            return obj;
-                          }, {} as Record<string, string>),
+                          .reduce(
+                            (obj, key) => {
+                              obj[key] = deps[key]; // Rebuild the object with sorted keys
+                              return obj;
+                            },
+                            {} as Record<string, string>
+                          ),
                       }}
                       mode={Mode.tree}
                       mainMenuBar={false}
@@ -139,8 +142,7 @@ export const DepsTable = ({
               <div>
                 <h4>JavaScript 依赖列表</h4>
                 <div className="text-gray-500">
-                  需要使用 cli v1.42.0+ 版本上传，且使用 git
-                  管理代码才能查看依赖列表
+                  需要使用 cli v1.42.0+ 版本上传才能查看依赖列表
                 </div>
               </div>
             )}

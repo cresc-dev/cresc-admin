@@ -21,8 +21,10 @@ export const Login = () => {
         }}
       >
         <div style={style.logo}>
-          <Logo className="mx-auto" />
-          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
+          <Logo className="mx-auto h-16" />
+          <div style={style.slogan}>
+            Blazing Fast Hot Update for React Native
+          </div>
         </div>
         <Form.Item>
           <Input

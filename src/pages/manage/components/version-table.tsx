@@ -265,7 +265,7 @@ export default function VersionTable() {
     <Table
       className="versions"
       rowKey="id"
-      title={() => "热更新包"}
+      title={() => "OTA Versions"}
       columns={columns}
       dataSource={versions}
       pagination={{
@@ -273,7 +273,7 @@ export default function VersionTable() {
         total: count,
         current: offset / pageSize + 1,
         pageSize,
-        showTotal: (total) => `共 ${total} 个 `,
+        showTotal: (total) => `Total ${total} versions`,
         onChange(page, size) {
           if (size) {
             setOffset((page - 1) * size);
@@ -299,7 +299,7 @@ export default function VersionTable() {
                 }
                 danger
               >
-                删除
+                Delete
               </Button>
             )
           : undefined

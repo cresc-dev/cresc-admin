@@ -78,7 +78,7 @@ const SettingModal = () => {
           }}
           danger
         >
-          删除
+          Delete
         </Button>
       </Form.Item>
     </>

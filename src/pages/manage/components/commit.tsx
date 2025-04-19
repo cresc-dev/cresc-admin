@@ -11,10 +11,10 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
         content={
           <div>
             <div className="text-center my-1 mx-auto">
-              <div className="font-bold">最近的提交：</div>
+              <div className="font-bold">Recent Commit</div>
               <div className="text-gray-500">
-                需要使用 cli v1.42.0+ 版本上传，且使用 git
-                管理代码才能查看提交记录
+                Require cli v1.42.0+ version to upload, and use git to manage
+                code to view commit records
               </div>
             </div>
           </div>
@@ -44,12 +44,12 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
       content={
         <div>
           <div className="my-1 mx-auto">
-            <div className="font-bold">最近的提交：</div>
-            <div>作者：{author}</div>
+            <div className="font-bold">Recent Commit</div>
+            <div>Author: {author}</div>
             <div>
-              时间：{time.fromNow()}（{time.format("YYYY-MM-DD HH:mm:ss")}）
+              Time: {time.fromNow()} ({time.format("YYYY-MM-DD HH:mm:ss")})
             </div>
-            <div>摘要：{message}</div>
+            <div>Summary: {message}</div>
             <hr />
             {url ? (
               <a

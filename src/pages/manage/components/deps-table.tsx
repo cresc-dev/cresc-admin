@@ -52,7 +52,7 @@ export const DepsTable = ({
                             setDiffs(null);
                           }}
                         >
-                          返回
+                          Back
                         </Button>
                       ) : (
                         <Dropdown.Button
@@ -104,7 +104,7 @@ export const DepsTable = ({
                             },
                           }}
                         >
-                          对比变更
+                          Compare Changes
                         </Dropdown.Button>
                       )}
                     </div>
@@ -116,13 +116,10 @@ export const DepsTable = ({
                       content={{
                         json: Object.keys(deps)
                           .sort() // Sort the keys alphabetically
-                          .reduce(
-                            (obj, key) => {
-                              obj[key] = deps[key]; // Rebuild the object with sorted keys
-                              return obj;
-                            },
-                            {} as Record<string, string>
-                          ),
+                          .reduce((obj, key) => {
+                            obj[key] = deps[key]; // Rebuild the object with sorted keys
+                            return obj;
+                          }, {} as Record<string, string>),
                       }}
                       mode={Mode.tree}
                       mainMenuBar={false}
@@ -132,17 +129,18 @@ export const DepsTable = ({
                   )}
 
                   <div className="text-gray-500 my-4">
-                    仅在<span className="font-bold underline">上传</span>
-                    时抓取package.json的直接依赖，
-                    不保证严格匹配包内容，仅供参考。
+                    Note: Dependencies listed here are extracted directly from
+                    `package.json` during the upload process. They might not
+                    perfectly represent the final contents of the package.
                   </div>
                 </div>
               </div>
             ) : (
               <div>
-                <h4>JavaScript 依赖列表</h4>
+                <h4 className="font-bold">JavaScript Dependencies</h4>
                 <div className="text-gray-500">
-                  需要使用 cli v1.42.0+ 版本上传才能查看依赖列表
+                  Require cli v1.42.0+ version to upload to view the dependency
+                  list
                 </div>
               </div>
             )}

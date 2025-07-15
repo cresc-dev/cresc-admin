@@ -1,11 +1,10 @@
-import { api } from "@/services/api";
-import { useUserInfo } from "@/utils/hooks";
 import { AlipayCircleOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Popover, Space, Spin } from "antd";
 import { type ReactNode, useState } from "react";
+import { api } from "@/services/api";
+import { useUserInfo } from "@/utils/hooks";
 import { PRICING_LINK } from "../constants/links";
 import { quotas } from "../constants/quotas";
-
 
 const PurchaseButton = ({
   tier,
@@ -57,22 +56,23 @@ function UserPanel() {
             {currentQuota.title}
             <span>
               {currentQuota.pv < quotas.standard.pv && (
-                <PurchaseButton tier="standard">Upgrade to Standard</PurchaseButton>
+                <PurchaseButton tier="standard">
+                  Upgrade to Standard
+                </PurchaseButton>
               )}
               {currentQuota.pv < quotas.premium.pv && (
-                <PurchaseButton tier="premium">Upgrade to Premium</PurchaseButton>
+                <PurchaseButton tier="premium">
+                  Upgrade to Premium
+                </PurchaseButton>
               )}
               {currentQuota.pv < quotas.pro.pv && (
                 <PurchaseButton tier="pro">Upgrade to Pro</PurchaseButton>
               )}
-              {currentQuota.pv < quotas.vip1.pv && (
-                <PurchaseButton tier="vip1">Upgrade to VIP1</PurchaseButton>
+              {currentQuota.pv < quotas.max.pv && (
+                <PurchaseButton tier="max">Upgrade to Max</PurchaseButton>
               )}
-              {currentQuota.pv < quotas.vip2.pv && (
-                <PurchaseButton tier="vip2">Upgrade to VIP2</PurchaseButton>
-              )}
-              {currentQuota.pv < quotas.vip3.pv && (
-                <PurchaseButton tier="vip3">Upgrade to VIP3</PurchaseButton>
+              {currentQuota.pv < quotas.ultra.pv && (
+                <PurchaseButton tier="ultra">Upgrade to Ultra</PurchaseButton>
               )}
             </span>
           </Space>

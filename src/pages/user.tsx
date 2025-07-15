@@ -1,5 +1,5 @@
-import { AlipayCircleOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Popover, Space, Spin } from "antd";
+import { CreditCardOutlined } from "@ant-design/icons";
+import { Button, Descriptions, Space, Spin } from "antd";
 import { type ReactNode, useState } from "react";
 import { api } from "@/services/api";
 import { useUserInfo } from "@/utils/hooks";
@@ -18,7 +18,7 @@ const PurchaseButton = ({
     <Button
       // type='link'
       className="ml-6"
-      icon={<AlipayCircleOutlined />}
+      icon={<CreditCardOutlined />}
       onClick={async () => {
         setLoading(true);
         await purchase(tier);

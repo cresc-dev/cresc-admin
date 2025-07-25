@@ -22,7 +22,7 @@
     "json-diff-kit": "^1.0.32",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.7.0",
+    "react-router-dom": "^7.7.1",
     "vanilla-jsoneditor": "^3.8.0"
   },
   "devDependencies": {

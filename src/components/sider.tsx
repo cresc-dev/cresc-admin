@@ -173,7 +173,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
         </Menu.Item>
         <Menu.SubMenu
           key="apps"
-          title="App Management"
+          title="Apps"
           icon={<AppstoreOutlined />}
         >
           {apps?.map((i) => (
@@ -207,7 +207,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
             </Menu.Item>
           ))}
           <Menu.Item key="add-app" icon={<PlusOutlined />} onClick={addApp}>
-            Add App
+            New App
           </Menu.Item>
         </Menu.SubMenu>
       </Menu>

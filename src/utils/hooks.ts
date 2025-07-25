@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-
-import { api } from "@/services/api";
-import { getToken } from "@/services/request";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { api } from "@/services/api";
+import { getToken } from "@/services/request";
+
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
 export const useUserInfo = () => {
@@ -15,18 +15,10 @@ export const useUserInfo = () => {
   });
   const expireDay = dayjs(data?.tierExpiresAt);
   const displayExpireDay = data?.tierExpiresAt ? expireDay.format("LL") : "N/A";
-  const remainingDays = data?.tierExpiresAt
-    ? expireDay.diff(dayjs(), "day")
-    : null;
-  const isExpiringSoon = remainingDays !== null && remainingDays <= 90;
-  const displayRemainingDays = isExpiringSoon
-    ? `(Expires in ${remainingDays} days)`
-    : "";
+
   return {
     user: getToken() ? data : null,
     displayExpireDay,
-    displayRemainingDays,
-    isExpiringSoon,
   };
 };
 

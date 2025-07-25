@@ -31,7 +31,7 @@ const PurchaseButton = ({
 };
 
 function UserPanel() {
-  const { user, displayExpireDay, displayRemainingDays } = useUserInfo();
+  const { user, displayExpireDay } = useUserInfo();
   if (!user) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -77,18 +77,10 @@ function UserPanel() {
             </span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="Subscription valid until">
+        <Descriptions.Item label="Next billing date">
           <Space>
             {displayExpireDay ? (
-              <div className="flex flex-col">
-                {displayExpireDay}
-                {displayRemainingDays && (
-                  <>
-                    <br />
-                    <div>{displayRemainingDays}</div>
-                  </>
-                )}
-              </div>
+              <div className="flex flex-col">{displayExpireDay}</div>
             ) : (
               "N/A"
             )}

@@ -1,8 +1,3 @@
-import { PRICING_LINK } from "@/constants/links";
-import { quotas } from "@/constants/quotas";
-import { rootRouterPath } from "@/router";
-import { api } from "@/services/api";
-import { useAppList, useUserInfo } from "@/utils/hooks";
 import {
   AndroidFilled,
   AppleFilled,
@@ -18,13 +13,18 @@ import {
   Layout,
   Menu,
   Modal,
+  message,
   Progress,
   Select,
   Tag,
   Tooltip,
-  message,
 } from "antd";
 import { Link, useLocation } from "react-router-dom";
+import { PRICING_LINK } from "@/constants/links";
+import { quotas } from "@/constants/quotas";
+import { rootRouterPath } from "@/router";
+import { api } from "@/services/api";
+import { useAppList, useUserInfo } from "@/utils/hooks";
 import { ReactComponent as LogoH } from "../assets/logo-h.svg";
 import PlatformIcon from "./platform-icon";
 
@@ -117,7 +117,7 @@ export default function Sider() {
 }
 
 const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
-  const { user, displayExpireDay, displayRemainingDays } = useUserInfo();
+  const { user, displayExpireDay } = useUserInfo();
   const { apps } = useAppList();
   const quota = quotas[user?.tier as keyof typeof quotas];
   const pvQuota = quota?.pv;
@@ -158,13 +158,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
           </div>{" "}
           {user?.tier !== "free" && (
             <div className="text-xs mt-2 text-center">
-              Valid until: {displayExpireDay}
-              {displayRemainingDays && (
-                <>
-                  <br />
-                  <div>{displayRemainingDays}</div>
-                </>
-              )}
+              Next billing date: {displayExpireDay}
             </div>
           )}
         </Card>

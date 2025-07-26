@@ -1,6 +1,6 @@
 import { api } from "@/services/api";
 import { Button, Form, Input, message } from "antd";
-import md5 from "blueimp-md5";
+import { md5 } from "hash-wasm";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { rootRouterPath, router } from "../../../router";
@@ -17,7 +17,7 @@ export default function SetPassword() {
         try {
           await api.resetPwd({
             token: new URLSearchParams(search).get("code") ?? "",
-            newPwd: md5(values.newPwd),
+            newPwd: await md5(values.newPwd),
           });
           router.navigate(rootRouterPath.resetPassword("3"));
         } catch (e) {

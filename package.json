@@ -16,9 +16,9 @@
     "@rsbuild/plugin-svgr": "^1.2.1",
     "@tanstack/react-query": "^5.83.0",
     "antd": "^5.26.6",
-    "blueimp-md5": "^2.19.0",
     "dayjs": "^1.11.13",
     "git-url-parse": "^16.1.0",
+    "hash-wasm": "^4.12.0",
     "json-diff-kit": "^1.0.32",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -28,7 +28,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
     "@tailwindcss/postcss": "^4.1.4",
-    "@types/blueimp-md5": "^2.18.2",
     "@types/git-url-parse": "^16.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",

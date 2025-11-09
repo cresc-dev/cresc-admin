@@ -1,36 +1,42 @@
-type Style = { [name: string]: import("react").CSSProperties };
-
-declare module "*.svg" {
+declare module '*.svg' {
   export const ReactComponent: React.FunctionComponent<
     React.SVGProps<SVGSVGElement>
   >;
 }
 
-declare module "*.png" {
+declare module '*.png' {
   const content: string;
   export default content;
 }
-declare module "*.jpg" {
+declare module '*.jpg' {
   const content: string;
   export default content;
 }
+
+type Tier = 'free' | 'standard' | 'premium' | 'pro';
 
 interface User {
   email: string;
   id: number;
   name: string;
-  tier: "free" | "standard" | "premium" | "pro";
+  tier: Tier;
   tierExpiresAt?: string;
   checkQuota?: number;
   last7dAvg?: number;
+  last7dCounts?: number[];
+  pendingDowngrade?: {
+    targetTier: Tier,
+    effectiveDate: string,
+    createdAt: string,
+  };
 }
 
 interface App {
   id: number;
   name: string;
-  platform: "android" | "ios" | "harmony";
-  status?: "normal" | "paused" | null;
-  ignoreBuildTime?: "enabled" | "disabled";
+  platform: 'android' | 'ios' | 'harmony';
+  status?: 'normal' | 'paused' | null;
+  ignoreBuildTime?: 'enabled' | 'disabled';
   checkCount?: number;
   downloadUrl?: string;
   appKey?: string;
@@ -40,7 +46,7 @@ interface PackageBase {
   id: number;
   name: string;
   note?: string;
-  status?: "normal" | "paused" | "expired" | null;
+  status?: 'normal' | 'paused' | 'expired' | null;
 }
 
 interface Package extends PackageBase {
@@ -49,7 +55,7 @@ interface Package extends PackageBase {
   deps?: Record<string, string>;
   commit?: Commit;
   hash: string;
-  version?: Version;
+  versions?: Version;
 }
 
 interface Commit {
@@ -86,6 +92,23 @@ interface SiderMenuProps {
   selectedKeys?: string[];
 }
 
-interface CotentProps {
+interface ContentProps {
   app: App;
+}
+
+interface VersionConfig {
+  rollout?: {
+    [packageVersion: string]: number | null;
+  };
+}
+
+type BindingType = 'full' | 'exp';
+
+interface Binding {
+  id: number;
+  type: BindingType;
+  // appId: number;
+  versionId: number;
+  packageId: number;
+  rollout: number;
 }

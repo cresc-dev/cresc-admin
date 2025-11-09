@@ -1,40 +1,40 @@
-import { message } from "antd";
-import { logout } from "./auth";
+import { message } from 'antd';
+import { logout } from './auth';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-let _token = localStorage.getItem("token");
+let _token = localStorage.getItem('token');
 
 export const setToken = (token: string) => {
   _token = token;
-  localStorage.setItem("token", token);
+  localStorage.setItem('token', token);
 };
 
 export const getToken = () => _token;
 
 // const baseUrl = `http://localhost:8787`;
 
-const baseUrl = "https://api.cresc.dev";
+const baseUrl = 'https://api.cresc.dev';
 
 interface PushyResponse {
   message?: string;
 }
 
 export default async function request<T extends Record<any, any>>(
-  method: "get" | "post" | "put" | "delete",
+  method: 'get' | 'post' | 'put' | 'delete',
   path: string,
-  params?: Record<any, any>
+  params?: Record<any, any>,
 ) {
   const headers: HeadersInit = {};
   const options: RequestInit = { method, headers };
   let url = `${baseUrl}${path}`;
   if (_token) {
-    headers["x-accesstoken"] = _token;
+    headers['x-accesstoken'] = _token;
   }
   if (params) {
-    if (method === "get") {
+    if (method === 'get') {
       url += `?${new URLSearchParams(params).toString()}`;
     } else {
-      headers["content-type"] = "application/json";
+      headers['content-type'] = 'application/json';
       options.body = JSON.stringify(params);
     }
   }
@@ -50,9 +50,9 @@ export default async function request<T extends Record<any, any>>(
     }
 
     message.error(json.message);
-    throw new Error(`${response.status}: ${json.message}`);
+    throw Error(`${response.status}: ${json.message}`);
   } catch (err) {
-    if ((err as Error).message.includes("Unauthorized")) {
+    if ((err as Error).message.includes('Unauthorized')) {
       logout();
     } else {
       message.error((err as Error).message);

@@ -1,12 +1,12 @@
-import { api } from "@/services/api";
-import { setUserEmail } from "@/services/auth";
-import { Button, Checkbox, Form, Input, Row, message } from "antd";
-import { md5 } from "hash-wasm";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ReactComponent as Logo } from "../assets/logo.svg";
-import { rootRouterPath, router } from "../router";
-import { isPasswordValid } from "../utils/helper";
+import { Button, Checkbox, Form, Input, message, Row } from 'antd';
+import { md5 } from 'hash-wasm';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { api } from '@/services/api';
+import { setUserEmail } from '@/services/auth';
+import { ReactComponent as Logo } from '../assets/logo.svg';
+import { rootRouterPath, router } from '../router';
+import { isPasswordValid } from '../utils/helper';
 
 export const Register = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,7 +21,7 @@ export const Register = () => {
       setUserEmail(values.email);
       router.navigate(rootRouterPath.welcome);
     } catch (_) {
-      message.error("该邮箱已被注册");
+      message.error('该邮箱已被注册');
     }
     setLoading(false);
   }
@@ -31,7 +31,9 @@ export const Register = () => {
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
           <Logo className="mx-auto" />
-          <div style={style.slogan}>Blazing Fast Hot Update for React Native</div>
+          <div style={style.slogan}>
+            Blazing Fast Hot Update for React Native
+          </div>
         </div>
         <Form.Item name="name" hasFeedback>
           <Input placeholder="Username" size="large" required />
@@ -47,7 +49,7 @@ export const Register = () => {
             () => ({
               async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw "The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long";
+                  throw 'The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long';
                 }
               },
             }),
@@ -68,8 +70,8 @@ export const Register = () => {
           rules={[
             ({ getFieldValue }) => ({
               async validator(_, value: string) {
-                if (getFieldValue("pwd") !== value) {
-                  throw "The passwords you entered do not match";
+                if (getFieldValue('pwd') !== value) {
+                  throw 'The passwords you entered do not match';
                 }
               },
             }),
@@ -103,7 +105,11 @@ export const Register = () => {
                   validator: (_, value) =>
                     value
                       ? Promise.resolve()
-                      : Promise.reject(new Error("Please read and agree to the terms before checking here")),
+                      : Promise.reject(
+                          Error(
+                            'Please read and agree to the terms before checking here',
+                          ),
+                        ),
                 },
               ]}
               hasFeedback
@@ -134,8 +140,8 @@ export const Register = () => {
 export const Component = Register;
 
 const style: Style = {
-  body: { display: "flex", flexDirection: "column", height: "100%" },
-  form: { width: 320, margin: "auto", paddingTop: 16, flex: 1 },
-  logo: { textAlign: "center", margin: "48px 0" },
-  slogan: { marginTop: 16, color: "#00000073", fontSize: 18 },
+  body: { display: 'flex', flexDirection: 'column', height: '100%' },
+  form: { width: 320, margin: 'auto', paddingTop: 16, flex: 1 },
+  logo: { textAlign: 'center', margin: '48px 0' },
+  slogan: { marginTop: 16, color: '#00000073', fontSize: 18 },
 };

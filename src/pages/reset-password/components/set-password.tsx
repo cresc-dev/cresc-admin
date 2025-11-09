@@ -1,10 +1,10 @@
-import { api } from "@/services/api";
-import { Button, Form, Input, message } from "antd";
-import { md5 } from "hash-wasm";
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { rootRouterPath, router } from "../../../router";
-import { isPasswordValid } from "../../../utils/helper";
+import { Button, Form, Input, message } from 'antd';
+import { md5 } from 'hash-wasm';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { api } from '@/services/api';
+import { rootRouterPath, router } from '../../../router';
+import { isPasswordValid } from '../../../utils/helper';
 
 export default function SetPassword() {
   const { search } = useLocation();
@@ -16,13 +16,13 @@ export default function SetPassword() {
         setLoading(true);
         try {
           await api.resetPwd({
-            token: new URLSearchParams(search).get("code") ?? "",
+            token: new URLSearchParams(search).get('code') ?? '',
             newPwd: await md5(values.newPwd),
           });
-          router.navigate(rootRouterPath.resetPassword("3"));
+          router.navigate(rootRouterPath.resetPassword('3'));
         } catch (e) {
           console.log(e);
-          message.error((e as Error).message ?? "Network error");
+          message.error((e as Error).message ?? 'Network error');
         }
         setLoading(false);
       }}
@@ -36,8 +36,8 @@ export default function SetPassword() {
             validator(_, value: string) {
               if (value && !isPasswordValid(value)) {
                 return Promise.reject(
-                  new Error(
-                    "The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long",
+                  Error(
+                    'The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long',
                   ),
                 );
               }
@@ -46,7 +46,12 @@ export default function SetPassword() {
           }),
         ]}
       >
-        <Input type="password" placeholder="New Password" autoComplete="" required />
+        <Input
+          type="password"
+          placeholder="New Password"
+          autoComplete=""
+          required
+        />
       </Form.Item>
       <Form.Item
         hasFeedback
@@ -55,8 +60,10 @@ export default function SetPassword() {
         rules={[
           ({ getFieldValue }) => ({
             validator(_, value: string) {
-              if (getFieldValue("newPwd") !== value) {
-                return Promise.reject(new Error("The passwords you entered do not match"));
+              if (getFieldValue('newPwd') !== value) {
+                return Promise.reject(
+                  Error('The passwords you entered do not match'),
+                );
               }
               return Promise.resolve();
             },

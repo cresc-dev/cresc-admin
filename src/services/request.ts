@@ -1,4 +1,5 @@
 import { message } from 'antd';
+import { testUrls } from '@/utils/helper';
 import { logout } from './auth';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -11,9 +12,24 @@ export const setToken = (token: string) => {
 
 export const getToken = () => _token;
 
-// const baseUrl = `http://localhost:8787`;
-
-const baseUrl = 'https://api.cresc.dev';
+const SERVER = {
+  main: [
+    // "http://localhost:9000",
+    'https://api.cresc.dev',
+    'https://api.cresc.app',
+  ],
+};
+const getBaseUrl = (async () => {
+  return testUrls(SERVER.main.map((url) => `${url}/status`)).then((ret) => {
+    let baseUrl = SERVER.main[0];
+    if (ret) {
+      // remove /status
+      baseUrl = ret.replace('/status', '');
+    }
+    console.log('baseUrl', baseUrl);
+    return baseUrl;
+  });
+})();
 
 interface PushyResponse {
   message?: string;
@@ -26,6 +42,7 @@ export default async function request<T extends Record<any, any>>(
 ) {
   const headers: HeadersInit = {};
   const options: RequestInit = { method, headers };
+  const baseUrl = await getBaseUrl;
   let url = `${baseUrl}${path}`;
   if (_token) {
     headers['x-accesstoken'] = _token;
@@ -44,6 +61,7 @@ export default async function request<T extends Record<any, any>>(
       logout();
       return;
     }
+    // TODO token 过期
     const json = (await response.json()) as PushyResponse;
     if (response.status === 200) {
       return json as T & PushyResponse;
@@ -55,7 +73,7 @@ export default async function request<T extends Record<any, any>>(
     if ((err as Error).message.includes('Unauthorized')) {
       logout();
     } else {
-      message.error((err as Error).message);
+      message.error(`Error: ${(err as Error).message}`);
       throw err;
     }
   }

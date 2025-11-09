@@ -1,11 +1,8 @@
 import {
-  AndroidFilled,
-  AppleFilled,
   AppstoreOutlined,
-  HarmonyOSOutlined,
   PlusOutlined,
   UserOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons';
 import {
   Card,
   Form,
@@ -18,19 +15,23 @@ import {
   Select,
   Tag,
   Tooltip,
-} from "antd";
-import { Link, useLocation } from "react-router-dom";
-import { PRICING_LINK } from "@/constants/links";
-import { quotas } from "@/constants/quotas";
-import { rootRouterPath } from "@/router";
-import { api } from "@/services/api";
-import { useAppList, useUserInfo } from "@/utils/hooks";
-import { ReactComponent as LogoH } from "../assets/logo-h.svg";
-import PlatformIcon from "./platform-icon";
+} from 'antd';
+import { Link, useLocation } from 'react-router-dom';
+import { PRICING_LINK } from '@/constants/links';
+import { quotas } from '@/constants/quotas';
+import { rootRouterPath } from '@/router';
+import { api } from '@/services/api';
+import { useAppList, useUserInfo } from '@/utils/hooks';
+import { ReactComponent as LogoH } from '../assets/logo-h.svg';
+import PlatformIcon from './platform-icon';
+
+const style = {
+  sider: { boxShadow: '2px 0 8px 0 rgb(29 35 41 / 5%)', zIndex: 2 },
+};
 
 function addApp() {
-  let name = "";
-  let platform = "android";
+  let name = '';
+  let platform = 'android';
   Modal.confirm({
     icon: null,
     closable: true,
@@ -51,7 +52,7 @@ function addApp() {
             }}
             options={[
               {
-                value: "android",
+                value: 'android',
                 label: (
                   <>
                     <PlatformIcon platform="android" className="mr-2" /> Android
@@ -59,22 +60,22 @@ function addApp() {
                 ),
               },
               {
-                value: "ios",
+                value: 'ios',
                 label: (
                   <>
                     <PlatformIcon platform="ios" className="mr-2" /> iOS
                   </>
                 ),
               },
-              {
-                value: "harmony",
-                label: (
-                  <>
-                    <PlatformIcon platform="harmony" className="mr-[10px]" />
-                    HarmonyOS
-                  </>
-                ),
-              },
+              // {
+              //   value: 'harmony',
+              //   label: (
+              //     <>
+              //       <PlatformIcon platform="harmony" className="mr-[10px]" />
+              //       HarmonyOS
+              //     </>
+              //   ),
+              // },
             ]}
           />
         </Form.Item>
@@ -82,7 +83,7 @@ function addApp() {
     ),
     onOk() {
       if (!name) {
-        message.warning("Please enter the app name");
+        message.warning('Please enter the app name');
         return false;
       }
       return api.createApp({ name, platform }).catch((error) => {
@@ -97,11 +98,11 @@ export default function Sider() {
   const { user } = useUserInfo();
   if (!user) return null;
 
-  const initPath = pathname?.replace(/^\//, "")?.split("/");
+  const initPath = pathname?.replace(/^\//, '')?.split('/');
   let selectedKeys = initPath;
   if (selectedKeys?.length === 0) {
-    if (pathname === "/") {
-      selectedKeys = ["/user"];
+    if (pathname === '/') {
+      selectedKeys = ['/user'];
     } else {
       selectedKeys = initPath;
     }
@@ -139,12 +140,12 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
           className="mr-2! mb-4!"
         >
           <Progress
-            status={percent && percent > 40 ? "normal" : "exception"}
-            size={["100%", 30]}
+            status={percent && percent > 40 ? 'normal' : 'exception'}
+            size={['100%', 30]}
             percent={percent}
-            percentPosition={{ type: "inner", align: "center" }}
+            percentPosition={{ type: 'inner', align: 'center' }}
             format={() =>
-              consumedQuota ? `${consumedQuota.toLocaleString()}` : ""
+              consumedQuota ? `${consumedQuota.toLocaleString()}` : ''
             }
           />
           <div className="text-xs mt-2 text-center">
@@ -153,10 +154,10 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
           <div className="text-xs mt-2 text-center">
             <a target="_blank" href={PRICING_LINK} rel="noreferrer">
               {quota?.title}
-            </a>{" "}
+            </a>{' '}
             Available: {pvQuota?.toLocaleString()} per day
-          </div>{" "}
-          {user?.tier !== "free" && (
+          </div>{' '}
+          {user?.tier !== 'free' && (
             <div className="text-xs mt-2 text-center">
               Next billing date: {displayExpireDay}
             </div>
@@ -164,18 +165,14 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
         </Card>
       )}
       <Menu
-        defaultOpenKeys={["apps"]}
+        defaultOpenKeys={['apps']}
         selectedKeys={selectedKeys}
         mode="inline"
       >
         <Menu.Item key="user" icon={<UserOutlined />}>
           <Link to={rootRouterPath.user}>Account Settings</Link>
         </Menu.Item>
-        <Menu.SubMenu
-          key="apps"
-          title="Apps"
-          icon={<AppstoreOutlined />}
-        >
+        <Menu.SubMenu key="apps" title="Apps" icon={<AppstoreOutlined />}>
           {apps?.map((i) => (
             <Menu.Item key={i.id} className="!h-16">
               <div className="flex flex-row items-center gap-4">
@@ -188,7 +185,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
                 >
                   <div className="flex flex-row items-center font-bold">
                     {i.name}
-                    {i.status === "paused" && (
+                    {i.status === 'paused' && (
                       <Tag className="ml-2">Paused</Tag>
                     )}
                   </div>
@@ -213,8 +210,4 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
       </Menu>
     </div>
   );
-};
-
-const style: Style = {
-  sider: { boxShadow: "2px 0 8px 0 rgb(29 35 41 / 5%)", zIndex: 2 },
 };

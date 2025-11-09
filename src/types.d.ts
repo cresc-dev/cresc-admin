@@ -25,9 +25,9 @@ interface User {
   last7dAvg?: number;
   last7dCounts?: number[];
   pendingDowngrade?: {
-    targetTier: Tier,
-    effectiveDate: string,
-    createdAt: string,
+    targetTier: Tier;
+    effectiveDate: string;
+    createdAt: string;
   };
 }
 
@@ -55,7 +55,6 @@ interface Package extends PackageBase {
   deps?: Record<string, string>;
   commit?: Commit;
   hash: string;
-  versions?: Version;
 }
 
 interface Commit {
@@ -73,11 +72,6 @@ interface Version {
   metaInfo?: string;
   name: string;
   packages?: PackageBase[];
-  config?: {
-    rollout?: {
-      [packageVersion: string]: number | null;
-    };
-  };
   deps?: Record<string, string>;
   commit?: Commit;
 }

@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "outDir": "dist",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "lib": ["dom", "esnext"],
     "jsx": "react-jsx",
     "esModuleInterop": true,

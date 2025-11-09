@@ -28,6 +28,7 @@
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/git-url-parse": "^16.0.2",
+    "@types/node": "^24.10.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",

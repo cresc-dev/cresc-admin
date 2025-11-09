@@ -13,12 +13,12 @@ export const setToken = (token: string) => {
 export const getToken = () => _token;
 
 const SERVER = {
-  main: [
-    // "http://localhost:9000",
-    'https://api.cresc.dev',
-    'https://api.cresc.app',
-  ],
+  main:
+    process.env.NODE_ENV === 'production'
+      ? ['https://api.cresc.dev', 'https://api.cresc.app']
+      : ['http://localhost:9000'],
 };
+
 const getBaseUrl = (async () => {
   return testUrls(SERVER.main.map((url) => `${url}/status`)).then((ret) => {
     let baseUrl = SERVER.main[0];

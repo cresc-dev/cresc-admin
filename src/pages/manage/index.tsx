@@ -1,4 +1,4 @@
-import { SettingFilled } from "@ant-design/icons";
+import { SettingFilled } from '@ant-design/icons';
 import {
   Breadcrumb,
   Button,
@@ -6,24 +6,24 @@ import {
   Form,
   Layout,
   Modal,
+  message,
   Row,
   Space,
   Tabs,
   Tag,
-  message,
-} from "antd";
+} from 'antd';
 
-import { Link, useParams } from "react-router-dom";
-import "./manage.css";
+import { Link, useParams } from 'react-router-dom';
+import './manage.css';
 
-import { api } from "@/services/api";
-import { useApp } from "@/utils/hooks";
-import { useEffect } from "react";
-import PackageList from "./components/package-list";
-import SettingModal from "./components/setting-modal";
-import VersionTable from "./components/version-table";
-import { ManageProvider, useManageContext } from "./hooks/useManageContext";
-import PlatformIcon from "@/components/platform-icon";
+import { useEffect } from 'react';
+import PlatformIcon from '@/components/platform-icon';
+import { api } from '@/services/api';
+import { useApp } from '@/utils/hooks';
+import PackageList from './components/package-list';
+import SettingModal from './components/setting-modal';
+import VersionTable from './components/version-table';
+import { ManageProvider, useManageContext } from './hooks/useManageContext';
 
 const ManageDashBoard = () => {
   const { packages, unusedPackages, packagesLoading } = useManageContext();
@@ -35,17 +35,27 @@ const ManageDashBoard = () => {
         width={240}
       >
         <div className="py-4">Native Packages</div>
-        <Tabs>
-          <Tabs.TabPane tab="All" key="all">
-            <PackageList dataSource={packages} loading={packagesLoading} />
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Unused" key="unused">
-            <PackageList
-              dataSource={unusedPackages}
-              loading={packagesLoading}
-            />
-          </Tabs.TabPane>
-        </Tabs>
+        <Tabs
+          items={[
+            {
+              key: 'all',
+              label: 'All',
+              children: (
+                <PackageList dataSource={packages} loading={packagesLoading} />
+              ),
+            },
+            {
+              key: 'unused',
+              label: 'Unused',
+              children: (
+                <PackageList
+                  dataSource={unusedPackages}
+                  loading={packagesLoading}
+                />
+              ),
+            },
+          ]}
+        />
       </Layout.Sider>
       <Layout.Content className="!p-0">
         <VersionTable />
@@ -70,16 +80,24 @@ export const Manage = () => {
     <Form layout="vertical" form={form} initialValues={app}>
       <Row className="mb-4">
         <Col flex={1}>
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/apps">App List</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <PlatformIcon platform={app?.platform} className="mr-1" />
-              {app?.name}
-              {app?.status === "paused" && <Tag className="ml-2">Paused</Tag>}
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              {
+                title: <Link to="/apps">App List</Link>,
+              },
+              {
+                title: (
+                  <>
+                    <PlatformIcon platform={app?.platform} className="mr-1" />
+                    {app?.name}
+                    {app?.status === 'paused' && (
+                      <Tag className="ml-2">Paused</Tag>
+                    )}
+                  </>
+                ),
+              },
+            ]}
+          />
         </Col>
         <Space.Compact>
           <Button
@@ -94,20 +112,20 @@ export const Manage = () => {
                 async onOk() {
                   try {
                     await api.updateApp(id, {
-                      name: form.getFieldValue("name") as string,
-                      downloadUrl: form.getFieldValue("downloadUrl") as string,
-                      status: form.getFieldValue("status") as
-                        | "normal"
-                        | "paused",
-                      ignoreBuildTime: form.getFieldValue("ignoreBuildTime") as
-                        | "enabled"
-                        | "disabled",
+                      name: form.getFieldValue('name') as string,
+                      downloadUrl: form.getFieldValue('downloadUrl') as string,
+                      status: form.getFieldValue('status') as
+                        | 'normal'
+                        | 'paused',
+                      ignoreBuildTime: form.getFieldValue('ignoreBuildTime') as
+                        | 'enabled'
+                        | 'disabled',
                     });
                   } catch (e) {
                     message.error((e as Error).message);
                     return;
                   }
-                  message.success("Successfully updated");
+                  message.success('Successfully updated');
                 },
               });
             }}

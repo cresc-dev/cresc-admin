@@ -21,7 +21,7 @@ export const Register = () => {
       setUserEmail(values.email);
       router.navigate(rootRouterPath.welcome);
     } catch (_) {
-      message.error('该邮箱已被注册');
+      message.error('This email has already been registered');
     }
     setLoading(false);
   }

@@ -32,14 +32,14 @@ export function ErrorBoundary() {
   return (
     <Result
       status="500"
-      title="页面出错了"
-      subTitle={error?.message || "发生了未知错误"}
+      title="Page Error"
+      subTitle={error?.message || "An unknown error occurred"}
       extra={
         <>
           <Button type="primary" onClick={handleRetry}>
-            重试
+            Retry
           </Button>
-          <Button onClick={handleGoHome}>返回首页</Button>
+          <Button onClick={handleGoHome}>Back to Home</Button>
         </>
       }
     />

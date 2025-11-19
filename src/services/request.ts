@@ -61,7 +61,7 @@ export default async function request<T extends Record<any, any>>(
       logout();
       return;
     }
-    // TODO token 过期
+    // TODO token expired
     const json = (await response.json()) as PushyResponse;
     if (response.status === 200) {
       return json as T & PushyResponse;

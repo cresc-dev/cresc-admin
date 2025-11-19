@@ -170,6 +170,20 @@ export const api = {
             : undefined,
       );
     }),
+  // audit logs
+  getAuditLogs: ({
+    offset = 0,
+    limit = 20,
+    startDate,
+  }: {
+    offset?: number;
+    limit?: number;
+    startDate?: string;
+  }) =>
+    request<{ data: AuditLog[]; count: number }>(
+      'get',
+      `/audit/logs?offset=${offset}&limit=${limit}&startDate=${startDate}`,
+    ),
   // order
   createOrder: (params: { tier?: string }) =>
     request<{ payUrl: string }>('post', '/orders', params),

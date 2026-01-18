@@ -1,0 +1,369 @@
+import { Line } from '@ant-design/charts';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Card,
+  DatePicker,
+  Radio,
+  Select,
+  Spin,
+  Statistic,
+  Typography,
+} from 'antd';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import { useMemo, useRef, useState } from 'react';
+import { api } from '@/services/api';
+
+const { Title } = Typography;
+const { RangePicker } = DatePicker;
+
+type MetricMode = 'pv' | 'uv';
+type MetricKeyPrefix = 'rn' | 'os' | 'rnu';
+
+interface ChartDataPoint {
+  time: string;
+  value: number;
+  category: string;
+}
+
+interface MetricsResponse {
+  dict: string[];
+  data: Array<{ time: string; data: Array<[number, number]> }>;
+}
+
+const TOTAL_SERIES_LABEL = 'total';
+const modeLabels: Record<MetricMode, string> = {
+  pv: 'Requests',
+  uv: 'Users',
+};
+
+const metricKeyOptions = [
+  { label: 'rn', value: 'rn' },
+  { label: 'os', value: 'os' },
+  { label: 'rnu', value: 'rnu' },
+];
+
+const getCategoryPrefix = (category: string) => {
+  const separatorIndex = category.indexOf(':');
+  if (separatorIndex === -1) return category.trim();
+  return category.slice(0, separatorIndex).trim();
+};
+
+export const Component = () => {
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
+    dayjs().subtract(24, 'hour'),
+    dayjs(),
+  ]);
+  const [mode, setMode] = useState<MetricMode>('pv');
+  const [selectedKeyPrefix, setSelectedKeyPrefix] =
+    useState<MetricKeyPrefix>('rn');
+  const legendValuesRef = useRef<string[]>([]);
+  const startDate = dateRange[0].toISOString();
+  const endDate = dateRange[1].toISOString();
+
+  const { data: pvMetrics, isLoading: isLoadingPv } = useQuery({
+    queryKey: ['globalMetrics', startDate, endDate, 'pv'],
+    queryFn: () =>
+      api.getGlobalMetrics({
+        start: startDate,
+        end: endDate,
+        mode: 'pv',
+      }),
+    enabled: !!dateRange[0] && !!dateRange[1],
+  });
+
+  const { data: uvMetrics, isLoading: isLoadingUv } = useQuery({
+    queryKey: ['globalMetrics', startDate, endDate, 'uv'],
+    queryFn: () =>
+      api.getGlobalMetrics({
+        start: startDate,
+        end: endDate,
+        mode: 'uv',
+      }),
+    enabled: !!dateRange[0] && !!dateRange[1],
+  });
+
+  const metricsData = mode === 'pv' ? pvMetrics : uvMetrics;
+  const isChartLoading = mode === 'pv' ? isLoadingPv : isLoadingUv;
+
+  // Transform data for chart
+  const chartData = useMemo(() => {
+    if (!metricsData?.data || !metricsData?.dict) return [];
+    const points: ChartDataPoint[] = [];
+    for (const bucket of metricsData.data) {
+      for (const [dictIndex, count] of bucket.data) {
+        const rawCategory = metricsData.dict[dictIndex] || '';
+        // Skip _total entry
+        if (rawCategory === '_total') {
+          continue;
+        }
+        // Treat empty values as 'unknown' (legacy data compatibility)
+        let category = rawCategory.replace('\u001f', ': ');
+        if (rawCategory.endsWith('\u001f')) {
+          category = rawCategory.replace('\u001f', ': unknown');
+        }
+        points.push({
+          time: bucket.time,
+          value: count,
+          category,
+        });
+      }
+    }
+    return points;
+  }, [metricsData]);
+
+  const prefixFilteredChartData = useMemo(() => {
+    if (!chartData.length) return [];
+    return chartData.filter(
+      (point) => getCategoryPrefix(point.category) === selectedKeyPrefix,
+    );
+  }, [chartData, selectedKeyPrefix]);
+
+  const categoryTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const point of prefixFilteredChartData) {
+      totals.set(
+        point.category,
+        (totals.get(point.category) || 0) + point.value,
+      );
+    }
+    return totals;
+  }, [prefixFilteredChartData]);
+
+  const sortedCategories = useMemo(() => {
+    return Array.from(categoryTotals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([category]) => category);
+  }, [categoryTotals]);
+
+  const totalSeriesData = useMemo(() => {
+    if (!prefixFilteredChartData.length) return [];
+    const totalsByTime = new Map<string, number>();
+    for (const point of prefixFilteredChartData) {
+      totalsByTime.set(
+        point.time,
+        (totalsByTime.get(point.time) || 0) + point.value,
+      );
+    }
+    return Array.from(totalsByTime.entries())
+      .map(([time, value]) => ({
+        time,
+        value,
+        category: TOTAL_SERIES_LABEL,
+      }))
+      .sort((a, b) => dayjs(a.time).valueOf() - dayjs(b.time).valueOf());
+  }, [prefixFilteredChartData]);
+
+  const defaultLegendValues = useMemo(() => {
+    const topTen = sortedCategories.slice(0, 10);
+    if (totalSeriesData.length === 0) return topTen;
+    return [TOTAL_SERIES_LABEL, ...topTen];
+  }, [sortedCategories, totalSeriesData]);
+
+  const colorDomain = useMemo(() => {
+    if (sortedCategories.length === 0) return [];
+    if (totalSeriesData.length === 0) return sortedCategories;
+    return [TOTAL_SERIES_LABEL, ...sortedCategories];
+  }, [sortedCategories, totalSeriesData]);
+
+  const lineData = useMemo(() => {
+    if (!prefixFilteredChartData.length && !totalSeriesData.length) return [];
+    return [...prefixFilteredChartData, ...totalSeriesData];
+  }, [prefixFilteredChartData, totalSeriesData]);
+
+  legendValuesRef.current = defaultLegendValues;
+
+  const getMetricsTotal = (metrics?: MetricsResponse) => {
+    if (!metrics?.data || !metrics.dict) return 0;
+    let total = 0;
+    for (const bucket of metrics.data) {
+      let bucketTotal = 0;
+      for (const [dictIndex, count] of bucket.data) {
+        const key = metrics.dict[dictIndex];
+        if (key === '_total') {
+          bucketTotal = count;
+          break;
+        }
+        bucketTotal += count;
+      }
+      total += bucketTotal;
+    }
+    return total;
+  };
+
+  const totalPv = useMemo(() => getMetricsTotal(pvMetrics), [pvMetrics]);
+  const totalUv = useMemo(() => getMetricsTotal(uvMetrics), [uvMetrics]);
+
+  const topCategories = useMemo(() => {
+    return Array.from(categoryTotals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+  }, [categoryTotals]);
+
+  const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (dates?.[0] && dates[1]) {
+      setDateRange([dates[0], dates[1]]);
+    }
+  };
+
+  // Line chart config
+  const lineConfig = {
+    interaction: {
+      legendFilter: true,
+      tooltip: { shared: true },
+    },
+    data: lineData,
+    xField: (d: ChartDataPoint) => new Date(d.time),
+    yField: 'value',
+    colorField: 'category',
+    shapeField: 'smooth',
+    axis: {
+      x: {
+        title: 'Time',
+        labelAutoRotate: true,
+        labelFormatter: (value: string) => {
+          const parsed = dayjs(value);
+          return parsed.isValid() ? parsed.format('MM/DD HH:mm') : value;
+        },
+      },
+      y: {
+        title: modeLabels[mode],
+      },
+    },
+    tooltip: {
+      channel: 'y',
+    },
+    legend: {
+      position: 'top',
+    },
+    scale: colorDomain.length
+      ? {
+          color: { domain: colorDomain },
+        }
+      : undefined,
+    onReady: ({ chart }: { chart: { on: Function; emit: Function } }) => {
+      try {
+        chart.on('afterrender', () => {
+          const values = legendValuesRef.current;
+          if (!values.length) return;
+          chart.emit('legend:filter', {
+            data: { channel: 'color', values },
+          });
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    },
+    height: 480,
+  };
+
+  return (
+    <div className="page-section">
+      <Card>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
+          <Title level={4} className="m-0!">
+            Global Statistics
+          </Title>
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+            <Radio.Group
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="w-full md:w-auto"
+            >
+              <Radio.Button value="pv">Requests</Radio.Button>
+              <Radio.Button value="uv">Users</Radio.Button>
+            </Radio.Group>
+            <Select
+              placeholder="Filter Key"
+              showSearch={{
+                optionFilterProp: 'label',
+              }}
+              value={selectedKeyPrefix}
+              options={metricKeyOptions}
+              onChange={(value) => setSelectedKeyPrefix(value)}
+              className="w-full md:w-40"
+            />
+            <RangePicker
+              showTime
+              value={dateRange}
+              onChange={handleDateChange}
+              className="w-full md:w-auto"
+              presets={[
+                {
+                  label: 'Last 1 hour',
+                  value: [dayjs().subtract(1, 'hour'), dayjs()],
+                },
+                {
+                  label: 'Last 6 hours',
+                  value: [dayjs().subtract(6, 'hour'), dayjs()],
+                },
+                {
+                  label: 'Last 24 hours',
+                  value: [dayjs().subtract(24, 'hour'), dayjs()],
+                },
+                {
+                  label: 'Last 7 days',
+                  value: [dayjs().subtract(7, 'day'), dayjs()],
+                },
+                {
+                  label: 'Last 30 days',
+                  value: [dayjs().subtract(30, 'day'), dayjs()],
+                },
+              ]}
+            />
+          </div>
+        </div>
+
+        <Spin spinning={isChartLoading}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <Card size="small">
+              <Statistic
+                title="Total Requests"
+                value={isLoadingPv ? '-' : totalPv.toLocaleString()}
+              />
+            </Card>
+            <Card size="small">
+              <Statistic
+                title="Total Users"
+                value={isLoadingUv ? '-' : totalUv.toLocaleString()}
+              />
+            </Card>
+          </div>
+
+          {/* Chart */}
+          <Card size="small" style={{ marginBottom: 20 }}>
+            {lineData.length > 0 ? (
+              <Line {...lineConfig} />
+            ) : (
+              <div className="h-80 flex items-center justify-center text-gray-400">
+                No data
+              </div>
+            )}
+          </Card>
+
+          {/* Category breakdown */}
+          {topCategories.length > 0 && (
+            <Card title="Category Statistics (Top 10)" size="small">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {topCategories.map(([category, value]) => (
+                  <div key={category} className="p-3 bg-gray-50 rounded">
+                    <div
+                      className="text-xs text-gray-500 truncate"
+                      title={category}
+                    >
+                      {category}
+                    </div>
+                    <div className="text-lg font-semibold">
+                      {value.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </Spin>
+      </Card>
+    </div>
+  );
+};

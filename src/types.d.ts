@@ -13,7 +13,18 @@ declare module '*.jpg' {
   export default content;
 }
 
-type Tier = 'free' | 'standard' | 'premium' | 'pro';
+type Tier = 'free' | 'standard' | 'premium' | 'pro' | 'max' | 'ultra' | 'custom';
+
+interface Quota {
+  base?: Exclude<Tier, 'custom'>;
+  app: number;
+  package: number;
+  packageSize: string;
+  bundle: number;
+  bundleSize: string;
+  pv: number;
+  price?: number;
+}
 
 interface User {
   email: string;
@@ -24,11 +35,70 @@ interface User {
   checkQuota?: number;
   last7dAvg?: number;
   last7dCounts?: number[];
+  quota?: Quota;
+  admin?: boolean;
   pendingDowngrade?: {
     targetTier: Tier;
     effectiveDate: string;
     createdAt: string;
   };
+}
+
+interface AdminUser {
+  id: number;
+  email: string;
+  name: string;
+  status: 'normal' | 'unverified' | null;
+  tier: string;
+  tierExpiresAt?: string | null;
+  quota?: Quota | null;
+  createdAt?: string;
+}
+
+interface AdminApp {
+  id: number;
+  userId: number | null;
+  platform: 'ios' | 'android' | 'harmony';
+  name: string;
+  appKey: string;
+  appSecret: string;
+  downloadUrl: string | null;
+  status: string | null;
+  ignoreBuildTime: 'enabled' | 'disabled' | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface AdminVersion {
+  id: number;
+  appId: number;
+  hash: string;
+  name: string;
+  description: string | null;
+  metaInfo: string | null;
+  config: any | null;
+  deps: string | null;
+  commit: string | null;
+  createdAt?: string;
+}
+
+interface ApiToken {
+  id: number;
+  name: string;
+  token?: string; // Only available when creating
+  tokenSuffix: string;
+  permissions: {
+    read?: boolean;
+    write?: boolean;
+    delete?: boolean;
+  };
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  isExpired: boolean;
+  isRevoked: boolean;
 }
 
 interface App {

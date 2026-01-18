@@ -187,4 +187,34 @@ export const api = {
   // order
   createOrder: (params: { tier?: string }) =>
     request<{ payUrl: string }>('post', '/orders', params),
+  // global metrics
+  getGlobalMetrics: (params: {
+    start: string;
+    end: string;
+    mode?: 'pv' | 'uv';
+  }) =>
+    request<{
+      dict: string[];
+      data: Array<{ time: string; data: Array<[number, number]> }>;
+    }>(
+      'get',
+      `/metrics/global?start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}&mode=${params.mode || 'pv'}`,
+    ),
+  getAppMetrics: (params: { appKey: string; start: string; end: string }) =>
+    request<{
+      dict: string[];
+      data: Array<{ time: string; data: Array<[number, number]> }>;
+    }>(
+      'get',
+      `/metrics/app?appKey=${encodeURIComponent(params.appKey)}&start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}`,
+    ),
+  // API Token
+  createApiToken: (params: {
+    name: string;
+    permissions: { read?: boolean; write?: boolean; delete?: boolean };
+    expiresAt?: string;
+  }) => request<ApiToken>('post', '/api-token/create', params),
+  listApiTokens: () => request<{ data: ApiToken[] }>('get', '/api-token/list'),
+  revokeApiToken: (tokenId: number) =>
+    request<{ message: string }>('delete', `/api-token/${tokenId}`),
 };

@@ -15,6 +15,12 @@ export const rootRouterPath = {
   welcome: "/welcome",
   register: "/register",
   auditLogs: "/audit-logs",
+  realtimeMetrics: "/realtime-metrics",
+  adminConfig: "/admin-config",
+  adminUsers: "/admin-users",
+  adminApps: "/admin-apps",
+  adminMetrics: "/admin-metrics",
+  apiTokens: "/api-tokens",
 };
 
 export const needAuthLoader = ({ request }: { request: Request }) => {
@@ -88,7 +94,38 @@ export const router = createHashRouter([
         path: "audit-logs",
         loader: needAuthLoader,
         lazy: () => import("./pages/audit-logs"),
-      }
+      },
+      {
+        path: "realtime-metrics",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/realtime-metrics"),
+      },
+      {
+        path: "admin-config",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/admin-config"),
+      },
+      {
+        path: "admin-users",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/admin-users"),
+      },
+      {
+        path: "admin-apps",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/admin-apps"),
+      },
+      {
+        path: "admin-metrics",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/admin-metrics"),
+      },
+      {
+        path: "api-tokens",
+        loader: needAuthLoader,
+        lazy: () => import("./pages/api-tokens"),
+      },
     ],
   },
 ]);
+

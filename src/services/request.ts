@@ -16,7 +16,7 @@ const SERVER = {
   main:
     process.env.NODE_ENV === 'production'
       ? ['https://api.cresc.dev', 'https://api.cresc.app']
-      : ['http://localhost:9000'],
+      : [process.env.PUBLIC_API ?? 'http://localhost:9000'],
 };
 
 const getBaseUrl = (async () => {

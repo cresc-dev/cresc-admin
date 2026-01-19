@@ -1,6 +1,6 @@
-import { Button, Result } from "antd";
-import { useEffect } from "react";
-import { useNavigate, useRouteError } from "react-router-dom";
+import { Button, Result } from 'antd';
+import { useEffect } from 'react';
+import { useNavigate, useRouteError } from 'react-router-dom';
 
 interface ChunkError extends Error {
   __webpack_chunkName?: string;
@@ -9,11 +9,13 @@ interface ChunkError extends Error {
 export function ErrorBoundary() {
   const error = useRouteError() as ChunkError;
   const navigate = useNavigate();
+  const message = error?.message || '';
 
   const isChunkError =
-    error?.message?.includes("Loading CSS chunk") ||
-    error?.message?.includes("Loading chunk") ||
-    error?.message?.includes("ChunkLoadError");
+    message &&
+    (message.includes('Loading CSS chunk') ||
+      message.includes('Loading chunk') ||
+      message.includes('ChunkLoadError'));
 
   useEffect(() => {
     if (isChunkError) {
@@ -26,14 +28,14 @@ export function ErrorBoundary() {
   };
 
   const handleGoHome = () => {
-    navigate("/");
+    navigate('/');
   };
 
   return (
     <Result
       status="500"
       title="Page Error"
-      subTitle={error?.message || "An unknown error occurred"}
+      subTitle={message || 'An unknown error occurred'}
       extra={
         <>
           <Button type="primary" onClick={handleRetry}>

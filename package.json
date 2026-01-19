@@ -2,12 +2,14 @@
   "name": "cresc-admin",
   "private": true,
   "scripts": {
-    "dev": "rsbuild dev",
+    "dev": "PUBLIC_API=https://api.cresc.dev rsbuild dev",
+    "dev:local": "PUBLIC_API=http://localhost:9000 rsbuild dev",
     "build": "NODE_ENV=production rsbuild build",
     "preview": "rsbuild preview",
     "lint": "tsc --noEmit & biome check --write ."
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^6.1.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@rsbuild/core": "^1.7.2",

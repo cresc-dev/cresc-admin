@@ -1,6 +1,10 @@
 import {
   AppstoreOutlined,
+  FileTextOutlined,
+  KeyOutlined,
+  LineChartOutlined,
   PlusOutlined,
+  SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import {
@@ -24,6 +28,10 @@ import { api } from '@/services/api';
 import { useAppList, useUserInfo } from '@/utils/hooks';
 import { ReactComponent as LogoH } from '../assets/logo-h.svg';
 import PlatformIcon from './platform-icon';
+
+interface SiderMenuProps {
+  selectedKeys: string[];
+}
 
 const style = {
   sider: { boxShadow: '2px 0 8px 0 rgb(29 35 41 / 5%)', zIndex: 2 },
@@ -120,13 +128,13 @@ export default function Sider() {
 const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
   const { user, displayExpireDay } = useUserInfo();
   const { apps } = useAppList();
-  const quota = quotas[user?.tier as keyof typeof quotas];
+  const quota = user?.quota || quotas[user?.tier as keyof typeof quotas];
   const pvQuota = quota?.pv;
   const consumedQuota = user?.checkQuota;
   const percent =
     pvQuota && consumedQuota ? (consumedQuota / pvQuota) * 100 : undefined;
   return (
-    <div>
+    <div className="flex flex-col h-full overflow-hidden">
       {percent && (
         <Card
           title={
@@ -164,50 +172,120 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
           )}
         </Card>
       )}
-      <Menu
-        defaultOpenKeys={['apps']}
-        selectedKeys={selectedKeys}
-        mode="inline"
-      >
-        <Menu.Item key="user" icon={<UserOutlined />}>
-          <Link to={rootRouterPath.user}>Account Settings</Link>
-        </Menu.Item>
-        <Menu.SubMenu key="apps" title="Apps" icon={<AppstoreOutlined />}>
-          {apps?.map((i) => (
-            <Menu.Item key={i.id} className="!h-16">
-              <div className="flex flex-row items-center gap-4">
-                <div className="flex flex-col justify-center">
-                  <PlatformIcon platform={i.platform} className="!text-xl" />
-                </div>
-                <Link
-                  to={`/apps/${i.id}`}
-                  className="flex flex-col h-16 justify-center"
-                >
-                  <div className="flex flex-row items-center font-bold">
-                    {i.name}
-                    {i.status === 'paused' && (
-                      <Tag className="ml-2">Paused</Tag>
-                    )}
-                  </div>
-                  {i.checkCount && (
-                    <div className="text-xs text-gray-500 mb-2">
-                      <Tooltip
-                        mouseEnterDelay={1}
-                        title="Today's check times for this app"
+      <div className="overflow-y-auto">
+        <Menu
+          defaultOpenKeys={['apps']}
+          selectedKeys={selectedKeys}
+          mode="inline"
+          items={[
+            {
+              key: 'user',
+              icon: <UserOutlined />,
+              label: <Link to={rootRouterPath.user}>Account Settings</Link>,
+            },
+            {
+              key: 'api-tokens',
+              icon: <KeyOutlined />,
+              label: <Link to={rootRouterPath.apiTokens}>API Tokens</Link>,
+            },
+            {
+              key: 'audit-logs',
+              icon: <FileTextOutlined />,
+              label: <Link to={rootRouterPath.auditLogs}>Audit Logs</Link>,
+            },
+            {
+              key: 'realtime-metrics',
+              icon: <LineChartOutlined />,
+              label: (
+                <Link to={rootRouterPath.realtimeMetrics}>Realtime Metrics</Link>
+              ),
+            },
+            {
+              key: 'apps',
+              icon: <AppstoreOutlined />,
+              label: 'Apps',
+              children: [
+                ...(apps?.map((i, index) => ({
+                  key: `${i.id}-${index}`,
+                  className: '!h-16',
+                  label: (
+                    <div className="flex flex-row items-center gap-4">
+                      <div className="flex flex-col justify-center">
+                        <PlatformIcon
+                          platform={i.platform}
+                          className="text-xl!"
+                        />
+                      </div>
+                      <Link
+                        to={`/apps/${i.id}`}
+                        className="flex flex-col h-16 justify-center"
                       >
-                        <a>{i.checkCount.toLocaleString()} times</a>
-                      </Tooltip>
+                        <div className="flex flex-row items-center font-bold">
+                          {i.name}
+                          {i.status === 'paused' && (
+                            <Tag className="ml-2">Paused</Tag>
+                          )}
+                        </div>
+                        {i.checkCount && (
+                          <div className="text-xs text-gray-500 mb-2">
+                            <Tooltip
+                              mouseEnterDelay={1}
+                              title="Today's check times for this app"
+                            >
+                              <a>{i.checkCount.toLocaleString()} times</a>
+                            </Tooltip>
+                          </div>
+                        )}
+                      </Link>
                     </div>
-                  )}
-                </Link>
-              </div>
-            </Menu.Item>
-          ))}
-          <Menu.Item key="add-app" icon={<PlusOutlined />} onClick={addApp}>
-            New App
-          </Menu.Item>
-        </Menu.SubMenu>
-      </Menu>
+                  ),
+                })) || []),
+                {
+                  key: 'add-app',
+                  icon: <PlusOutlined />,
+                  label: 'New App',
+                  onClick: addApp,
+                },
+              ],
+            },
+            ...(user?.admin
+              ? [
+                  {
+                    key: 'admin',
+                    icon: <SettingOutlined />,
+                    label: 'Admin',
+                    children: [
+                      {
+                        key: 'admin-config',
+                        label: (
+                          <Link to={rootRouterPath.adminConfig}>Dynamic Config</Link>
+                        ),
+                      },
+                      {
+                        key: 'admin-users',
+                        label: (
+                          <Link to={rootRouterPath.adminUsers}>User Management</Link>
+                        ),
+                      },
+                      {
+                        key: 'admin-apps',
+                        label: (
+                          <Link to={rootRouterPath.adminApps}>App Management</Link>
+                        ),
+                      },
+                      {
+                        key: 'admin-metrics',
+                        label: (
+                          <Link to={rootRouterPath.adminMetrics}>Global Metrics</Link>
+                        ),
+                      },
+                    ],
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </div>
     </div>
   );
 };

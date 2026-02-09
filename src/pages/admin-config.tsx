@@ -118,17 +118,17 @@ export const Component = () => {
       const values = await form.validateFields();
       const key = values.key;
 
-      // Validate JSON and submit a compact string
-      let parsedValue: unknown;
+      // Try to parse as JSON for compact format, otherwise use raw string
+      let valueToSave: string;
       try {
-        parsedValue = JSON.parse(jsonValue);
+        const parsedValue = JSON.parse(jsonValue);
+        valueToSave = JSON.stringify(parsedValue);
       } catch {
-        message.error('Please enter valid JSON');
-        return;
+        // Not valid JSON, use raw string directly
+        valueToSave = jsonValue;
       }
 
-      const compactValue = JSON.stringify(parsedValue);
-      await adminApi.setConfig(key, compactValue);
+      await adminApi.setConfig(key, valueToSave);
       message.success('Saved successfully');
       setIsModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['adminConfig'] });
@@ -249,7 +249,7 @@ export const Component = () => {
           >
             <Input disabled={!!editingItem} placeholder="Config key" />
           </Form.Item>
-          <Form.Item label="Value (JSON)">
+          <Form.Item label="Value">
             <JsonEditorWrapper value={jsonValue} onChange={setJsonValue} />
           </Form.Item>
         </Form>

@@ -118,11 +118,14 @@ export const Component = () => {
       const values = await form.validateFields();
       const key = values.key;
 
-      // Try to parse as JSON for compact format, otherwise use raw string
+      // Try to parse as JSON; for objects/arrays, compact it; for strings, use directly
       let valueToSave: string;
       try {
         const parsedValue = JSON.parse(jsonValue);
-        valueToSave = JSON.stringify(parsedValue);
+        valueToSave =
+          typeof parsedValue === 'string'
+            ? parsedValue
+            : JSON.stringify(parsedValue);
       } catch {
         // Not valid JSON, use raw string directly
         valueToSave = jsonValue;

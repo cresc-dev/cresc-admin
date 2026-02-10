@@ -55,6 +55,7 @@ export const Component = () => {
     setEditingApp(record);
     form.setFieldsValue({
       name: record.name,
+      appKey: record.appKey,
       platform: record.platform,
       userId: record.userId,
       downloadUrl: record.downloadUrl || '',
@@ -71,6 +72,7 @@ export const Component = () => {
 
       const updateData: Partial<AdminApp> = {
         name: values.name,
+        appKey: values.appKey || undefined,
         platform: values.platform,
         userId: values.userId || null,
         downloadUrl: values.downloadUrl || null,
@@ -230,6 +232,9 @@ export const Component = () => {
           <Space className="w-full" direction="vertical" size="middle">
             <Form.Item name="name" label="Name" className="mb-0!" rules={[{ required: true }]}>
               <Input />
+            </Form.Item>
+            <Form.Item name="appKey" label="App Key" className="mb-0!">
+              <Input placeholder="Leave empty to keep current" />
             </Form.Item>
             <Form.Item name="platform" label="Platform" className="mb-0!">
               <Select

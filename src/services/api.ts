@@ -187,6 +187,16 @@ export const api = {
   // order
   createOrder: (params: { tier?: string }) =>
     request<{ payUrl: string }>('post', '/orders', params),
+  cancelSubscription: () =>
+    request<{ message: string }>('post', '/orders/cancel').then((res) => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      return res;
+    }),
+  resumeSubscription: () =>
+    request<{ message: string }>('post', '/orders/resume').then((res) => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      return res;
+    }),
   // global metrics
   getGlobalMetrics: (params: {
     start: string;

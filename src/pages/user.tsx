@@ -1,6 +1,6 @@
 import { CreditCardOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Button, Descriptions, Dropdown, Space, Spin } from "antd";
+import { Button, Descriptions, Dropdown, message, Popconfirm, Space, Spin } from "antd";
 import { type ReactNode, useState } from "react";
 import { api } from "@/services/api";
 import { useUserInfo } from "@/utils/hooks";
@@ -27,6 +27,65 @@ const PurchaseButton = ({
     >
       {loading ? "Preparing payment..." : children}
     </Button>
+  );
+};
+
+const CancelResumeButton = ({
+  cancelAtPeriodEnd,
+}: {
+  cancelAtPeriodEnd?: boolean;
+}) => {
+  const [loading, setLoading] = useState(false);
+
+  if (cancelAtPeriodEnd) {
+    return (
+      <Popconfirm
+        title="Resume subscription?"
+        description="Your subscription will continue to renew automatically."
+        onConfirm={async () => {
+          setLoading(true);
+          try {
+            await api.resumeSubscription();
+            message.success("Subscription resumed");
+          } catch {
+            message.error("Failed to resume subscription");
+          } finally {
+            setLoading(false);
+          }
+        }}
+        okText="Resume"
+        cancelText="No"
+      >
+        <Button type="link" loading={loading} className="mt-2 md:mt-0">
+          Resume subscription
+        </Button>
+      </Popconfirm>
+    );
+  }
+
+  return (
+    <Popconfirm
+      title="Cancel subscription?"
+      description="You will retain access until the end of the current billing period. No refund will be issued."
+      onConfirm={async () => {
+        setLoading(true);
+        try {
+          await api.cancelSubscription();
+          message.success("Subscription will be cancelled at period end");
+        } catch {
+          message.error("Failed to cancel subscription");
+        } finally {
+          setLoading(false);
+        }
+      }}
+      okText="Yes, cancel"
+      okButtonProps={{ danger: true }}
+      cancelText="No"
+    >
+      <Button type="link" danger loading={loading} className="mt-2 md:mt-0">
+        Cancel subscription
+      </Button>
+    </Popconfirm>
   );
 };
 
@@ -103,7 +162,7 @@ function UserPanel() {
       </div>
     );
   }
-  const { name, email, tier, quota } = user;
+  const { name, email, tier, quota, cancelAtPeriodEnd } = user;
   const defaultQuota = quotas[tier as keyof typeof quotas];
   const currentQuota = quota || defaultQuota;
 
@@ -120,6 +179,9 @@ function UserPanel() {
         <Descriptions.Item label="Subscription">
           <Space wrap>
             {currentQuota.title}
+            {cancelAtPeriodEnd && (
+              <span style={{ color: '#faad14', fontSize: 12 }}>(cancelling)</span>
+            )}
             {!quota && defaultQuota && (
               <UpgradeDropdown currentQuota={defaultQuota} />
             )}
@@ -141,7 +203,7 @@ function UserPanel() {
               "N/A"
             )}
             {tier !== "free" && (
-              <PurchaseButton tier={tier}>Renew</PurchaseButton>
+              <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
             )}
           </Space>
         </Descriptions.Item>

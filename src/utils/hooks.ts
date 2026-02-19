@@ -16,10 +16,14 @@ export const useUserInfo = () => {
   });
   const expireDay = dayjs(data?.tierExpiresAt);
   const displayExpireDay = data?.tierExpiresAt ? expireDay.format('LL') : 'N/A';
+  const displayRemainingDays = data?.tierExpiresAt
+    ? `${expireDay.diff(dayjs(), 'day')} days remaining`
+    : undefined;
 
   return {
     user: getToken() ? data : null,
     displayExpireDay,
+    displayRemainingDays,
   };
 };
 

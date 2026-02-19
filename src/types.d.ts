@@ -37,6 +37,7 @@ interface User {
   last7dCounts?: number[];
   quota?: Quota;
   admin?: boolean;
+  cancelAtPeriodEnd?: boolean;
   pendingDowngrade?: {
     targetTier: Tier;
     effectiveDate: string;

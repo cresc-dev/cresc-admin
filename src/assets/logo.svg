@@ -1,5 +1,10 @@
-<svg width="108" height="108" viewBox="-20 -20 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M20 8C13.3726 8 8 13.3726 8 20C8 26.6274 13.3726 32 20 32V38C10.0589 38 2 29.9411 2 20C2 10.0589 10.0589 2 20 2V8Z" fill="#40D4EA"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M32 4C25.0513 6.13514 20 12.6041 20 20.2528C20 27.9015 25.0513 34.3705 32 36.5056V30.0534C28.4383 28.2327 26 24.5275 26 20.2528C26 15.9781 28.4383 12.2729 32 10.4522V4Z" fill="#40D4EA"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M38 32.4499C34.9029 29.2169 33 24.8306 33 20C33 15.1693 34.9029 10.7831 38 7.55005V32.4499Z" fill="#40D4EA"/>
+<svg width="108" height="108" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cresc_grad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#40D4EA"/>
+      <stop offset="1" stop-color="#4483ED"/>
+    </linearGradient>
+  </defs>
+  <path d="M 88 25 A 40 40 0 1 0 88 83" stroke="url(#cresc_grad)" stroke-width="18" stroke-linecap="round" />
+  <circle cx="88" cy="54" r="10" fill="url(#cresc_grad)" />
 </svg>

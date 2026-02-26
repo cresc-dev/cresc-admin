@@ -111,6 +111,8 @@ export const Component = () => {
   const handleEdit = (record: AdminUser) => {
     setEditingUser(record);
     form.setFieldsValue({
+      name: record.name,
+      email: record.email,
       tier: record.tier,
       status: record.status,
       tierExpiresAt: record.tierExpiresAt ? dayjs(record.tierExpiresAt) : null,
@@ -125,6 +127,8 @@ export const Component = () => {
       if (!editingUser) return;
 
       const updateData: Partial<AdminUser> = {
+        name: values.name,
+        email: values.email,
         tier: values.tier,
         status: values.status,
         tierExpiresAt: values.tierExpiresAt
@@ -264,6 +268,12 @@ export const Component = () => {
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Space className="w-full" direction="vertical" size="middle">
+            <Form.Item name="name" label="Name" className="mb-0!">
+              <Input />
+            </Form.Item>
+            <Form.Item name="email" label="Email" className="mb-0!">
+              <Input />
+            </Form.Item>
             <Form.Item name="tier" label="Tier" className="mb-0!">
               <Select
                 options={[

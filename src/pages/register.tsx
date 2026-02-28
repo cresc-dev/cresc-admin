@@ -30,7 +30,7 @@ export const Register = () => {
     <div style={style.body}>
       <Form style={style.form} onFinish={(values) => submit(values)}>
         <div style={style.logo}>
-          <Logo className="mx-auto" />
+          <Logo className="mx-auto h-16 w-auto" />
           <div style={style.slogan}>
             Blazing Fast Hot Update for React Native
           </div>

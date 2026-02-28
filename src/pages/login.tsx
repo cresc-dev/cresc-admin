@@ -21,7 +21,7 @@ export const Login = () => {
         }}
       >
         <div style={style.logo}>
-          <Logo className="mx-auto h-16" />
+          <Logo className="mx-auto h-16 w-auto" />
           <div style={style.slogan}>
             Blazing Fast Hot Update for React Native
           </div>

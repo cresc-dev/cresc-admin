@@ -118,7 +118,7 @@ export default function Sider() {
   return (
     <Layout.Sider width={240} theme="light" style={style.sider}>
       <Layout.Header className="flex justify-center items-center bg-transparent! px-0!">
-        <LogoH />
+        <LogoH className="h-7 w-auto" />
       </Layout.Header>
       <SiderMenu selectedKeys={selectedKeys} />
     </Layout.Sider>

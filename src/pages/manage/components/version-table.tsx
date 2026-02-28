@@ -54,7 +54,7 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
               href={TEST_QR_CODE_DOC}
               rel="noreferrer"
             >
-              How to use?
+              How to use
             </a>
           </div>
           <QRCode value={codeValue} bordered={false} className="my-0 mx-auto" />
@@ -75,7 +75,7 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
                   setEnableDeepLink(target.checked);
                 }}
               >
-                Use Deep Link:
+                Use Deep Link
               </Checkbox>
               <Input
                 placeholder="e.g. cresc://"
@@ -111,7 +111,7 @@ function removeSelectedVersions({
     }
   }
   Modal.confirm({
-    title: "Delete selected versions:",
+    title: "Delete selected OTA versions:",
     content: versionNames.join(", "),
     maskClosable: true,
     okButtonProps: { danger: true },
@@ -149,7 +149,7 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: "Meta Info",
+    title: "Metadata",
     dataIndex: "metaInfo",
     render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
   },
@@ -162,7 +162,7 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: "Upload Time",
+    title: "Uploaded At",
     dataIndex: "createdAt",
     render: (_, record) => (
       <TextColumn record={record} recordKey="createdAt" isEditable={false} />

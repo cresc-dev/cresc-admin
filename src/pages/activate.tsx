@@ -17,7 +17,7 @@ export const Activate = () => {
   }
   if (isLoading) {
     return (
-      <Result icon={<LoadingOutlined />} title="Activating your account ..." />
+      <Result icon={<LoadingOutlined />} title="Activating your account..." />
     );
   }
   return (
@@ -26,7 +26,7 @@ export const Activate = () => {
       title="Activation successful"
       extra={
         <Link to="/login" replace>
-          <Button type="primary">Go to login</Button>
+          <Button type="primary">Go to log in</Button>
         </Link>
       }
     />

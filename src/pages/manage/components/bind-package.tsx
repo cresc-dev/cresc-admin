@@ -18,7 +18,7 @@ import { useMemo, useState } from 'react';
 import { api } from '@/services/api';
 import { useManageContext } from '../hooks/useManageContext';
 
-type DepChangeType = '新增' | '移除' | '版本变更';
+type DepChangeType = 'Added' | 'Removed' | 'Changed';
 
 type DepChangeRow = {
   key: string;
@@ -39,9 +39,9 @@ type DepChangeFilters = Record<DepChangeType, boolean>;
 function getDepsChangeSummary(changes: DepChangeRow[]): DepChangeSummary {
   return changes.reduce(
     (acc, item) => {
-      if (item.changeType === '新增') {
+      if (item.changeType === 'Added') {
         acc.added += 1;
-      } else if (item.changeType === '移除') {
+      } else if (item.changeType === 'Removed') {
         acc.removed += 1;
       } else {
         acc.changed += 1;
@@ -65,37 +65,37 @@ function getDepsChangeColumns({
     {
       title: (
         <span>
-          依赖（
+          Dependencies (
           <Checkbox
-            checked={filters.新增}
+            checked={filters.Added}
             onChange={({ target }) => {
-              onFilterChange('新增', target.checked);
+              onFilterChange('Added', target.checked);
             }}
           />
           <span className="ml-1" style={{ color: '#dc2626', fontWeight: 700 }}>
-            新增 {summary.added}
+            Added {summary.added}
           </span>
-          ，
+          , 
           <Checkbox
-            checked={filters.移除}
+            checked={filters.Removed}
             onChange={({ target }) => {
-              onFilterChange('移除', target.checked);
+              onFilterChange('Removed', target.checked);
             }}
           />
           <span className="ml-1" style={{ color: '#16a34a', fontWeight: 700 }}>
-            移除 {summary.removed}
+            Removed {summary.removed}
           </span>
-          ，
+          , 
           <Checkbox
-            checked={filters.版本变更}
+            checked={filters.Changed}
             onChange={({ target }) => {
-              onFilterChange('版本变更', target.checked);
+              onFilterChange('Changed', target.checked);
             }}
           />
           <span className="ml-1" style={{ color: '#d97706', fontWeight: 700 }}>
-            变更 {summary.changed}
+            Changed {summary.changed}
           </span>
-          ）
+          )
         </span>
       ),
       dataIndex: 'dependency',
@@ -103,11 +103,11 @@ function getDepsChangeColumns({
       ellipsis: true,
     },
     {
-      title: '版本变化',
+      title: 'Version Change',
       key: 'versionChange',
       ellipsis: true,
       render: (_: unknown, record: DepChangeRow) => {
-        if (record.changeType === '版本变更') {
+        if (record.changeType === 'Changed') {
           return (
             <span className="font-mono">
               <span style={{ color: '#d97706', fontWeight: 600 }}>
@@ -121,10 +121,10 @@ function getDepsChangeColumns({
           );
         }
 
-        if (record.changeType === '新增') {
+        if (record.changeType === 'Added') {
           return (
             <span className="font-mono">
-              <span style={{ color: '#dc2626', fontWeight: 700 }}>新增</span>
+              <span style={{ color: '#dc2626', fontWeight: 700 }}>Added</span>
               <span className="mx-2 text-gray-400">|</span>
               <span style={{ color: '#6b7280' }}>{record.oldVersion}</span>
               <ArrowRightOutlined className="mx-2 text-gray-400" />
@@ -137,7 +137,7 @@ function getDepsChangeColumns({
 
         return (
           <span className="font-mono">
-            <span style={{ color: '#16a34a', fontWeight: 700 }}>移除</span>
+            <span style={{ color: '#16a34a', fontWeight: 700 }}>Removed</span>
             <span className="mx-2 text-gray-400">|</span>
             <span style={{ color: '#16a34a', fontWeight: 600 }}>
               {record.oldVersion}
@@ -171,7 +171,7 @@ function getDepsChanges(
         dependency: key,
         oldVersion: '-',
         newVersion: newValue,
-        changeType: '新增',
+        changeType: 'Added',
       });
       continue;
     }
@@ -181,7 +181,7 @@ function getDepsChanges(
         dependency: key,
         oldVersion: oldValue,
         newVersion: '-',
-        changeType: '移除',
+        changeType: 'Removed',
       });
       continue;
     }
@@ -195,7 +195,7 @@ function getDepsChanges(
         dependency: key,
         oldVersion: oldValue,
         newVersion: newValue,
-        changeType: '版本变更',
+        changeType: 'Changed',
       });
     }
   }
@@ -212,9 +212,9 @@ const DepsChangeConfirmContent = ({
   changes: DepChangeRow[];
 }) => {
   const [filters, setFilters] = useState<DepChangeFilters>({
-    新增: true,
-    移除: true,
-    版本变更: true,
+    Added: true,
+    Removed: true,
+    Changed: true,
   });
 
   const summary = useMemo(() => getDepsChangeSummary(changes), [changes]);
@@ -236,17 +236,19 @@ const DepsChangeConfirmContent = ({
 
   return (
     <div>
-      <div>目标原生包：{packageName}</div>
-      <div>热更包：{versionDisplayName}</div>
+      <div>Target Native Package: {packageName}</div>
+      <div>OTA Version: {versionDisplayName}</div>
       <Alert
         className="mt-3"
         showIcon
         type="warning"
         message={
           <span>
-            如果变更的依赖是纯 JS 模块，则一般没有影响；若包含
-            <strong>原生代码</strong>
-            的新增或变化，热更可能导致功能不正常甚至闪退。建议仔细检查并在正式发布前使用扫码功能完整测试。
+            Changes in pure JavaScript dependencies are usually safe. If any
+            changed dependency includes <strong>native code</strong>, the OTA
+            update may cause feature issues or even crashes. Please review
+            carefully and run a full QR-code based test before publishing to
+            production.
           </span>
         }
       />
@@ -257,7 +259,7 @@ const DepsChangeConfirmContent = ({
         columns={columns}
         dataSource={filteredChanges}
         scroll={{ y: 320 }}
-        locale={{ emptyText: '当前筛选条件下无依赖变化' }}
+        locale={{ emptyText: 'No dependency changes match the current filters.' }}
       />
     </div>
   );
@@ -297,11 +299,11 @@ const BindPackage = ({
       return;
     }
     Modal.confirm({
-      title: '检测到依赖变化，确认继续发布？',
+      title: 'Dependency changes detected. Continue publishing?',
       maskClosable: true,
       okButtonProps: { danger: true },
-      okText: '继续发布',
-      cancelText: '取消',
+      okText: 'Publish anyway',
+      cancelText: 'Cancel',
       width: 820,
       content: (
         <DepsChangeConfirmContent

@@ -15,10 +15,10 @@ export const Welcome = () => {
   const { mutate: sendEmail, isPending } = useMutation({
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
-      message.info("Email sent successfully, please check your inbox");
+      message.info("Activation email sent. Please check your inbox.");
     },
     onError: () => {
-      message.error("Email sending failed");
+      message.error("Failed to send activation email.");
     },
   });
 
@@ -26,18 +26,18 @@ export const Welcome = () => {
     <Result
       title={
         <>
-          Thank you for your attention to the hot update service provided by React Native Chinese Website
+          Thanks for choosing Cresc hot updates for React Native.
           <br />
-          We have sent an activation email to your email address
+          We have sent an activation email to your address.
           <br />
-          Please click the activation link in the email to activate your account
+          Click the activation link in the email to activate your account.
           <div className="h-6" />
         </>
       }
-      subTitle="If you do not receive the activation email, please click"
+      subTitle="Didn't receive the activation email?"
       extra={
         <Button type="primary" onClick={() => sendEmail()} loading={isPending}>
-          Resend
+          Resend email
         </Button>
       }
     />

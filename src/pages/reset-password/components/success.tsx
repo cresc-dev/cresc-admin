@@ -4,10 +4,10 @@ export default function Success() {
   return (
     <Result
       status="success"
-      title="Password set successfully, please log in again"
+      title="Password updated successfully. Please log in again."
       extra={[
         <Button key="login" type="primary" href="/#/login">
-          Login
+          Log in
         </Button>,
       ]}
     />

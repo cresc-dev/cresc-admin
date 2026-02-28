@@ -24,7 +24,7 @@ const MainLayout = () => {
             <Menu mode="horizontal" selectable={false}>
               <Menu.Item key="issues" icon={<CommentOutlined />}>
                 <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
-                  Discussion
+                  Support
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="document" icon={<ReadOutlined />}>
@@ -47,7 +47,7 @@ const MainLayout = () => {
                     key="logout"
                     onClick={() => {
                       logout();
-                      message.info("You have logged out");
+                      message.info("You have been logged out.");
                     }}
                     icon={<LogoutOutlined />}
                   >

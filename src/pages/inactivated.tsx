@@ -14,16 +14,16 @@ export const Inactivated = () => {
   const { mutate: sendEmail, isPending } = useMutation({
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
-      message.info('Email sent successfully, please check your email');
+      message.info('Activation email sent. Please check your inbox.');
     },
     onError: () => {
-      message.error('Email sending failed');
+      message.error('Failed to send activation email.');
     },
   });
   return (
     <Result
-      title="Your account is not activated, please check your email"
-      subTitle="If you did not receive the activation email, please click"
+      title="Your account is not activated yet."
+      subTitle="Didn't receive the activation email?"
       extra={[
         <Button
           key="resend"
@@ -31,10 +31,10 @@ export const Inactivated = () => {
           onClick={() => sendEmail()}
           loading={isPending}
         >
-          Resend
+          Resend email
         </Button>,
         <Button key="back" href="/user">
-          Back to login
+          Back to log in
         </Button>,
       ]}
     />

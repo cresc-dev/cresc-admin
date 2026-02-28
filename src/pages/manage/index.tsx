@@ -83,7 +83,7 @@ export const Manage = () => {
           <Breadcrumb
             items={[
               {
-                title: <Link to="/apps">App List</Link>,
+                title: <Link to="/apps">Apps</Link>,
               },
               {
                 title: (
@@ -125,7 +125,7 @@ export const Manage = () => {
                     message.error((e as Error).message);
                     return;
                   }
-                  message.success('Successfully updated');
+                  message.success('Settings updated');
                 },
               });
             }}

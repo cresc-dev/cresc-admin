@@ -33,7 +33,7 @@ export default PackageList;
 
 function remove(item: Package, appId: number) {
   Modal.confirm({
-    title: `It CANNOT be recovered after the deletion. Are you sure you want to delete "${item.name}"?`,
+    title: `This action cannot be undone. Delete "${item.name}"?`,
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
@@ -50,9 +50,9 @@ function edit(item: Package, appId: number) {
     maskClosable: true,
     content: (
       <Form layout="vertical" initialValues={item}>
-        <Form.Item name="note" label="Remark">
+        <Form.Item name="note" label="Note">
           <Input
-            placeholder="Add Remark"
+            placeholder="Add a note"
             onChange={({ target }) => (note = target.value)}
           />
         </Form.Item>
@@ -117,10 +117,10 @@ const Item = ({ item }: { item: Package }) => {
                   type="secondary"
                   ellipsis={{ tooltip: item.note }}
                 >
-                  Remark: {item.note}
+                  Note: {item.note}
                 </Typography.Paragraph>
               )}
-              Build Time: {item.buildTime}
+              Build time: {item.buildTime}
             </>
           }
         />

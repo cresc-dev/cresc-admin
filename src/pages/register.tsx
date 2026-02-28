@@ -21,7 +21,7 @@ export const Register = () => {
       setUserEmail(values.email);
       router.navigate(rootRouterPath.welcome);
     } catch (_) {
-      message.error('This email has already been registered');
+      message.error('This email address is already registered');
     }
     setLoading(false);
   }
@@ -32,7 +32,7 @@ export const Register = () => {
         <div style={style.logo}>
           <Logo className="mx-auto h-16 w-auto" />
           <div style={style.slogan}>
-            Blazing Fast Hot Update for React Native
+            Blazing-fast OTA updates for React Native
           </div>
         </div>
         <Form.Item name="name" hasFeedback>
@@ -49,7 +49,7 @@ export const Register = () => {
             () => ({
               async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw 'The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long';
+                  throw 'Password must include uppercase and lowercase letters, numbers, and be at least 6 characters long';
                 }
               },
             }),
@@ -71,7 +71,7 @@ export const Register = () => {
             ({ getFieldValue }) => ({
               async validator(_, value: string) {
                 if (getFieldValue('pwd') !== value) {
-                  throw 'The passwords you entered do not match';
+                  throw 'The passwords do not match';
                 }
               },
             }),
@@ -79,7 +79,7 @@ export const Register = () => {
         >
           <Input
             type="password"
-            placeholder="Enter the password again"
+            placeholder="Confirm password"
             size="large"
             autoComplete=""
             required
@@ -92,7 +92,7 @@ export const Register = () => {
             size="large"
             loading={loading}
           >
-            Register
+            Create account
           </Button>
         </Form.Item>
         <Form.Item>
@@ -107,7 +107,7 @@ export const Register = () => {
                       ? Promise.resolve()
                       : Promise.reject(
                           Error(
-                            'Please read and agree to the terms before checking here',
+                            'Please read and accept the terms to continue',
                           ),
                         ),
                 },
@@ -117,7 +117,7 @@ export const Register = () => {
             >
               <Checkbox>
                 <span>
-                  I have read and agree to
+                  I have read and agree to the
                   <a
                     target="_blank"
                     href="https://pushy.reactnative.cn/agreement/"
@@ -129,7 +129,7 @@ export const Register = () => {
               </Checkbox>
             </Form.Item>
             <span />
-            <Link to="/login">Already have an account?</Link>
+            <Link to="/login">Already have an account? Log in</Link>
           </Row>
         </Form.Item>
       </Form>

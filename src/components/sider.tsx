@@ -49,7 +49,7 @@ function addApp() {
         <br />
         <Form.Item label="App Name" name="name">
           <Input
-            placeholder="Please enter the app name"
+            placeholder="Enter an app name"
             onChange={({ target }) => (name = target.value)}
           />
         </Form.Item>
@@ -91,7 +91,7 @@ function addApp() {
     ),
     onOk() {
       if (!name) {
-        message.warning('Please enter the app name');
+        message.warning('Please enter an app name');
         return false;
       }
       return api.createApp({ name, platform }).catch((error) => {
@@ -141,7 +141,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
             <div className="text-center py-1">
               <span className="">{user?.email}</span>
               <br />
-              <span className="font-normal">Today's query balance</span>
+              <span className="font-normal">Today's remaining checks</span>
             </div>
           }
           size="small"
@@ -157,13 +157,13 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
             }
           />
           <div className="text-xs mt-2 text-center">
-            7-day average balance: {user?.last7dAvg?.toLocaleString()}
+            7-day average remaining checks: {user?.last7dAvg?.toLocaleString()}
           </div>
           <div className="text-xs mt-2 text-center">
             <a target="_blank" href={PRICING_LINK} rel="noreferrer">
               {quota?.title}
             </a>{' '}
-            Available: {pvQuota?.toLocaleString()} per day
+            Daily quota: {pvQuota?.toLocaleString()} checks
           </div>{' '}
           {user?.tier !== 'free' && (
             <div className="text-xs mt-2 text-center">
@@ -197,7 +197,7 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
               key: 'realtime-metrics',
               icon: <LineChartOutlined />,
               label: (
-                <Link to={rootRouterPath.realtimeMetrics}>Realtime Metrics</Link>
+                <Link to={rootRouterPath.realtimeMetrics}>Real-time Metrics</Link>
               ),
             },
             {
@@ -230,9 +230,9 @@ const SiderMenu = ({ selectedKeys }: SiderMenuProps) => {
                           <div className="text-xs text-gray-500 mb-2">
                             <Tooltip
                               mouseEnterDelay={1}
-                              title="Today's check times for this app"
+                              title="Today's checks for this app"
                             >
-                              <a>{i.checkCount.toLocaleString()} times</a>
+                              <a>{i.checkCount.toLocaleString()} checks</a>
                             </Tooltip>
                           </div>
                         )}

@@ -289,7 +289,7 @@ export const Component = () => {
           </Title>
           <Space>
             <Select
-              placeholder="Select App"
+              placeholder="Select an app"
               showSearch
               optionFilterProp="label"
               value={selectedAppKey}
@@ -354,7 +354,7 @@ export const Component = () => {
               <Line {...lineConfig} />
             ) : (
               <div className="h-80 flex items-center justify-center text-gray-400">
-                No data
+                No data available
               </div>
             )}
           </Card>

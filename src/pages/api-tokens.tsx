@@ -147,8 +147,8 @@ function ApiTokensPage() {
       title: 'Action',
       key: 'action',
       render: (_: unknown, record: ApiToken) => (
-        <Popconfirm
-          title="Confirm Revoke"
+          <Popconfirm
+          title="Revoke this token?"
           description="This token will no longer be usable. Are you sure?"
           onConfirm={() => revokeMutation.mutate(record.id)}
           okText="Yes"
@@ -171,7 +171,7 @@ function ApiTokensPage() {
   return (
     <div className="body">
       <Card
-        title="API Token Management"
+        title="API Tokens"
         extra={
           <Button
             type="primary"
@@ -237,7 +237,7 @@ function ApiTokensPage() {
                   <b>Delete</b> - Delete apps, versions, and packages
                 </Checkbox>
                 <div className="text-xs text-gray-500 mt-1">
-                  Note: Write permission does not include read permission
+                  Note: Write access does not automatically include read access.
                 </div>
               </Space>
             </Checkbox.Group>
@@ -276,7 +276,7 @@ function ApiTokensPage() {
       >
         <div className="my-4">
           <Paragraph type="warning" className="mb-2">
-            ⚠️ Please copy and save this token now. You won't be able to see it again!
+            ⚠️ Copy and save this token now. You won't be able to view it again.
           </Paragraph>
           <Input.TextArea
             value={newToken || ''}

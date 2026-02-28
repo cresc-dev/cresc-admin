@@ -104,7 +104,7 @@ export const DepsTable = ({
                             },
                           }}
                         >
-                          Compare Changes
+                          Compare
                         </Dropdown.Button>
                       )}
                     </div>
@@ -143,10 +143,6 @@ export const DepsTable = ({
             ) : (
               <div>
                 <h4 className="font-bold">JavaScript Dependencies</h4>
-                <div className="text-gray-500">
-                  Require cli v1.42.0+ version to upload to view the dependency
-                  list
-                </div>
               </div>
             )}
           </div>

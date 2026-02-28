@@ -8,10 +8,10 @@ export default function SendEmail() {
   const { mutateAsync: sendEmail, isPending } = useMutation({
     mutationFn: (email: string) => api.resetpwdSendMail({ email }),
     onSuccess: () => {
-      message.info("Email sent successfully, please check your email");
+      message.info("Reset email sent. Please check your inbox.");
     },
     onError: () => {
-      message.error("Email sending failed");
+      message.error("Failed to send reset email.");
     },
   });
 
@@ -19,8 +19,8 @@ export default function SendEmail() {
     return (
       <Result
         status="success"
-        title="The verification email has been sent to your email, please click the link in the email to complete the operation"
-        subTitle="The verification email is valid for 24 hours, please verify it as soon as possible!"
+        title="A verification email has been sent. Click the link in the email to continue."
+        subTitle="The verification link is valid for 24 hours."
       />
     );
   }
@@ -41,7 +41,7 @@ export default function SendEmail() {
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={isPending} block>
-          Send Email
+          Send email
         </Button>
       </Form.Item>
     </Form>

@@ -263,7 +263,7 @@ export const Component = () => {
       <Card>
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
           <Title level={4} className="m-0!">
-            Global Statistics
+            Global Metrics
           </Title>
           <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
             <Radio.Group
@@ -275,7 +275,7 @@ export const Component = () => {
               <Radio.Button value="uv">Users</Radio.Button>
             </Radio.Group>
             <Select
-              placeholder="Filter Key"
+              placeholder="Filter key"
               showSearch={{
                 optionFilterProp: 'label',
               }}
@@ -337,14 +337,14 @@ export const Component = () => {
               <Line {...lineConfig} />
             ) : (
               <div className="h-80 flex items-center justify-center text-gray-400">
-                No data
+                No data available
               </div>
             )}
           </Card>
 
           {/* Category breakdown */}
           {topCategories.length > 0 && (
-            <Card title="Category Statistics (Top 10)" size="small">
+            <Card title="Category Breakdown (Top 10)" size="small">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {topCategories.map(([category, value]) => (
                   <div key={category} className="p-3 bg-gray-50 rounded">

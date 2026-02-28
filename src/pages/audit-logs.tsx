@@ -390,8 +390,8 @@ export const AuditLogs = () => {
               Audit Logs
             </h2>
             <p className="text-gray-500 text-sm mt-1">
-              Logging feature started testing on November 17, 2025. No earlier
-              data available. Data will only be retained for 180 days.
+              Audit logging began on November 17, 2025. No earlier data is
+              available. Logs are retained for 180 days.
             </p>
           </div>
           <Space>
@@ -409,7 +409,7 @@ export const AuditLogs = () => {
               onClick={handleExportToExcel}
               disabled={filteredAuditLogs.length === 0}
             >
-              Export Excel
+              Export to Excel
             </Button>
           </Space>
         </div>

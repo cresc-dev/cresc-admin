@@ -248,7 +248,7 @@ export const Component = () => {
           <Form.Item
             name="key"
             label="Key"
-            rules={[{ required: true, message: 'Please enter config key' }]}
+            rules={[{ required: true, message: 'Please enter a config key' }]}
           >
             <Input disabled={!!editingItem} placeholder="Config key" />
           </Form.Item>

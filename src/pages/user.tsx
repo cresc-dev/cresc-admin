@@ -45,10 +45,10 @@ const CancelResumeButton = ({
         onConfirm={async () => {
           setLoading(true);
           try {
-            await api.resumeSubscription();
-            message.success("Subscription resumed");
+          await api.resumeSubscription();
+            message.success("Subscription resumed.");
           } catch {
-            message.error("Failed to resume subscription");
+            message.error("Failed to resume subscription.");
           } finally {
             setLoading(false);
           }
@@ -71,9 +71,11 @@ const CancelResumeButton = ({
         setLoading(true);
         try {
           await api.cancelSubscription();
-          message.success("Subscription will be cancelled at period end");
+          message.success(
+            "Your subscription will end at the end of the current billing period.",
+          );
         } catch {
-          message.error("Failed to cancel subscription");
+          message.error("Failed to cancel subscription.");
         } finally {
           setLoading(false);
         }
@@ -200,7 +202,7 @@ function UserPanel() {
                 )}
               </div>
             ) : (
-              "N/A"
+              "Not available"
             )}
             {tier !== "free" && (
               <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
@@ -210,7 +212,7 @@ function UserPanel() {
       </Descriptions>
       <br />
       <Button href={PRICING_LINK} target="_blank">
-        View price list
+        View pricing
       </Button>
     </div>
   );

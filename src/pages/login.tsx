@@ -23,7 +23,7 @@ export const Login = () => {
         <div style={style.logo}>
           <Logo className="mx-auto h-16 w-auto" />
           <div style={style.slogan}>
-            Blazing Fast Hot Update for React Native
+            Blazing-fast OTA updates for React Native
           </div>
         </div>
         <Form.Item>
@@ -54,12 +54,12 @@ export const Login = () => {
             loading={loading}
             block
           >
-            Login
+            Log in
           </Button>
         </Form.Item>
         <Form.Item>
           <Row justify="space-between">
-            <Link to="/register">Register</Link>
+            <Link to="/register">Create account</Link>
             <Link to="/reset-password/0">Forgot password?</Link>
           </Row>
         </Form.Item>

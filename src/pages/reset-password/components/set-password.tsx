@@ -37,7 +37,7 @@ export default function SetPassword() {
               if (value && !isPasswordValid(value)) {
                 return Promise.reject(
                   Error(
-                    'The password must contain uppercase and lowercase letters and numbers, and be at least 6 characters long',
+                    'Password must include uppercase and lowercase letters, numbers, and be at least 6 characters long',
                   ),
                 );
               }
@@ -62,7 +62,7 @@ export default function SetPassword() {
             validator(_, value: string) {
               if (getFieldValue('newPwd') !== value) {
                 return Promise.reject(
-                  Error('The passwords you entered do not match'),
+                  Error('The passwords do not match'),
                 );
               }
               return Promise.resolve();
@@ -72,14 +72,14 @@ export default function SetPassword() {
       >
         <Input
           type="password"
-          placeholder="Enter the password again"
+          placeholder="Confirm new password"
           autoComplete=""
           required
         />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading} block>
-          Confirm Change
+          Save new password
         </Button>
       </Form.Item>
     </Form>

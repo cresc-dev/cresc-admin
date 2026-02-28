@@ -75,7 +75,7 @@ function getDepsChangeColumns({
           <span className="ml-1" style={{ color: '#dc2626', fontWeight: 700 }}>
             Added {summary.added}
           </span>
-          , 
+          ,
           <Checkbox
             checked={filters.Removed}
             onChange={({ target }) => {
@@ -85,7 +85,7 @@ function getDepsChangeColumns({
           <span className="ml-1" style={{ color: '#16a34a', fontWeight: 700 }}>
             Removed {summary.removed}
           </span>
-          , 
+          ,
           <Checkbox
             checked={filters.Changed}
             onChange={({ target }) => {
@@ -259,7 +259,9 @@ const DepsChangeConfirmContent = ({
         columns={columns}
         dataSource={filteredChanges}
         scroll={{ y: 320 }}
-        locale={{ emptyText: 'No dependency changes match the current filters.' }}
+        locale={{
+          emptyText: 'No dependency changes match the current filters.',
+        }}
       />
     </div>
   );
@@ -410,21 +412,21 @@ const BindPackage = ({
         <Dropdown
           menu={{
             items: availablePackages.map((p) => ({
-              key: p.id,
+              key: `pkg-${p.id}`,
               label: p.name,
               children: [
                 {
-                  key: 'full',
+                  key: `pkg-${p.id}-full`,
                   label: 'Full Release',
                   icon: <CloudDownloadOutlined />,
                   onClick: () => publishToPackage(p),
                 },
                 {
-                  key: 'staged',
+                  key: `pkg-${p.id}-staged`,
                   label: 'Staged Release',
                   icon: <ExperimentOutlined />,
                   children: [1, 2, 5, 10, 20, 50].map((percentage) => ({
-                    key: `${percentage}`,
+                    key: `pkg-${p.id}-staged-${percentage}`,
                     label: `${percentage}%`,
                     onClick: () => publishToPackage(p, percentage),
                   })),

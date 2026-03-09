@@ -54,3 +54,37 @@ export const quotas = {
     pv: 100_000_000,
   },
 };
+
+export const products = {
+  free: {
+    price: 0,
+    title: 'Cresc Free',
+    summary: 'Cresc Free for 1 month',
+  },
+  standard: {
+    price: 19,
+    title: 'Cresc Standard',
+    summary: 'Cresc Standard for 1 month',
+  },
+  premium: {
+    price: 39,
+    title: 'Cresc Premium',
+    summary: 'Cresc Premium for 1 month',
+  },
+  pro: {
+    price: 99,
+    title: 'Cresc Pro',
+    summary: 'Cresc Pro for 1 month',
+  },
+  max: {
+    price: 399,
+    title: 'Cresc Max',
+    summary: 'Cresc Max for 1 month',
+  },
+  ultra: {
+    price: 1699,
+    title: 'Cresc Ultra',
+    summary: 'Cresc Ultra for 1 month',
+  },
+};
+

@@ -1,15 +1,6 @@
 import { Line } from '@ant-design/charts';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Card,
-  DatePicker,
-  Input,
-  Radio,
-  Select,
-  Space,
-  Spin,
-  Typography,
-} from 'antd';
+import { Card, DatePicker, Input, Radio, Select, Spin, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -30,10 +21,16 @@ interface ChartDataPoint {
 
 type MetricAttribute = 'hash' | 'packageVersion_buildTime';
 
+interface FormattedCategory {
+  label: string;
+  attribute?: MetricAttribute;
+  isTotal: boolean;
+}
+
 const TOTAL_LABEL = 'Update Checks';
 const CATEGORY_SEPARATOR = '\u001f';
 
-const formatCategory = (rawCategory: string) => {
+const formatCategory = (rawCategory: string): FormattedCategory => {
   if (!rawCategory) {
     return { label: 'unknown', isTotal: false };
   }
@@ -210,6 +207,40 @@ export const Component = () => {
     [filteredChartData],
   );
 
+  const totalRequests = useMemo(() => {
+    if (!filteredChartData.length) return 0;
+    if (hasTotal) {
+      return filteredChartData.reduce(
+        (sum, point) => (point.isTotal ? sum + point.value : sum),
+        0,
+      );
+    }
+    return filteredChartData.reduce((sum, point) => sum + point.value, 0);
+  }, [filteredChartData, hasTotal]);
+
+  const topCategories = useMemo(() => {
+    return sortedCategories
+      .slice(0, 10)
+      .map(
+        (category) => [category, categoryTotals.get(category) || 0] as const,
+      );
+  }, [sortedCategories, categoryTotals]);
+
+  const topCategoryMax = useMemo(() => {
+    return topCategories.length > 0 ? topCategories[0][1] : 0;
+  }, [topCategories]);
+
+  const dateRangeLabel = useMemo(() => {
+    return `${dateRange[0].format('YYYY/MM/DD HH:mm')} - ${dateRange[1].format('YYYY/MM/DD HH:mm')}`;
+  }, [dateRange]);
+
+  const selectedAttributeLabel = useMemo(() => {
+    return (
+      attributeOptions.find((option) => option.value === selectedAttribute)
+        ?.label || selectedAttribute
+    );
+  }, [selectedAttribute]);
+
   const defaultLegendValues = useMemo(() => {
     const topTen = sortedCategories.slice(0, 10);
     if (!hasTotal) return topTen;
@@ -283,20 +314,30 @@ export const Component = () => {
   return (
     <div className="p-6">
       <Card>
-        <div className="flex justify-between items-center mb-6">
-          <Title level={4} className="m-0!">
-            Real-time Metrics
-          </Title>
-          <Space>
-            <Select
-              placeholder="Select an app"
-              showSearch
-              optionFilterProp="label"
-              value={selectedAppKey}
-              onChange={handleAppChange}
-              options={appOptions}
-              style={{ width: 200 }}
-            />
+        <div className="mb-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <Title level={4} className="m-0!">
+              Real-time Metrics
+            </Title>
+            {selectedAppKey && (
+              <div className="max-w-[55%] truncate text-xs text-gray-500">
+                App Key: {selectedAppKey}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-full sm:w-56">
+              <Select
+                placeholder="Select an app"
+                showSearch
+                optionFilterProp="label"
+                value={selectedAppKey}
+                onChange={handleAppChange}
+                options={appOptions}
+                style={{ width: '100%' }}
+              />
+            </div>
             <Radio.Group
               value={selectedAttribute}
               onChange={(e) => setSelectedAttribute(e.target.value)}
@@ -310,42 +351,147 @@ export const Component = () => {
               ))}
             </Radio.Group>
             {isAdmin && (
-              <Input
-                placeholder="Enter any App Key"
-                value={manualAppKey}
-                onChange={(e) => setManualAppKey(e.target.value)}
-                onPressEnter={handleManualAppKeySubmit}
-                style={{ width: 180 }}
-              />
+              <div className="w-full sm:w-52">
+                <Input
+                  placeholder="Enter any App Key"
+                  value={manualAppKey}
+                  onChange={(e) => setManualAppKey(e.target.value)}
+                  onPressEnter={handleManualAppKeySubmit}
+                />
+              </div>
             )}
-            <RangePicker
-              showTime
-              value={dateRange}
-              onChange={handleDateChange}
-              presets={[
-                {
-                  label: 'Last 1 hour',
-                  value: [dayjs().subtract(1, 'hour'), dayjs()],
-                },
-                {
-                  label: 'Last 6 hours',
-                  value: [dayjs().subtract(6, 'hour'), dayjs()],
-                },
-                {
-                  label: 'Last 24 hours',
-                  value: [dayjs().subtract(24, 'hour'), dayjs()],
-                },
-                {
-                  label: 'Last 7 days',
-                  value: [dayjs().subtract(7, 'day'), dayjs()],
-                },
-              ]}
-            />
-          </Space>
+            <div className="w-full xl:w-auto xl:min-w-[22rem]">
+              <RangePicker
+                showTime
+                value={dateRange}
+                onChange={handleDateChange}
+                style={{ width: '100%' }}
+                presets={[
+                  {
+                    label: 'Last 1 hour',
+                    value: [dayjs().subtract(1, 'hour'), dayjs()],
+                  },
+                  {
+                    label: 'Last 6 hours',
+                    value: [dayjs().subtract(6, 'hour'), dayjs()],
+                  },
+                  {
+                    label: 'Last 24 hours',
+                    value: [dayjs().subtract(24, 'hour'), dayjs()],
+                  },
+                  {
+                    label: 'Last 7 days',
+                    value: [dayjs().subtract(7, 'day'), dayjs()],
+                  },
+                ]}
+              />
+            </div>
+          </div>
         </div>
 
         <Spin spinning={isLoading}>
-          <Card size="small" style={{ marginBottom: 20 }}>
+          <Card title="Request Overview" size="small" style={{ marginBottom: 16 }}>
+            {!selectedAppKey ? (
+              <div className="h-20 flex items-center justify-center text-gray-400">
+                Please select an app
+              </div>
+            ) : (
+              <div className="grid gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
+                <div className="grid grid-cols-2 gap-2 xl:grid-cols-1">
+                  <div className="rounded border border-gray-100 bg-gray-50 px-3 py-2">
+                    <div className="text-xs text-gray-500">Total Requests</div>
+                    <div className="mt-1 text-2xl font-semibold leading-none tabular-nums">
+                      {isLoading ? '-' : totalRequests.toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-[11px] text-gray-500">
+                      {dateRangeLabel}
+                    </div>
+                  </div>
+                  <div className="rounded border border-gray-100 bg-gray-50 px-3 py-2">
+                    <div className="text-xs text-gray-500">Category Count</div>
+                    <div className="mt-1 text-2xl font-semibold leading-none tabular-nums">
+                      {categoryTotals.size}
+                    </div>
+                    <div className="mt-1 text-[11px] text-gray-500">
+                      Current Dimension: {selectedAttributeLabel}
+                    </div>
+                  </div>
+                </div>
+
+                {topCategories.length > 0 ? (
+                  <div>
+                    <div
+                      className="grid gap-2"
+                      style={{
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(180px, 1fr))',
+                      }}
+                    >
+                      {topCategories.map(([category, value], index) => {
+                        const sharePercent =
+                          totalRequests > 0 ? (value / totalRequests) * 100 : 0;
+                        const relativePercent =
+                          topCategoryMax > 0
+                            ? (value / topCategoryMax) * 100
+                            : 0;
+                        const barWidth =
+                          value > 0 ? Math.max(relativePercent, 6) : 0;
+                        const rankBadgeClass =
+                          index === 0
+                            ? 'border-amber-200 bg-amber-50 text-amber-700'
+                            : index === 1
+                              ? 'border-slate-200 bg-slate-50 text-slate-700'
+                              : index === 2
+                                ? 'border-orange-200 bg-orange-50 text-orange-700'
+                                : 'border-gray-200 bg-gray-50 text-gray-600';
+
+                        return (
+                          <div
+                            key={category}
+                            className="min-w-0 rounded border border-gray-200 bg-white px-3 py-2.5"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium ${rankBadgeClass}`}
+                              >
+                                TOP {index + 1}
+                              </span>
+                              <span className="text-[11px] text-gray-500 tabular-nums">
+                                {sharePercent.toFixed(1)}%
+                              </span>
+                            </div>
+
+                            <div className="mt-2 text-xl font-semibold leading-none tabular-nums text-gray-900">
+                              {value.toLocaleString()}
+                            </div>
+
+                            <div className="mt-2 h-1.5 overflow-hidden rounded bg-gray-100">
+                              <div
+                                className="h-full rounded bg-blue-500"
+                                style={{ width: `${barWidth}%` }}
+                              />
+                            </div>
+
+                            <div
+                              className="mt-2 truncate text-xs text-gray-500"
+                              title={category}
+                            >
+                              {category}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-20 flex items-center justify-center text-gray-400">
+                    No top 10 data
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+          <Card size="small" style={{ marginBottom: 16 }}>
             {!selectedAppKey ? (
               <div className="h-80 flex items-center justify-center text-gray-400">
                 Please select an app

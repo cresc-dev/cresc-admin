@@ -20,7 +20,7 @@
     "dayjs": "^1.11.19",
     "git-url-parse": "^16.1.0",
     "hash-wasm": "^4.12.0",
-    "json-diff-kit": "^1.0.34",
+    "json-diff-kit": "^1.0.35",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",
@@ -29,10 +29,10 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.4",
+    "@biomejs/biome": "2.4.6",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/git-url-parse": "^16.0.2",
-    "@types/node": "^25.3.2",
+    "@types/node": "^25.3.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",

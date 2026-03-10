@@ -107,7 +107,7 @@ export const Register = () => {
                       ? Promise.resolve()
                       : Promise.reject(
                           Error(
-                            'Please read and accept the terms to continue',
+                            'Please read and accept the User Service Agreement and Privacy Policy to continue',
                           ),
                         ),
                 },
@@ -117,13 +117,13 @@ export const Register = () => {
             >
               <Checkbox>
                 <span>
-                  I have read and agree to the
+                  I have read and agree to the{' '}
                   <a
                     target="_blank"
-                    href="https://pushy.reactnative.cn/agreement/"
+                    href="https://cresc.dev/policy/"
                     rel="noreferrer"
                   >
-                    User Agreement
+                    User Service Agreement and Privacy Policy
                   </a>
                 </span>
               </Checkbox>

@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Button, message, Result } from 'antd';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { getUserEmail } from '@/services/auth';
 import { rootRouterPath, router } from '../router';
@@ -33,9 +34,9 @@ export const Inactivated = () => {
         >
           Resend email
         </Button>,
-        <Button key="back" href="/user">
-          Back to log in
-        </Button>,
+        <Link key="back" to={rootRouterPath.login} replace>
+          <Button>Back to log in</Button>
+        </Link>,
       ]}
     />
   );

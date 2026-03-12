@@ -1,4 +1,6 @@
 import { Button, Result } from "antd";
+import { Link } from "react-router-dom";
+import { rootRouterPath } from "@/router";
 
 export default function Success() {
   return (
@@ -6,9 +8,9 @@ export default function Success() {
       status="success"
       title="Password updated successfully. Please log in again."
       extra={[
-        <Button key="login" type="primary" href="/#/login">
-          Log in
-        </Button>,
+        <Link key="login" to={rootRouterPath.login} replace>
+          <Button type="primary">Log in</Button>
+        </Link>,
       ]}
     />
   );

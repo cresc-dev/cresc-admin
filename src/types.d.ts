@@ -1,6 +1,8 @@
 declare module '*.svg' {
-  export const ReactComponent: React.FunctionComponent<
-    React.SVGProps<SVGSVGElement>
+  const content: string;
+  export default content;
+  export const ReactComponent: import('react').FunctionComponent<
+    import('react').SVGProps<SVGSVGElement>
   >;
 }
 
@@ -13,10 +15,20 @@ declare module '*.jpg' {
   export default content;
 }
 
-type Tier = 'free' | 'standard' | 'premium' | 'pro' | 'max' | 'ultra' | 'custom';
+type Style = Record<string, import('react').CSSProperties>;
+
+type Tier =
+  | 'free'
+  | 'standard'
+  | 'premium'
+  | 'pro'
+  | 'max'
+  | 'ultra'
+  | 'custom';
 
 interface Quota {
   base?: Exclude<Tier, 'custom'>;
+  title?: string;
   app: number;
   package: number;
   packageSize: string;
@@ -126,6 +138,7 @@ interface Package extends PackageBase {
   deps?: Record<string, string>;
   commit?: Commit;
   hash: string;
+  versions?: Version | Version[] | null;
 }
 
 interface Commit {
@@ -187,6 +200,7 @@ interface AuditLog {
   ip?: string;
   userAgent?: string;
   apiTokens?: {
+    name?: string;
     tokenSuffix: string;
   };
   createdAt: string;

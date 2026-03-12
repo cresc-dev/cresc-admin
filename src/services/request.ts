@@ -35,10 +35,25 @@ interface PushyResponse {
   message?: string;
 }
 
+export class RequestError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'RequestError';
+    this.status = status;
+  }
+}
+
+export interface RequestOptions {
+  suppressErrorToast?: boolean;
+}
+
 export default async function request<T extends Record<any, any>>(
   method: 'get' | 'post' | 'put' | 'delete',
   path: string,
   params?: Record<any, any>,
+  requestOptions: RequestOptions = {},
 ) {
   const headers: HeadersInit = {};
   const options: RequestInit = { method, headers };
@@ -61,19 +76,42 @@ export default async function request<T extends Record<any, any>>(
       logout();
       return;
     }
-    // TODO token expired
-    const json = (await response.json()) as PushyResponse;
-    if (response.status === 200) {
+
+    const text = await response.text();
+    let json: PushyResponse = {};
+    if (text) {
+      try {
+        json = JSON.parse(text) as PushyResponse;
+      } catch {
+        json = {
+          message: text,
+        };
+      }
+    }
+
+    if (response.ok) {
       return json as T & PushyResponse;
     }
 
-    message.error(json.message);
-    throw Error(`${response.status}: ${json.message}`);
+    const error = new RequestError(
+      json.message || `Request failed with status ${response.status}`,
+      response.status,
+    );
+    if (!requestOptions.suppressErrorToast && error.message) {
+      message.error(error.message);
+    }
+    throw error;
   } catch (err) {
+    if (err instanceof RequestError) {
+      throw err;
+    }
+
     if ((err as Error).message.includes('Unauthorized')) {
       logout();
     } else {
-      message.error(`Error: ${(err as Error).message}`);
+      if (!requestOptions.suppressErrorToast) {
+        message.error(`Error: ${(err as Error).message}`);
+      }
       throw err;
     }
   }

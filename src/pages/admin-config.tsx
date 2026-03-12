@@ -5,8 +5,8 @@ import {
   Card,
   Form,
   Input,
-  message,
   Modal,
+  message,
   Popconfirm,
   Space,
   Spin,
@@ -14,7 +14,12 @@ import {
   Typography,
 } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { JSONEditor, type Content, type OnChange } from 'vanilla-jsoneditor';
+import {
+  type Content,
+  createJSONEditor,
+  Mode,
+  type OnChange,
+} from 'vanilla-jsoneditor';
 import { adminApi } from '@/services/admin-api';
 
 const { Title } = Typography;
@@ -33,7 +38,13 @@ const JsonEditorWrapper = ({
   onChange: (value: string) => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<JSONEditor | null>(null);
+  const editorRef = useRef<ReturnType<typeof createJSONEditor> | null>(null);
+  const initialValueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
@@ -44,26 +55,26 @@ const JsonEditorWrapper = ({
       ) => {
         if (!contentErrors) {
           if ('json' in content && content.json !== undefined) {
-            onChange(JSON.stringify(content.json, null, 2));
+            onChangeRef.current(JSON.stringify(content.json, null, 2));
           } else if ('text' in content) {
-            onChange(content.text);
+            onChangeRef.current(content.text);
           }
         }
       };
 
-      editorRef.current = new JSONEditor({
+      editorRef.current = createJSONEditor({
         target: containerRef.current,
         props: {
-          content: { text: value },
+          content: { text: initialValueRef.current },
           onChange: handleChange,
-          mode: 'text',
+          mode: Mode.text,
         },
       });
     }
 
     return () => {
       if (editorRef.current) {
-        editorRef.current.destroy();
+        void editorRef.current.destroy();
         editorRef.current = null;
       }
     };

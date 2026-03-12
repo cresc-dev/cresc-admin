@@ -12,7 +12,7 @@ export const api = {
   resetpwdSendMail: (params: { email: string }) =>
     request('post', '/user/resetpwd/sendmail', params),
   register: (params: { [key: string]: string }) =>
-    request('post', '/user/register', params),
+    request('post', '/user/register', params, { suppressErrorToast: true }),
   resetPwd: (params: { token: string; newPwd: string }) =>
     request('post', '/user/resetpwd/reset', params),
   // app

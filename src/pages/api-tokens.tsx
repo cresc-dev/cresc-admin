@@ -18,6 +18,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { API_REFERENCE_LINK } from '@/constants/links';
 import { api } from '@/services/api';
 
 const { Paragraph } = Typography;
@@ -147,7 +148,7 @@ function ApiTokensPage() {
       title: 'Action',
       key: 'action',
       render: (_: unknown, record: ApiToken) => (
-          <Popconfirm
+        <Popconfirm
           title="Revoke this token?"
           description="This token will no longer be usable. Are you sure?"
           onConfirm={() => revokeMutation.mutate(record.id)}
@@ -183,12 +184,9 @@ function ApiTokensPage() {
         }
       >
         <Paragraph type="secondary" className="mb-4">
-          API Tokens can be used for CI/CD pipelines or automation scripts to call{' '}
-          <a
-            target="_blank"
-            href="https://api.cresc.dev/docs"
-            rel="noopener"
-          >
+          API Tokens can be used for CI/CD pipelines or automation scripts to
+          call{' '}
+          <a target="_blank" href={API_REFERENCE_LINK} rel="noopener">
             Cresc API
           </a>
           . Each user can have up to 10 active tokens.
@@ -223,7 +221,12 @@ function ApiTokensPage() {
           <Form.Item
             label="Permissions"
             name="permissions"
-            rules={[{ required: true, message: 'Please select at least one permission' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Please select at least one permission',
+              },
+            ]}
           >
             <Checkbox.Group>
               <Space direction="vertical">
@@ -231,7 +234,8 @@ function ApiTokensPage() {
                   <b>Read</b> - View apps, versions, and packages
                 </Checkbox>
                 <Checkbox value="write">
-                  <b>Write</b> - Create and update apps, publish versions, upload packages
+                  <b>Write</b> - Create and update apps, publish versions,
+                  upload packages
                 </Checkbox>
                 <Checkbox value="delete">
                   <b>Delete</b> - Delete apps, versions, and packages

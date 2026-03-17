@@ -1,17 +1,18 @@
-import { logout } from "@/services/auth";
-import { useUserInfo } from "@/utils/hooks";
 import {
   CommentOutlined,
   InfoCircleOutlined,
   LogoutOutlined,
   ReadOutlined,
   UserOutlined,
-} from "@ant-design/icons";
-import { Layout, Menu, Row, message } from "antd";
-import type { ReactNode } from "react";
-import { Outlet } from "react-router-dom";
-import Footer from "./footer";
-import Sider from "./sider";
+} from '@ant-design/icons';
+import { Layout, Menu, message, Row } from 'antd';
+import type { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
+import { DOCUMENTATION_LINK } from '@/constants/links';
+import { logout } from '@/services/auth';
+import { useUserInfo } from '@/utils/hooks';
+import Footer from './footer';
+import Sider from './sider';
 
 const MainLayout = () => {
   const { user } = useUserInfo();
@@ -28,9 +29,7 @@ const MainLayout = () => {
                 </ExtLink>
               </Menu.Item>
               <Menu.Item key="document" icon={<ReadOutlined />}>
-                <ExtLink href="https://pushy.reactnative.cn/docs/getting-started.html">
-                  Documentation
-                </ExtLink>
+                <ExtLink href={DOCUMENTATION_LINK}>Documentation</ExtLink>
               </Menu.Item>
               <Menu.Item key="about" icon={<InfoCircleOutlined />}>
                 <ExtLink href="https://reactnative.cn/about.html">
@@ -47,7 +46,7 @@ const MainLayout = () => {
                     key="logout"
                     onClick={() => {
                       logout();
-                      message.info("You have been logged out.");
+                      message.info('You have been logged out.');
                     }}
                     icon={<LogoutOutlined />}
                   >
@@ -89,17 +88,17 @@ const ExtLink = ({ children, href }: ExtLinkProps) => (
 
 const style: Style = {
   header: {
-    background: "#fff",
+    background: '#fff',
     height: 48,
-    lineHeight: "46px",
-    boxShadow: "2px 1px 4px rgba(0, 21, 41, 0.08)",
+    lineHeight: '46px',
+    boxShadow: '2px 1px 4px rgba(0, 21, 41, 0.08)',
     zIndex: 1,
   },
   body: {
-    overflow: "auto",
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
+    overflow: 'auto',
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
     paddingBottom: 0,
   },
 };

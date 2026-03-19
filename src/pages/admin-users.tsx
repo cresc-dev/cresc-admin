@@ -22,9 +22,20 @@ import {
   Mode,
   type OnChange,
 } from 'vanilla-jsoneditor';
+import { quotas } from '@/constants/quotas';
 import { adminApi } from '@/services/admin-api';
 
 const { Title } = Typography;
+
+const tierOptions = [
+  ...Object.entries(quotas).map(([value, quota]) => ({
+    value,
+    label: quota.title,
+  })),
+  { value: 'custom', label: 'Custom' },
+];
+
+const tierLabelMap = new Map(tierOptions.map((option) => [option.value, option.label]));
 
 // JSON Editor wrapper component for quota editing
 const JsonEditorWrapper = ({
@@ -199,7 +210,8 @@ export const Component = () => {
       title: 'Tier',
       dataIndex: 'tier',
       key: 'tier',
-      width: 100,
+      width: 120,
+      render: (tier: string) => tierLabelMap.get(tier) || tier || '-',
     },
     {
       title: 'Tier Expires At',
@@ -288,17 +300,7 @@ export const Component = () => {
               <Input />
             </Form.Item>
             <Form.Item name="tier" label="Tier" className="mb-0!">
-              <Select
-                options={[
-                  { value: 'free', label: 'Free' },
-                  { value: 'standard', label: 'Standard' },
-                  { value: 'premium', label: 'Premium' },
-                  { value: 'pro', label: 'Pro' },
-                  { value: 'max', label: 'Max' },
-                  { value: 'ultra', label: 'Ultra' },
-                  { value: 'custom', label: 'Custom' },
-                ]}
-              />
+              <Select options={tierOptions} optionFilterProp="label" showSearch />
             </Form.Item>
             <Form.Item name="status" label="Status" className="mb-0!">
               <Select

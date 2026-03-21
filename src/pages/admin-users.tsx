@@ -37,6 +37,7 @@ const tierOptions = [
 
 const tierLabelMap = new Map(tierOptions.map((option) => [option.value, option.label]));
 const defaultPremiumQuotaText = JSON.stringify(quotas.premium, null, 2);
+const modalWidth = typeof window !== 'undefined' && window.innerWidth < 768 ? '92vw' : 600;
 
 // JSON Editor wrapper component for quota editing
 const JsonEditorWrapper = ({
@@ -227,6 +228,14 @@ export const Component = () => {
         date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
+      title: 'Created At',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 180,
+      render: (date: string | null | undefined) =>
+        date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
+    },
+    {
       title: 'Custom Quota',
       dataIndex: 'quota',
       key: 'quota',
@@ -272,7 +281,7 @@ export const Component = () => {
             columns={columns}
             rowKey="id"
             pagination={{ pageSize: 20 }}
-            scroll={{ x: 900 }}
+            scroll={{ x: 1080 }}
           />
         </Spin>
       </Card>
@@ -294,7 +303,7 @@ export const Component = () => {
             Save
           </Button>,
         ]}
-        width={600}
+        width={modalWidth}
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Space className="w-full" direction="vertical" size="middle">

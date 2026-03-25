@@ -1,9 +1,11 @@
-import { api } from "@/services/api";
-import { getUserEmail } from "@/services/auth";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Result, message } from "antd";
-import { useEffect } from "react";
-import { rootRouterPath, router } from "../router";
+import { useMutation } from '@tanstack/react-query';
+import { Button, message, Result } from 'antd';
+import { useEffect } from 'react';
+import { activationEmailResendCooldownStorageKey } from '@/constants/local-storage';
+import { api } from '@/services/api';
+import { getUserEmail } from '@/services/auth';
+import { useLocalStorageCooldown } from '@/utils/hooks';
+import { rootRouterPath, router } from '../router';
 
 export const Welcome = () => {
   useEffect(() => {
@@ -12,13 +14,20 @@ export const Welcome = () => {
     }
   }, []);
 
+  const { isCoolingDown, remainingSeconds, startCooldown } =
+    useLocalStorageCooldown({
+      storageKey: activationEmailResendCooldownStorageKey,
+      durationMs: 60_000,
+    });
+
   const { mutate: sendEmail, isPending } = useMutation({
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
-      message.info("Activation email sent. Please check your inbox.");
+      startCooldown();
+      message.info('Activation email sent. Please check your inbox.');
     },
     onError: () => {
-      message.error("Failed to send activation email.");
+      message.error('Failed to send activation email.');
     },
   });
 
@@ -36,8 +45,15 @@ export const Welcome = () => {
       }
       subTitle="Didn't receive the activation email?"
       extra={
-        <Button type="primary" onClick={() => sendEmail()} loading={isPending}>
-          Resend email
+        <Button
+          type="primary"
+          onClick={() => sendEmail()}
+          loading={isPending}
+          disabled={isCoolingDown}
+        >
+          {isCoolingDown
+            ? `Resend email in ${remainingSeconds}s`
+            : 'Resend email'}
         </Button>
       }
     />

@@ -15,6 +15,8 @@ declare module '*.jpg' {
   export default content;
 }
 
+declare module '*.css';
+
 type Style = Record<string, import('react').CSSProperties>;
 
 type Tier =

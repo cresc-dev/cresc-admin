@@ -1,17 +1,17 @@
-import { api } from "@/services/api";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Form, Input, Result, message } from "antd";
-import { useState } from "react";
+import { useMutation } from '@tanstack/react-query';
+import { Button, Form, Input, message, Result } from 'antd';
+import { useState } from 'react';
+import { api } from '@/services/api';
 
 export default function SendEmail() {
   const [sent, setSent] = useState<boolean>(false);
   const { mutateAsync: sendEmail, isPending } = useMutation({
     mutationFn: (email: string) => api.resetpwdSendMail({ email }),
     onSuccess: () => {
-      message.info("Reset email sent. Please check your inbox.");
+      message.info('Reset email sent. Please check your inbox.');
     },
     onError: () => {
-      message.error("Failed to send reset email.");
+      message.error('Failed to send reset email.');
     },
   });
 
@@ -35,7 +35,7 @@ export default function SendEmail() {
     >
       <Form.Item
         name="email"
-        rules={[{ type: "email", message: "Please enter a valid email" }]}
+        rules={[{ type: 'email', message: 'Please enter a valid email' }]}
       >
         <Input placeholder="Enter your email" type="email" required />
       </Form.Item>

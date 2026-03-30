@@ -75,6 +75,11 @@ const attributeOptions = [
   { label: 'Package', value: 'packageVersion_buildTime' },
 ];
 
+type ChartInstance = {
+  on: (event: string, callback: () => void) => void;
+  emit: (event: string, payload: unknown) => void;
+};
+
 export const Component = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
@@ -288,7 +293,7 @@ export const Component = () => {
           color: { domain: colorDomain },
         }
       : undefined,
-    onReady: ({ chart }: { chart: { on: Function; emit: Function } }) => {
+    onReady: ({ chart }: { chart: ChartInstance }) => {
       try {
         chart.on('afterrender', () => {
           const values = legendValuesRef.current;
@@ -390,7 +395,11 @@ export const Component = () => {
         </div>
 
         <Spin spinning={isLoading}>
-          <Card title="Request Overview" size="small" style={{ marginBottom: 16 }}>
+          <Card
+            title="Request Overview"
+            size="small"
+            style={{ marginBottom: 16 }}
+          >
             {!selectedAppKey ? (
               <div className="h-20 flex items-center justify-center text-gray-400">
                 Please select an app

@@ -4,15 +4,17 @@ import {
   Button,
   Card,
   Form,
+  Grid,
   Input,
-  message,
   Modal,
+  message,
   Select,
   Space,
   Spin,
   Table,
   Typography,
 } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { adminApi } from '@/services/admin-api';
@@ -21,6 +23,8 @@ const { Title } = Typography;
 
 export const Component = () => {
   const queryClient = useQueryClient();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const [searchKeyword, setSearchKeyword] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,11 +90,12 @@ export const Component = () => {
     }
   };
 
-  const columns = [
+  const columns: ColumnsType<AdminApp> = [
     {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
+      responsive: ['md'],
       width: 60,
     },
     {
@@ -105,7 +110,7 @@ export const Component = () => {
       key: 'appKey',
       width: 200,
       render: (key: string) => (
-        <Space>
+        <Space wrap size={[4, 8]}>
           <span className="font-mono text-xs">{key}</span>
           <Button
             type="text"
@@ -125,10 +130,15 @@ export const Component = () => {
       key: 'platform',
       width: 80,
       render: (platform: string) => (
-        <span className={
-          platform === 'ios' ? 'text-blue-600' :
-          platform === 'android' ? 'text-green-600' : 'text-orange-600'
-        }>
+        <span
+          className={
+            platform === 'ios'
+              ? 'text-blue-600'
+              : platform === 'android'
+                ? 'text-green-600'
+                : 'text-orange-600'
+          }
+        >
           {platform}
         </span>
       ),
@@ -137,12 +147,14 @@ export const Component = () => {
       title: 'User ID',
       dataIndex: 'userId',
       key: 'userId',
+      responsive: ['lg'],
       width: 80,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      responsive: ['md'],
       width: 80,
       render: (status: string | null) => status || '-',
     },
@@ -150,6 +162,7 @@ export const Component = () => {
       title: 'Ignore Build Time',
       dataIndex: 'ignoreBuildTime',
       key: 'ignoreBuildTime',
+      responsive: ['lg'],
       width: 120,
       render: (v: string | null) => (
         <span className={v === 'enabled' ? 'text-green-600' : ''}>
@@ -161,6 +174,7 @@ export const Component = () => {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      responsive: ['lg'],
       width: 160,
       render: (date: string | undefined) =>
         date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
@@ -203,8 +217,13 @@ export const Component = () => {
             dataSource={data?.data || []}
             columns={columns}
             rowKey="id"
-            pagination={{ pageSize: 20 }}
-            scroll={{ x: 1000 }}
+            size={isMobile ? 'small' : 'middle'}
+            pagination={
+              isMobile
+                ? { pageSize: 10, simple: true }
+                : { pageSize: 20, showSizeChanger: true }
+            }
+            scroll={{ x: 760 }}
           />
         </Spin>
       </Card>
@@ -226,11 +245,16 @@ export const Component = () => {
             Save
           </Button>,
         ]}
-        width={600}
+        width={isMobile ? 'calc(100vw - 32px)' : 600}
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Space className="w-full" direction="vertical" size="middle">
-            <Form.Item name="name" label="Name" className="mb-0!" rules={[{ required: true }]}>
+            <Form.Item
+              name="name"
+              label="Name"
+              className="mb-0!"
+              rules={[{ required: true }]}
+            >
               <Input />
             </Form.Item>
             <Form.Item name="appKey" label="App Key" className="mb-0!">
@@ -248,13 +272,21 @@ export const Component = () => {
             <Form.Item name="userId" label="User ID" className="mb-0!">
               <Input type="number" placeholder="Leave empty for no owner" />
             </Form.Item>
-            <Form.Item name="downloadUrl" label="Download URL" className="mb-0!">
+            <Form.Item
+              name="downloadUrl"
+              label="Download URL"
+              className="mb-0!"
+            >
               <Input placeholder="App store link" />
             </Form.Item>
             <Form.Item name="status" label="Status" className="mb-0!">
               <Input placeholder="Custom status" />
             </Form.Item>
-            <Form.Item name="ignoreBuildTime" label="Ignore Build Time" className="mb-0!">
+            <Form.Item
+              name="ignoreBuildTime"
+              label="Ignore Build Time"
+              className="mb-0!"
+            >
               <Select
                 allowClear
                 options={[

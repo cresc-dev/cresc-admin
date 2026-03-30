@@ -1,6 +1,6 @@
-import { Button, Result } from "antd";
-import { Link } from "react-router-dom";
-import { rootRouterPath } from "@/router";
+import { Button, Result } from 'antd';
+import { Link } from 'react-router-dom';
+import { rootRouterPath } from '@/router';
 
 export default function Success() {
   return (

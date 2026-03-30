@@ -1,32 +1,33 @@
-import { TEST_QR_CODE_DOC } from "@/constants/links";
-import { api } from "@/services/api";
-import { useVersions } from "@/utils/hooks";
-import { QrcodeOutlined } from "@ant-design/icons";
+import { QrcodeOutlined } from '@ant-design/icons';
 import {
   Button,
   Checkbox,
+  Grid,
   Input,
   Modal,
   Popover,
   QRCode,
   Table,
   Typography,
-} from "antd";
-import type { ColumnType } from "antd/lib/table";
+} from 'antd';
+import type { ColumnType } from 'antd/lib/table';
 // import { useDrag, useDrop } from "react-dnd";
-import { type ReactNode, useEffect, useState } from "react";
-import type { TextContent } from "vanilla-jsoneditor";
-import { useManageContext } from "../hooks/useManageContext";
-import BindPackage from "./bind-package";
-import JsonEditor from "./json-editor";
-import { Commit } from "./commit";
-import { DepsTable } from "./deps-table";
+import { type ReactNode, useEffect, useState } from 'react';
+import type { TextContent } from 'vanilla-jsoneditor';
+import { TEST_QR_CODE_DOC } from '@/constants/links';
+import { api } from '@/services/api';
+import { useVersions } from '@/utils/hooks';
+import { useManageContext } from '../hooks/useManageContext';
+import BindPackage from './bind-package';
+import { Commit } from './commit';
+import { DepsTable } from './deps-table';
+import JsonEditor from './json-editor';
 
 const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const { appId, deepLink, setDeepLink } = useManageContext();
   const [enableDeepLink, setEnableDeepLink] = useState(!!deepLink);
 
-  const isDeepLinkValid = enableDeepLink && deepLink.endsWith("://");
+  const isDeepLinkValid = enableDeepLink && deepLink.endsWith('://');
 
   useEffect(() => {
     if (isDeepLinkValid) {
@@ -35,7 +36,7 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   }, [appId, deepLink, isDeepLinkValid]);
 
   const codePayload = {
-    type: "__rnPushyVersionHash",
+    type: '__rnPushyVersionHash',
     data: hash,
   };
   const codeValue = isDeepLinkValid
@@ -111,13 +112,13 @@ function removeSelectedVersions({
     }
   }
   Modal.confirm({
-    title: "Delete selected OTA versions:",
-    content: versionNames.join(", "),
+    title: 'Delete selected OTA versions:',
+    content: versionNames.join(', '),
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
       await Promise.all(
-        selected.map((id) => api.deleteVersion({ appId, versionId: id }))
+        selected.map((id) => api.deleteVersion({ appId, versionId: id })),
       );
     },
   });
@@ -125,15 +126,15 @@ function removeSelectedVersions({
 
 const columns: ColumnType<Version>[] = [
   {
-    title: "Version",
-    dataIndex: "name",
+    title: 'Version',
+    dataIndex: 'name',
     render: (_, record) => (
       <TextColumn
         record={record}
         recordKey="name"
         extra={
           <>
-            <DepsTable deps={record.deps} name={"OTA Version " + record.name} />
+            <DepsTable deps={record.deps} name={`OTA Version ${record.name}`} />
             <Commit commit={record.commit} />
             <TestQrCode name={record.name} hash={record.hash} />
           </>
@@ -142,28 +143,31 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: "Description",
-    dataIndex: "description",
+    title: 'Description',
+    dataIndex: 'description',
+    responsive: ['md'],
     render: (_, record) => (
       <TextColumn record={record} recordKey="description" />
     ),
   },
   {
-    title: "Metadata",
-    dataIndex: "metaInfo",
+    title: 'Metadata',
+    dataIndex: 'metaInfo',
+    responsive: ['lg'],
     render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
   },
   {
-    title: "Publish",
-    dataIndex: "packages",
-    width: "100%",
+    title: 'Publish',
+    dataIndex: 'packages',
+    width: '100%',
     render: (_, { id, deps, name }) => (
       <BindPackage versionId={id} versionDeps={deps} versionName={name} />
     ),
   },
   {
-    title: "Uploaded At",
-    dataIndex: "createdAt",
+    title: 'Uploaded At',
+    dataIndex: 'createdAt',
+    responsive: ['md'],
     render: (_, record) => (
       <TextColumn record={record} recordKey="createdAt" isEditable={false} />
     ),
@@ -183,8 +187,10 @@ const TextColumn = ({
 }) => {
   const key = recordKey;
   const { appId } = useManageContext();
-  let value = (record[key as keyof Version] as string) ?? "";
-  if (key === "createdAt") {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
+  let value = (record[key as keyof Version] as string) ?? '';
+  if (key === 'createdAt') {
     const t = new Date(value);
     const y = t.getFullYear();
     const month = t.getMonth() + 1;
@@ -202,12 +208,16 @@ const TextColumn = ({
         let originValue = value;
         Modal.confirm({
           icon: null,
-          width: key === "metaInfo" ? 640 : undefined,
+          width: isMobile
+            ? 'calc(100vw - 32px)'
+            : key === 'metaInfo'
+              ? 640
+              : undefined,
           title: columns.find((i) => i.dataIndex === key)?.title as string,
           closable: true,
           maskClosable: true,
           content:
-            key === "metaInfo" ? (
+            key === 'metaInfo' ? (
               <JsonEditor
                 className="h-96"
                 content={{ text: value }}
@@ -230,7 +240,7 @@ const TextColumn = ({
               versionId: record.id,
               params: { [key]: value } as unknown as Omit<
                 Version,
-                "id" | "packages"
+                'id' | 'packages'
               >,
             });
           },
@@ -243,7 +253,11 @@ const TextColumn = ({
   }
   return (
     <div>
-      <Typography.Text className="w-40" editable={editable} ellipsis>
+      <Typography.Text
+        className="block max-w-[9rem] md:w-40"
+        editable={editable}
+        ellipsis
+      >
         {value}
       </Typography.Text>
       {extra}
@@ -251,6 +265,8 @@ const TextColumn = ({
   );
 };
 export default function VersionTable() {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const { appId } = useManageContext();
   const [selected, setSelected] = useState<number[]>([]);
   const [offset, setOffset] = useState<number>(0);
@@ -265,15 +281,17 @@ export default function VersionTable() {
     <Table
       className="versions"
       rowKey="id"
-      title={() => "OTA Versions"}
+      title={() => 'OTA Versions'}
       columns={columns}
       dataSource={versions}
+      size={isMobile ? 'small' : 'middle'}
       pagination={{
-        showSizeChanger: true,
+        showSizeChanger: !isMobile,
+        simple: isMobile,
         total: count,
         current: offset / pageSize + 1,
         pageSize,
-        showTotal: (total) => `Total ${total} versions`,
+        showTotal: isMobile ? undefined : (total) => `Total ${total} versions`,
         onChange(page, size) {
           if (size) {
             setOffset((page - 1) * size);
@@ -281,12 +299,11 @@ export default function VersionTable() {
           }
         },
       }}
+      scroll={{ x: 960 }}
       rowSelection={{
-        selections: [
-          Table.SELECTION_ALL,
-          Table.SELECTION_INVERT,
-          Table.SELECTION_NONE,
-        ],
+        selections: isMobile
+          ? undefined
+          : [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
         onChange: (keys) => setSelected(keys as number[]),
       }}
       loading={isLoading}
@@ -294,6 +311,7 @@ export default function VersionTable() {
         selected.length
           ? () => (
               <Button
+                className={isMobile ? 'w-full' : undefined}
                 onClick={() =>
                   removeSelectedVersions({ selected, versions, appId })
                 }

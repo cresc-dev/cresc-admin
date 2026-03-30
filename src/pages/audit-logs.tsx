@@ -1,5 +1,5 @@
 import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Space, Table, Typography } from 'antd';
+import { Button, DatePicker, Grid, Table, Typography } from 'antd';
 import type { ColumnType } from 'antd/lib/table';
 import dayjs, { type Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -149,6 +149,7 @@ const columns: ColumnType<AuditLog>[] = [
   },
   {
     title: 'Submitted Data',
+    responsive: ['md'],
     width: 300,
     ellipsis: {
       showTitle: false,
@@ -177,6 +178,7 @@ const columns: ColumnType<AuditLog>[] = [
   {
     title: 'Device Info',
     dataIndex: 'userAgent',
+    responsive: ['lg'],
     width: 250,
     ellipsis: {
       showTitle: false,
@@ -204,6 +206,7 @@ const columns: ColumnType<AuditLog>[] = [
   {
     title: 'API Key',
     dataIndex: ['apiTokens', 'tokenSuffix'],
+    responsive: ['lg'],
     width: 120,
     render: (tokenSuffix?: string) =>
       tokenSuffix ? (
@@ -215,6 +218,8 @@ const columns: ColumnType<AuditLog>[] = [
 ];
 
 export const AuditLogs = () => {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const [offset, setOffset] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(20);
   const [dateRange, setDateRange] = useState<
@@ -383,7 +388,7 @@ export const AuditLogs = () => {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <FileTextOutlined />
@@ -394,7 +399,7 @@ export const AuditLogs = () => {
               available. Logs are retained for 180 days.
             </p>
           </div>
-          <Space>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <RangePicker
               value={dateRange}
               onChange={handleDateRangeChange}
@@ -402,16 +407,18 @@ export const AuditLogs = () => {
               placeholder={['Start Date', 'End Date']}
               allowClear
               disabledDate={disabledDate}
+              className="w-full sm:w-auto"
             />
             <Button
               type="primary"
               icon={<DownloadOutlined />}
               onClick={handleExportToExcel}
               disabled={filteredAuditLogs.length === 0}
+              className="w-full sm:w-auto"
             >
               Export to Excel
             </Button>
-          </Space>
+          </div>
         </div>
       </div>
       <Table
@@ -419,13 +426,15 @@ export const AuditLogs = () => {
         columns={columns}
         dataSource={filteredAuditLogs}
         loading={isLoading}
+        size={isMobile ? 'small' : 'middle'}
         pagination={{
-          showSizeChanger: true,
-          showQuickJumper: true,
+          showSizeChanger: !isMobile,
+          showQuickJumper: !isMobile,
+          simple: isMobile,
           total: filteredAuditLogs.length,
           current: offset / pageSize + 1,
           pageSize,
-          showTotal: (total) => `Total ${total} records`,
+          showTotal: isMobile ? undefined : (total) => `Total ${total} records`,
           onChange(page, size) {
             if (size) {
               setOffset((page - 1) * size);
@@ -433,7 +442,7 @@ export const AuditLogs = () => {
             }
           },
         }}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 900 }}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { Layout, Typography } from "antd";
+import { Layout, Typography } from 'antd';
 
 export default () => (
   <Layout.Footer className="text-center">

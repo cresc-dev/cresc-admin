@@ -1,7 +1,7 @@
-import { Popover, Button } from "antd";
-import dayjs from "dayjs";
-import gitUrlParse from "git-url-parse";
-import { PullRequestOutlined } from "@ant-design/icons";
+import { PullRequestOutlined } from '@ant-design/icons';
+import { Button, Popover } from 'antd';
+import dayjs from 'dayjs';
+import gitUrlParse from 'git-url-parse';
 
 export const Commit = ({ commit }: { commit?: Commit }) => {
   if (!commit) {
@@ -26,7 +26,7 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
   }
 
   const { origin, hash, message, author } = commit;
-  let url = "";
+  let url = '';
   if (origin) {
     try {
       const { owner, name, source } = gitUrlParse(origin);
@@ -47,7 +47,7 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
             <div className="font-bold">Recent Commit</div>
             <div>Author: {author}</div>
             <div>
-              Time: {time.fromNow()} ({time.format("YYYY-MM-DD HH:mm:ss")})
+              Time: {time.fromNow()} ({time.format('YYYY-MM-DD HH:mm:ss')})
             </div>
             <div>Summary: {message}</div>
             <hr />

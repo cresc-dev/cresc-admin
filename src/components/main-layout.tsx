@@ -49,7 +49,9 @@ const MainLayout = () => {
     {
       key: 'about',
       icon: <InfoCircleOutlined />,
-      label: <ExtLink href="https://reactnative.cn/about.html">About Us</ExtLink>,
+      label: (
+        <ExtLink href="https://reactnative.cn/about.html">About Us</ExtLink>
+      ),
     },
     ...(user
       ? [
@@ -107,7 +109,11 @@ const MainLayout = () => {
                   <Button type="text" icon={<MoreOutlined />} />
                 </Dropdown>
               ) : (
-                <Menu mode="horizontal" selectable={false} items={headerItems} />
+                <Menu
+                  mode="horizontal"
+                  selectable={false}
+                  items={headerItems}
+                />
               )}
             </div>
           </div>

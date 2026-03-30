@@ -4,6 +4,7 @@ import {
   Button,
   Col,
   Form,
+  Grid,
   Layout,
   Modal,
   message,
@@ -26,38 +27,65 @@ import VersionTable from './components/version-table';
 import { ManageProvider, useManageContext } from './hooks/useManageContext';
 
 const ManageDashBoard = () => {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const { packages, unusedPackages, packagesLoading } = useManageContext();
+  const packageTabItems = [
+    {
+      key: 'all',
+      label: 'All',
+      children: <PackageList dataSource={packages} loading={packagesLoading} />,
+    },
+    {
+      key: 'unused',
+      label: 'Unused',
+      children: (
+        <PackageList dataSource={unusedPackages} loading={packagesLoading} />
+      ),
+    },
+  ];
+
+  if (isMobile) {
+    return (
+      <Tabs
+        defaultActiveKey="versions"
+        size="small"
+        items={[
+          {
+            key: 'versions',
+            label: 'OTA Versions',
+            children: <VersionTable />,
+          },
+          {
+            key: 'packages',
+            label: 'Native Packages',
+            children: (
+              <div className="rounded-lg bg-white px-4 pb-4 pt-1">
+                <Tabs
+                  defaultActiveKey="all"
+                  size="small"
+                  items={packageTabItems}
+                />
+              </div>
+            ),
+          },
+        ]}
+      />
+    );
+  }
+
   return (
     <Layout>
       <Layout.Sider
         theme="light"
-        className="p-4 pt-0 mr-4 h-full rounded-lg"
+        className="p-4 pt-0 h-full rounded-lg"
         width={240}
+        style={{ marginRight: 16, maxWidth: '100%' }}
       >
         <div className="py-4">Native Packages</div>
-        <Tabs
-          items={[
-            {
-              key: 'all',
-              label: 'All',
-              children: (
-                <PackageList dataSource={packages} loading={packagesLoading} />
-              ),
-            },
-            {
-              key: 'unused',
-              label: 'Unused',
-              children: (
-                <PackageList
-                  dataSource={unusedPackages}
-                  loading={packagesLoading}
-                />
-              ),
-            },
-          ]}
-        />
+        <Tabs size="middle" items={packageTabItems} />
       </Layout.Sider>
-      <Layout.Content className="!p-0">
+      <Layout.Content className="!p-0" style={{ minWidth: 0 }}>
         <VersionTable />
       </Layout.Content>
     </Layout>
@@ -66,6 +94,7 @@ const ManageDashBoard = () => {
 
 export const Manage = () => {
   const [modal, contextHolder] = Modal.useModal();
+  const screens = Grid.useBreakpoint();
   const params = useParams<{ id?: string }>();
   const id = Number(params.id!);
   const { app } = useApp(id);
@@ -78,8 +107,8 @@ export const Manage = () => {
 
   return (
     <Form layout="vertical" form={form} initialValues={app}>
-      <Row className="mb-4">
-        <Col flex={1}>
+      <Row className="mb-4 flex-col gap-3 md:flex-row md:items-center">
+        <Col flex={1} className="min-w-0">
           <Breadcrumb
             items={[
               {
@@ -87,27 +116,34 @@ export const Manage = () => {
               },
               {
                 title: (
-                  <>
+                  <span className="inline-flex max-w-full items-center gap-1">
                     <PlatformIcon platform={app?.platform} className="mr-1" />
-                    {app?.name}
+                    <span className="max-w-[160px] truncate md:max-w-none">
+                      {app?.name}
+                    </span>
                     {app?.status === 'paused' && (
                       <Tag className="ml-2">Paused</Tag>
                     )}
-                  </>
+                  </span>
                 ),
               },
             ]}
           />
         </Col>
-        <Space.Compact>
+        <Space.Compact
+          direction={!screens.md ? 'vertical' : 'horizontal'}
+          className="w-full md:w-auto"
+        >
           <Button
             type="primary"
             icon={<SettingFilled />}
+            className="w-full md:w-auto"
             onClick={() => {
               modal.confirm({
                 icon: null,
                 closable: true,
                 maskClosable: true,
+                width: !screens.md ? 'calc(100vw - 32px)' : 520,
                 content: <SettingModal />,
                 async onOk() {
                   try {

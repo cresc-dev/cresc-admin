@@ -119,8 +119,8 @@ const useSelectedKeys = () => {
 
 export default function Sider() {
   const { user } = useUserInfo();
-  if (!user) return null;
   const selectedKeys = useSelectedKeys();
+  if (!user) return null;
   return (
     <Layout.Sider
       className="[&>.ant-layout-sider-children]:flex [&>.ant-layout-sider-children]:flex-col!"
@@ -245,7 +245,9 @@ const SiderMenu = ({ selectedKeys, onNavigate }: SiderMenuProps) => {
               key: 'realtime-metrics',
               icon: <LineChartOutlined />,
               label: (
-                <Link to={rootRouterPath.realtimeMetrics}>Real-time Metrics</Link>
+                <Link to={rootRouterPath.realtimeMetrics}>
+                  Real-time Metrics
+                </Link>
               ),
             },
             {
@@ -306,25 +308,33 @@ const SiderMenu = ({ selectedKeys, onNavigate }: SiderMenuProps) => {
                       {
                         key: 'admin-config',
                         label: (
-                          <Link to={rootRouterPath.adminConfig}>Dynamic Config</Link>
+                          <Link to={rootRouterPath.adminConfig}>
+                            Dynamic Config
+                          </Link>
                         ),
                       },
                       {
                         key: 'admin-users',
                         label: (
-                          <Link to={rootRouterPath.adminUsers}>User Management</Link>
+                          <Link to={rootRouterPath.adminUsers}>
+                            User Management
+                          </Link>
                         ),
                       },
                       {
                         key: 'admin-apps',
                         label: (
-                          <Link to={rootRouterPath.adminApps}>App Management</Link>
+                          <Link to={rootRouterPath.adminApps}>
+                            App Management
+                          </Link>
                         ),
                       },
                       {
                         key: 'admin-metrics',
                         label: (
-                          <Link to={rootRouterPath.adminMetrics}>Global Metrics</Link>
+                          <Link to={rootRouterPath.adminMetrics}>
+                            Global Metrics
+                          </Link>
                         ),
                       },
                     ],

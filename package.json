@@ -6,7 +6,7 @@
     "dev:local": "PUBLIC_API=http://localhost:9000 rsbuild dev",
     "build": "NODE_ENV=production rsbuild build",
     "preview": "rsbuild preview",
-    "lint": "tsc --noEmit & biome check --write ."
+    "lint": "tsc --noEmit && biome check --write ."
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",

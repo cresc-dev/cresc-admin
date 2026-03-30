@@ -1,34 +1,19 @@
-import { CreditCardOutlined } from "@ant-design/icons";
-import type { MenuProps } from "antd";
-import { Button, Descriptions, Dropdown, message, Popconfirm, Space, Spin } from "antd";
-import { type ReactNode, useState } from "react";
-import { api } from "@/services/api";
-import { useUserInfo } from "@/utils/hooks";
-import { PRICING_LINK } from "../constants/links";
-import { quotas } from "../constants/quotas";
-
-const PurchaseButton = ({
-  tier,
-  children,
-}: {
-  tier: string;
-  children: ReactNode;
-}) => {
-  const [loading, setLoading] = useState(false);
-  return (
-    <Button
-      className="mt-2 md:mt-0 md:ml-6"
-      icon={<CreditCardOutlined />}
-      onClick={async () => {
-        setLoading(true);
-        await purchase(tier);
-      }}
-      loading={loading}
-    >
-      {loading ? "Preparing payment..." : children}
-    </Button>
-  );
-};
+import { CreditCardOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import {
+  Button,
+  Descriptions,
+  Dropdown,
+  Grid,
+  message,
+  Popconfirm,
+  Spin,
+} from 'antd';
+import { useState } from 'react';
+import { api } from '@/services/api';
+import { useUserInfo } from '@/utils/hooks';
+import { PRICING_LINK } from '../constants/links';
+import { quotas } from '../constants/quotas';
 
 const CancelResumeButton = ({
   cancelAtPeriodEnd,
@@ -45,10 +30,10 @@ const CancelResumeButton = ({
         onConfirm={async () => {
           setLoading(true);
           try {
-          await api.resumeSubscription();
-            message.success("Subscription resumed.");
+            await api.resumeSubscription();
+            message.success('Subscription resumed.');
           } catch {
-            message.error("Failed to resume subscription.");
+            message.error('Failed to resume subscription.');
           } finally {
             setLoading(false);
           }
@@ -56,7 +41,11 @@ const CancelResumeButton = ({
         okText="Resume"
         cancelText="No"
       >
-        <Button type="link" loading={loading} className="mt-2 md:mt-0">
+        <Button
+          type="link"
+          loading={loading}
+          className="mt-2 self-start px-0 md:mt-0"
+        >
           Resume subscription
         </Button>
       </Popconfirm>
@@ -72,10 +61,10 @@ const CancelResumeButton = ({
         try {
           await api.cancelSubscription();
           message.success(
-            "Your subscription will end at the end of the current billing period.",
+            'Your subscription will end at the end of the current billing period.',
           );
         } catch {
-          message.error("Failed to cancel subscription.");
+          message.error('Failed to cancel subscription.');
         } finally {
           setLoading(false);
         }
@@ -84,7 +73,12 @@ const CancelResumeButton = ({
       okButtonProps={{ danger: true }}
       cancelText="No"
     >
-      <Button type="link" danger loading={loading} className="mt-2 md:mt-0">
+      <Button
+        type="link"
+        danger
+        loading={loading}
+        className="mt-2 self-start px-0 md:mt-0"
+      >
         Cancel subscription
       </Button>
     </Popconfirm>
@@ -101,16 +95,16 @@ const UpgradeDropdown = ({
   // Get all upgradeable tiers
   const getUpgradeOptions = () => {
     const allTiers = [
-      { key: "standard", title: "Upgrade to Standard", tier: "standard" },
-      { key: "premium", title: "Upgrade to Premium", tier: "premium" },
-      { key: "pro", title: "Upgrade to Pro", tier: "pro" },
-      { key: "max", title: "Upgrade to Max", tier: "max" },
-      { key: "ultra", title: "Upgrade to Ultra", tier: "ultra" },
+      { key: 'standard', title: 'Upgrade to Standard', tier: 'standard' },
+      { key: 'premium', title: 'Upgrade to Premium', tier: 'premium' },
+      { key: 'pro', title: 'Upgrade to Pro', tier: 'pro' },
+      { key: 'max', title: 'Upgrade to Max', tier: 'max' },
+      { key: 'ultra', title: 'Upgrade to Ultra', tier: 'ultra' },
     ];
 
     return allTiers.filter(
       (option) =>
-        currentQuota.pv < quotas[option.tier as keyof typeof quotas].pv
+        currentQuota.pv < quotas[option.tier as keyof typeof quotas].pv,
     );
   };
 
@@ -120,12 +114,12 @@ const UpgradeDropdown = ({
     return null; // No upgrade options available
   }
 
-  const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
+  const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
     setLoading(true);
     await purchase(key);
   };
 
-  const menuItems: MenuProps["items"] = upgradeOptions.map((option) => ({
+  const menuItems: MenuProps['items'] = upgradeOptions.map((option) => ({
     key: option.tier,
     label: option.title,
     icon: <CreditCardOutlined />,
@@ -141,7 +135,7 @@ const UpgradeDropdown = ({
 
   return (
     <Dropdown.Button
-      className="mt-2 md:mt-0 md:ml-6"
+      className="mt-2 w-full sm:w-auto md:mt-0 md:ml-6"
       icon={<CreditCardOutlined />}
       loading={loading}
       menu={{
@@ -150,13 +144,15 @@ const UpgradeDropdown = ({
       }}
       onClick={handleMainButtonClick}
     >
-      {loading ? "Preparing payment..." : upgradeOptions[0]?.title || "Upgrade"}
+      {loading ? 'Preparing payment...' : upgradeOptions[0]?.title || 'Upgrade'}
     </Dropdown.Button>
   );
 };
 
 function UserPanel() {
   const { user, displayExpireDay, displayRemainingDays } = useUserInfo();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   if (!user) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -167,32 +163,69 @@ function UserPanel() {
   const { name, email, tier, quota, cancelAtPeriodEnd } = user;
   const defaultQuota = quotas[tier as keyof typeof quotas];
   const currentQuota = quota || defaultQuota;
+  const quotaDetails = [
+    { key: 'app', item: 'Apps', value: `${currentQuota.app}` },
+    {
+      key: 'package',
+      item: 'Native packages / app',
+      value: `${currentQuota.package}`,
+    },
+    {
+      key: 'packageSize',
+      item: 'Native package size',
+      value: currentQuota.packageSize,
+    },
+    {
+      key: 'bundle',
+      item: 'OTA bundles / app',
+      value: `${currentQuota.bundle}`,
+    },
+    {
+      key: 'bundleSize',
+      item: 'OTA bundle size',
+      value: currentQuota.bundleSize,
+    },
+    {
+      key: 'pv',
+      item: 'Daily checks',
+      value: currentQuota.pv.toLocaleString(),
+    },
+  ];
 
   return (
     <div className="body">
       <Descriptions
         title="Account Information"
         column={1}
-        styles={{ label: { width: 134 } }}
+        layout={isMobile ? 'vertical' : 'horizontal'}
+        size={isMobile ? 'small' : undefined}
+        styles={{
+          content: { wordBreak: 'break-word' },
+          label: isMobile ? undefined : { width: 134 },
+        }}
         bordered
       >
         <Descriptions.Item label="Username">{name}</Descriptions.Item>
-        <Descriptions.Item label="Email">{email}</Descriptions.Item>
+        <Descriptions.Item label="Email">
+          <span className="break-all">{email}</span>
+        </Descriptions.Item>
         <Descriptions.Item label="Subscription">
-          <Space wrap>
-            {currentQuota.title}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <span>{currentQuota.title}</span>
             {cancelAtPeriodEnd && (
-              <span style={{ color: '#faad14', fontSize: 12 }}>(cancelling)</span>
+              <span style={{ color: '#faad14', fontSize: 12 }}>
+                (cancelling)
+              </span>
             )}
             {!quota && defaultQuota && (
               <UpgradeDropdown currentQuota={defaultQuota} />
             )}
-          </Space>
+          </div>
         </Descriptions.Item>
         <Descriptions.Item label="Next billing date">
-          <Space wrap>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {displayExpireDay ? (
-              <div className="flex flex-col">
+              <div className="flex min-w-0 flex-col">
                 {displayExpireDay}
                 {displayRemainingDays && (
                   <>
@@ -202,16 +235,29 @@ function UserPanel() {
                 )}
               </div>
             ) : (
-              "Not available"
+              'Not available'
             )}
-            {tier !== "free" && (
+            {tier !== 'free' && (
               <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
             )}
-          </Space>
+          </div>
+        </Descriptions.Item>
+        <Descriptions.Item label="Quota details">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {quotaDetails.map(({ key, item, value }) => (
+              <div
+                key={key}
+                className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+              >
+                <div className="text-xs text-gray-500">{item}</div>
+                <div className="mt-1 font-medium">{value}</div>
+              </div>
+            ))}
+          </div>
         </Descriptions.Item>
       </Descriptions>
       <br />
-      <Button href={PRICING_LINK} target="_blank">
+      <Button href={PRICING_LINK} target="_blank" className="w-full md:w-auto">
         View pricing
       </Button>
     </div>

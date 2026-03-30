@@ -61,9 +61,7 @@ export default function SetPassword() {
           ({ getFieldValue }) => ({
             validator(_, value: string) {
               if (getFieldValue('newPwd') !== value) {
-                return Promise.reject(
-                  Error('The passwords do not match'),
-                );
+                return Promise.reject(Error('The passwords do not match'));
               }
               return Promise.resolve();
             },

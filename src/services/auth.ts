@@ -5,6 +5,8 @@ import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { RequestError, setToken } from '@/services/request';
 
+export type OAuthProvider = 'google' | 'github';
+
 let _email = '';
 export const setUserEmail = (email: string) => {
   _email = email;
@@ -12,18 +14,30 @@ export const setUserEmail = (email: string) => {
 
 export const getUserEmail = () => _email;
 
+function getSearchParam(name: string) {
+  return new URLSearchParams(router.state.location.search).get(name);
+}
+
+function resolveLoginFrom(loginFrom?: string | null) {
+  if (!loginFrom || !loginFrom.startsWith('/') || loginFrom.startsWith('//')) {
+    return rootRouterPath.user;
+  }
+  return loginFrom;
+}
+
+export function completeLogin(token: string, loginFrom?: string | null) {
+  setToken(token);
+  message.success('Successfully logged in');
+  router.navigate(resolveLoginFrom(loginFrom));
+}
+
 export async function login(email: string, password: string) {
   _email = email;
   const params = { email, pwd: await md5(password) };
   try {
     const res = await api.login(params);
     if (res?.token) {
-      setToken(res.token);
-      message.success('Successfully logged in');
-      const loginFrom = new URLSearchParams(window.location.search).get(
-        'loginFrom',
-      );
-      router.navigate(loginFrom || rootRouterPath.user);
+      completeLogin(res.token, getSearchParam('loginFrom'));
     }
   } catch (err) {
     if (err instanceof RequestError && err.status === 423) {
@@ -33,6 +47,22 @@ export async function login(email: string, password: string) {
         err instanceof Error ? err.message : 'Failed to log in';
       message.error(errorMessage);
     }
+  }
+}
+
+export async function loginWithOAuth(provider: OAuthProvider) {
+  try {
+    const loginFrom = getSearchParam('loginFrom');
+    const res = await api.getOAuthLoginUrl(provider, loginFrom || undefined);
+    if (!res?.url) {
+      throw Error('Failed to start social login');
+    }
+    window.location.assign(res.url);
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : 'Failed to start social login';
+    message.error(errorMessage);
+    throw err;
   }
 }
 

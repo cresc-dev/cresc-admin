@@ -6,6 +6,17 @@ export const api = {
     request<{ token: string }>('post', '/user/login', params, {
       suppressErrorToast: true,
     }),
+  getOAuthLoginUrl: (provider: 'google' | 'github', loginFrom?: string) =>
+    request<{ url: string }>(
+      'get',
+      `/user/oauth/${provider}/url${
+        loginFrom ? `?loginFrom=${encodeURIComponent(loginFrom)}` : ''
+      }`,
+      undefined,
+      {
+        suppressErrorToast: true,
+      },
+    ),
   activate: (params: { token: string }) =>
     request('post', '/user/activate', params),
   me: () => request<User>('get', '/user/me'),

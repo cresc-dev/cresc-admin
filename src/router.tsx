@@ -12,6 +12,7 @@ export const rootRouterPath = {
   activate: '/activate',
   inactivated: '/inactivated',
   login: '/login',
+  oauthCallback: '/oauth-callback',
   welcome: '/welcome',
   register: '/register',
   auditLogs: '/audit-logs',
@@ -74,6 +75,10 @@ export const router = createHashRouter([
       {
         path: 'login',
         lazy: () => import('./pages/login'),
+      },
+      {
+        path: 'oauth-callback',
+        lazy: () => import('./pages/oauth-callback'),
       },
       {
         path: 'apps',

@@ -41,6 +41,7 @@ const tierLabelMap = new Map(
   tierOptions.map((option) => [option.value, option.label]),
 );
 const defaultPremiumQuotaText = JSON.stringify(quotas.premium, null, 2);
+const expiryShortcutDays = [7, 30, 365] as const;
 
 // JSON Editor wrapper component for quota editing
 const JsonEditorWrapper = ({
@@ -187,6 +188,23 @@ export const Component = () => {
     } catch (error) {
       message.error((error as Error).message);
     }
+  };
+
+  const handleExtendTierExpiry = (
+    days: (typeof expiryShortcutDays)[number],
+  ) => {
+    const currentValue = form.getFieldValue('tierExpiresAt');
+    const currentExpiry = currentValue ? dayjs(currentValue) : null;
+    const baseDate = currentExpiry?.isValid() ? currentExpiry : dayjs();
+
+    form.setFieldValue('tierExpiresAt', baseDate.add(days, 'day'));
+  };
+
+  const handleResetTierExpiry = () => {
+    form.setFieldValue(
+      'tierExpiresAt',
+      editingUser?.tierExpiresAt ? dayjs(editingUser.tierExpiresAt) : null,
+    );
   };
 
   const columns: ColumnsType<AdminUser> = [
@@ -346,12 +364,26 @@ export const Component = () => {
                 ]}
               />
             </Form.Item>
-            <Form.Item
-              name="tierExpiresAt"
-              label="Tier Expires At"
-              className="mb-0!"
-            >
-              <DatePicker showTime className="w-full" />
+            <Form.Item label="Tier Expires At" className="mb-0!">
+              <Space direction="vertical" size="small" className="w-full">
+                <Form.Item name="tierExpiresAt" noStyle>
+                  <DatePicker showTime className="w-full" />
+                </Form.Item>
+                <Space wrap size={[8, 8]}>
+                  {expiryShortcutDays.map((days) => (
+                    <Button
+                      key={days}
+                      size="small"
+                      onClick={() => handleExtendTierExpiry(days)}
+                    >
+                      +{days} days
+                    </Button>
+                  ))}
+                  <Button size="small" onClick={handleResetTierExpiry}>
+                    Reset
+                  </Button>
+                </Space>
+              </Space>
             </Form.Item>
             <Form.Item
               label="Custom Quota (JSON, leave empty for default)"

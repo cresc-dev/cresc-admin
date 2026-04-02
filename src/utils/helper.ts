@@ -1,3 +1,5 @@
+import type { NavigateOptions, SetURLSearchParams } from 'react-router-dom';
+
 export function isPasswordValid(password: string) {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,16}$/.test(password);
 }
@@ -47,4 +49,24 @@ export const testUrls = async (urls?: string[]) => {
     console.log('all ping failed, use first url:', urls[0]);
     return urls[0];
   }
+};
+
+export const patchSearchParams = (
+  setSearchParams: SetURLSearchParams,
+  patch: Record<string, string | null | undefined>,
+  navigateOptions: NavigateOptions = { replace: true },
+) => {
+  setSearchParams((prev) => {
+    const next = new URLSearchParams(prev);
+
+    for (const [key, value] of Object.entries(patch)) {
+      if (value == null) {
+        next.delete(key);
+      } else {
+        next.set(key, value);
+      }
+    }
+
+    return next;
+  }, navigateOptions);
 };

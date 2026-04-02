@@ -135,7 +135,7 @@ const UpgradeDropdown = ({
 
   return (
     <Dropdown.Button
-      className="mt-2 w-full sm:w-auto md:mt-0 md:ml-6"
+      className="shrink-0"
       icon={<CreditCardOutlined />}
       loading={loading}
       menu={{
@@ -210,13 +210,15 @@ function UserPanel() {
           <span className="break-all">{email}</span>
         </Descriptions.Item>
         <Descriptions.Item label="Subscription">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <span>{currentQuota.title}</span>
-            {cancelAtPeriodEnd && (
-              <span style={{ color: '#faad14', fontSize: 12 }}>
-                (cancelling)
-              </span>
-            )}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="whitespace-nowrap">{currentQuota.title}</span>
+              {cancelAtPeriodEnd && (
+                <span className="whitespace-nowrap" style={{ color: '#faad14', fontSize: 12 }}>
+                  (cancelling)
+                </span>
+              )}
+            </div>
             {!quota && defaultQuota && (
               <UpgradeDropdown currentQuota={defaultQuota} />
             )}

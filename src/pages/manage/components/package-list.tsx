@@ -21,7 +21,6 @@ import {
 import { Link } from 'react-router-dom';
 import { rootRouterPath } from '@/router';
 import { api } from '@/services/api';
-import { usePackageTimestampWarnings } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import { Commit } from './commit';
 import { DepsTable } from './deps-table';
@@ -33,8 +32,7 @@ const PackageList = ({
   dataSource?: Package[];
   loading?: boolean;
 }) => {
-  const { appId } = useManageContext();
-  const { app, packageTimestampWarnings } = usePackageTimestampWarnings(appId);
+  const { app, packageTimestampWarnings } = useManageContext();
   const realtimeMetricsPath = app?.appKey
     ? `${rootRouterPath.realtimeMetrics}?${new URLSearchParams({
         appKey: app.appKey,
@@ -130,7 +128,9 @@ const TimestampWarning = ({
           packages cannot receive hot updates.
         </div>
         <div className="mt-1">
-          <Link to={realtimeMetricsPath}>Click here to view real-time data</Link>
+          <Link to={realtimeMetricsPath}>
+            Click here to view real-time data
+          </Link>
         </div>
       </div>
     }

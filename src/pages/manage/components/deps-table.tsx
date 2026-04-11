@@ -2,7 +2,7 @@ import { JavaScriptOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Popover } from 'antd';
 import { useState } from 'react';
 import { Mode } from 'vanilla-jsoneditor';
-import { useVersions } from '@/utils/hooks';
+import { useAllVersions } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import { DepsDiff } from './deps-diff';
 import JsonEditor from './json-editor';
@@ -14,7 +14,11 @@ export const DepsTable = ({
   name?: string;
 }) => {
   const { packages, appId } = useManageContext();
-  const { versions } = useVersions({ appId, limit: 1000 });
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const { versions, isLoading: versionsLoading } = useAllVersions({
+    appId,
+    enabled: popoverOpen,
+  });
   const [diffs, setDiffs] = useState<{
     oldDeps?: Record<string, string>;
     newDeps?: Record<string, string>;
@@ -24,6 +28,7 @@ export const DepsTable = ({
     <Popover
       className="ant-typography-edit"
       afterOpenChange={(visible) => {
+        setPopoverOpen(visible);
         if (!visible) {
           setDiffs(null);
         }
@@ -74,15 +79,26 @@ export const DepsTable = ({
                                 key: 'version',
                                 type: 'group',
                                 label: 'OTA Versions',
-                                children: versions
-                                  .filter((v) => !!v.deps)
-                                  .map((v) => ({
-                                    key: `v_${v.id}`,
-                                    label: v.name,
-                                  })),
+                                children: versionsLoading
+                                  ? [
+                                      {
+                                        key: 'version_loading',
+                                        label: 'Loading...',
+                                        disabled: true,
+                                      },
+                                    ]
+                                  : versions
+                                      .filter((v) => !!v.deps)
+                                      .map((v) => ({
+                                        key: `v_${v.id}`,
+                                        label: v.name,
+                                      })),
                               },
                             ],
                             onClick: ({ key }) => {
+                              if (!key.includes('_')) {
+                                return;
+                              }
                               const [type, id] = key.split('_');
                               if (type === 'p') {
                                 const pkg = packages.find((p) => p.id === +id);

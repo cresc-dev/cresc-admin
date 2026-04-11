@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/services/api';
 import { getToken } from '@/services/request';
+import { versionKeys } from '@/utils/query-keys';
 
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
@@ -16,6 +17,15 @@ const buildPackageMetricValue = ({
   name,
   buildTime,
 }: Pick<Package, 'name' | 'buildTime'>) => `${name}_${buildTime || 'unknown'}`;
+
+const isIgnoredTimestamp = (timestamp: string) => {
+  const normalizedTimestamp = timestamp.trim();
+  if (normalizedTimestamp === 'unknown') {
+    return true;
+  }
+
+  return normalizedTimestamp !== '' && Number(normalizedTimestamp) === 0;
+};
 
 const getPackageTimestampWarnings = ({
   dict,
@@ -60,6 +70,9 @@ const getPackageTimestampWarnings = ({
     const timestamp = metricValue.startsWith(`${matchedPackage.pkg.name}_`)
       ? metricValue.slice(matchedPackage.pkg.name.length + 1) || 'unknown'
       : metricValue;
+    if (isIgnoredTimestamp(timestamp)) {
+      continue;
+    }
     const currentWarningTimestamps =
       warningTimestamps.get(matchedPackage.pkg.id) ?? new Set<string>();
     currentWarningTimestamps.add(timestamp);
@@ -204,28 +217,38 @@ export const useVersions = ({
   offset?: number;
   limit?: number;
 }) => {
-  // Fetch all versions (up to 1000) from backend and cache them
   const { data, isLoading } = useQuery({
-    queryKey: ['versions', appId],
+    queryKey: versionKeys.page(appId, offset, limit),
     staleTime: 3000,
+    placeholderData: keepPreviousData,
+    queryFn: () => api.getVersions({ appId, offset, limit }),
+  });
+
+  return {
+    versions: data?.data ?? [],
+    count: data?.count ?? 0,
+    isLoading,
+  };
+};
+
+export const useAllVersions = ({
+  appId,
+  enabled = true,
+}: {
+  appId: number;
+  enabled?: boolean;
+}) => {
+  const { data, isLoading } = useQuery({
+    queryKey: versionKeys.all(appId),
+    staleTime: 3000,
+    enabled,
     queryFn: () => api.getVersions({ appId, offset: 0, limit: 1000 }),
   });
 
-  // Implement frontend pagination
-  const allVersions = data?.data ?? [];
-  const totalCount = data?.count ?? 0;
-
-  // Calculate pagination
-  const startIndex = offset;
-  const endIndex = offset + limit;
-  const paginatedVersions = allVersions.slice(startIndex, endIndex);
-
   return {
-    versions: paginatedVersions,
-    count: totalCount,
+    versions: data?.data ?? [],
+    count: data?.count ?? 0,
     isLoading,
-    // Also return all versions for components that might need them
-    allVersions,
   };
 };
 
@@ -238,9 +261,15 @@ export const useBinding = (appId: number) => {
   return { bindings, isLoading };
 };
 
-export const usePackageTimestampWarnings = (appId: number) => {
-  const { app } = useApp(appId);
-  const { packages } = usePackages(appId);
+export const usePackageTimestampWarnings = ({
+  appId,
+  app,
+  packages,
+}: {
+  appId: number;
+  app?: App;
+  packages: Package[];
+}) => {
   const [metricsRange] = useState(() => ({
     start: dayjs().subtract(7, 'day').toISOString(),
     end: dayjs().toISOString(),
@@ -261,9 +290,7 @@ export const usePackageTimestampWarnings = (appId: number) => {
         end: metricsRange.end,
       }),
     enabled:
-      !!app?.appKey &&
-      packages.length > 0 &&
-      app.ignoreBuildTime !== 'enabled',
+      !!app?.appKey && packages.length > 0 && app.ignoreBuildTime !== 'enabled',
     staleTime: 1000 * 60 * 5,
   });
 

@@ -1,5 +1,5 @@
 import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Grid, Table, Typography } from 'antd';
+import { Button, DatePicker, Grid, message, Table, Typography } from 'antd';
 import type { ColumnType } from 'antd/lib/table';
 import dayjs, { type Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -7,7 +7,6 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useMemo, useState } from 'react';
 import { UAParser } from 'ua-parser-js';
-import * as XLSX from 'xlsx';
 import { useAuditLogs } from '@/utils/hooks';
 
 const { RangePicker } = DatePicker;
@@ -34,6 +33,16 @@ export const getUA = (userAgent: string) => {
 };
 
 const { Text } = Typography;
+
+const getApiTokenLabel = (apiTokens?: AuditLog['apiTokens']) => {
+  if (!apiTokens?.tokenSuffix) {
+    return undefined;
+  }
+
+  return apiTokens.name
+    ? `${apiTokens.name}(****${apiTokens.tokenSuffix})`
+    : `****${apiTokens.tokenSuffix}`;
+};
 
 // Replace numbers in path with {id} and remove trailing slashes
 const normalizePath = (path: string): string => {
@@ -179,18 +188,23 @@ const columns: ColumnType<AuditLog>[] = [
     title: 'Device Info',
     dataIndex: 'userAgent',
     responsive: ['lg'],
-    width: 250,
+    width: 200,
     ellipsis: {
       showTitle: false,
     },
     render: (userAgent: string | undefined, record: AuditLog) => {
-      const hasInfo = userAgent || record.ip;
+      const apiToken = getApiTokenLabel(record.apiTokens);
+      const hasInfo = userAgent || record.ip || apiToken;
       if (!hasInfo) {
         return <Text type="secondary">-</Text>;
       }
 
+      const title = [userAgent, record.ip && `IP: ${record.ip}`, apiToken]
+        .filter(Boolean)
+        .join('\n');
+
       return (
-        <div title={userAgent || record.ip}>
+        <div title={title}>
           {userAgent && <div>{getUA(userAgent)}</div>}
           {record.ip && (
             <div className="mt-1">
@@ -199,21 +213,16 @@ const columns: ColumnType<AuditLog>[] = [
               </Text>
             </div>
           )}
+          {apiToken && (
+            <div className="mt-1">
+              <Text type="secondary" className="font-mono text-xs">
+                API Key: {apiToken}
+              </Text>
+            </div>
+          )}
         </div>
       );
     },
-  },
-  {
-    title: 'API Key',
-    dataIndex: ['apiTokens', 'tokenSuffix'],
-    responsive: ['lg'],
-    width: 120,
-    render: (tokenSuffix?: string) =>
-      tokenSuffix ? (
-        <Text className="font-mono text-xs">****{tokenSuffix}</Text>
-      ) : (
-        <Text type="secondary">-</Text>
-      ),
   },
 ];
 
@@ -319,70 +328,76 @@ export const AuditLogs = () => {
   };
 
   // Export to Excel
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     if (filteredAuditLogs.length === 0) {
       return;
     }
 
-    // Format data
-    const excelData = filteredAuditLogs.map((log) => {
-      const date = dayjs(log.createdAt);
-      const actionLabel = getActionLabel(log.method, log.path);
+    try {
+      const XLSX = await import('xlsx');
 
-      // Parse UA information
-      let browserInfo = '-';
-      let osInfo = '-';
-      if (log.userAgent) {
-        // Handle special CLI useragent format
-        if (log.userAgent.startsWith('react-native-update-cli')) {
-          const version = log.userAgent.split('/')[1] || '';
-          browserInfo = `cli ${version}`.trim();
-          osInfo = '-';
-        } else {
-          const { browser, os } = UAParser(log.userAgent);
-          browserInfo =
-            `${browser.name || '-'} ${browser.version || ''}`.trim();
-          osInfo = `${os.name || '-'} ${os.version || ''}`.trim();
+      // Format data
+      const excelData = filteredAuditLogs.map((log) => {
+        const date = dayjs(log.createdAt);
+        const actionLabel = getActionLabel(log.method, log.path);
+
+        // Parse UA information
+        let browserInfo = '-';
+        let osInfo = '-';
+        if (log.userAgent) {
+          // Handle special CLI useragent format
+          if (log.userAgent.startsWith('react-native-update-cli')) {
+            const version = log.userAgent.split('/')[1] || '';
+            browserInfo = `cli ${version}`.trim();
+            osInfo = '-';
+          } else {
+            const { browser, os } = UAParser(log.userAgent);
+            browserInfo =
+              `${browser.name || '-'} ${browser.version || ''}`.trim();
+            osInfo = `${os.name || '-'} ${os.version || ''}`.trim();
+          }
         }
-      }
 
-      return {
-        Time: date.format('YYYY-MM-DD HH:mm:ss'),
-        Action: actionLabel,
-        'Status Code': log.statusCode,
-        'Submitted Data': log.data ? JSON.stringify(log.data) : '-',
-        Browser: browserInfo,
-        'Operating System': osInfo,
-        'IP Address': log.ip || '-',
-        'API Key': `****${log.apiTokens?.tokenSuffix || '-'}`,
-      };
-    });
+        return {
+          Time: date.format('YYYY-MM-DD HH:mm:ss'),
+          Action: actionLabel,
+          'Status Code': log.statusCode,
+          'Submitted Data': log.data ? JSON.stringify(log.data) : '-',
+          Browser: browserInfo,
+          'Operating System': osInfo,
+          'IP Address': log.ip || '-',
+          'API Key': `****${log.apiTokens?.tokenSuffix || '-'}`,
+        };
+      });
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
 
-    // Set column widths
-    const colWidths = [
-      { wch: 20 }, // Time
-      { wch: 15 }, // Action
-      { wch: 10 }, // Status Code
-      { wch: 40 }, // Submitted Data
-      { wch: 20 }, // Browser
-      { wch: 20 }, // Operating System
-      { wch: 15 }, // IP Address
-      { wch: 15 }, // API Key
-    ];
-    ws['!cols'] = colWidths;
+      // Set column widths
+      const colWidths = [
+        { wch: 20 }, // Time
+        { wch: 15 }, // Action
+        { wch: 10 }, // Status Code
+        { wch: 40 }, // Submitted Data
+        { wch: 20 }, // Browser
+        { wch: 20 }, // Operating System
+        { wch: 15 }, // IP Address
+        { wch: 15 }, // API Key
+      ];
+      ws['!cols'] = colWidths;
 
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, 'Audit Logs');
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Audit Logs');
 
-    // Generate filename
-    const fileName = `Audit_Logs_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`;
+      // Generate filename
+      const fileName = `Audit_Logs_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`;
 
-    // Export file
-    XLSX.writeFile(wb, fileName);
+      // Export file
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      message.error(`Export failed: ${(error as Error).message}`);
+    }
   };
 
   return (

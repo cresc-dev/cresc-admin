@@ -2,14 +2,11 @@ import { DeleteFilled } from '@ant-design/icons';
 import { Button, Form, Input, Modal, Switch, Typography } from 'antd';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
-import { useUserInfo } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 
 const SettingModal = () => {
-  const { user } = useUserInfo();
   const { appId } = useManageContext();
   const appKey = Form.useWatch('appKey') as string;
-  const ignoreBuildTime = Form.useWatch('ignoreBuildTime') as string;
 
   return (
     <>
@@ -43,22 +40,6 @@ const SettingModal = () => {
         })}
       >
         <Switch checkedChildren="Enabled" unCheckedChildren="Paused" />
-      </Form.Item>
-      <Form.Item
-        layout="vertical"
-        label="Ignore Build Time Check (Premium and above)"
-        name="ignoreBuildTime"
-        normalize={(value) => (value ? 'enabled' : 'disabled')}
-        getValueProps={(value) => ({ value: value === 'enabled' })}
-      >
-        <Switch
-          disabled={
-            (user?.tier === 'free' || user?.tier === 'standard') &&
-            ignoreBuildTime !== 'enabled'
-          }
-          checkedChildren="Enabled"
-          unCheckedChildren="Disabled"
-        />
       </Form.Item>
       <Form.Item label="Delete App" layout="vertical">
         <Button

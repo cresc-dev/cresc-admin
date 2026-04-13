@@ -289,21 +289,16 @@ export const usePackageTimestampWarnings = ({
         start: metricsRange.start,
         end: metricsRange.end,
       }),
-    enabled:
-      !!app?.appKey && packages.length > 0 && app.ignoreBuildTime !== 'enabled',
+    enabled: !!app?.appKey && packages.length > 0,
     staleTime: 1000 * 60 * 5,
   });
 
   const packageTimestampWarnings = useMemo(() => {
-    if (app?.ignoreBuildTime === 'enabled') {
-      return new Map<number, string[]>();
-    }
-
     return getPackageTimestampWarnings({
       dict: data?.dict,
       packages,
     });
-  }, [app?.ignoreBuildTime, data?.dict, packages]);
+  }, [data?.dict, packages]);
 
   return {
     app,

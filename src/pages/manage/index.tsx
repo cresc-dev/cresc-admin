@@ -153,9 +153,6 @@ export const Manage = () => {
                       status: form.getFieldValue('status') as
                         | 'normal'
                         | 'paused',
-                      ignoreBuildTime: form.getFieldValue('ignoreBuildTime') as
-                        | 'enabled'
-                        | 'disabled',
                     });
                   } catch (e) {
                     message.error((e as Error).message);

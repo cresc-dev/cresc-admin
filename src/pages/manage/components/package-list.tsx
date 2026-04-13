@@ -124,8 +124,11 @@ const TimestampWarning = ({
           ))}
         </div>
         <div className="mt-2">
-          Enable &quot;Ignore Build Time&quot; in App Settings, otherwise these
-          packages cannot receive hot updates.
+          Updates can still be delivered. A mismatch means the same native
+          package version is running from multiple native builds, so clients may
+          start from different embedded bundles. That lowers diff reuse and can
+          force larger full-bundle downloads or extra diff generation,
+          increasing latency and bandwidth.
         </div>
         <div className="mt-1">
           <Link to={realtimeMetricsPath}>

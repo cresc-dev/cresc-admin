@@ -64,7 +64,6 @@ export const Component = () => {
       userId: record.userId,
       downloadUrl: record.downloadUrl || '',
       status: record.status || '',
-      ignoreBuildTime: record.ignoreBuildTime,
     });
     setIsModalOpen(true);
   };
@@ -81,7 +80,6 @@ export const Component = () => {
         userId: values.userId || null,
         downloadUrl: values.downloadUrl || null,
         status: values.status || null,
-        ignoreBuildTime: values.ignoreBuildTime || null,
       };
 
       updateMutation.mutate({ id: editingApp.id, data: updateData });
@@ -157,18 +155,6 @@ export const Component = () => {
       responsive: ['md'],
       width: 80,
       render: (status: string | null) => status || '-',
-    },
-    {
-      title: 'Ignore Build Time',
-      dataIndex: 'ignoreBuildTime',
-      key: 'ignoreBuildTime',
-      responsive: ['lg'],
-      width: 120,
-      render: (v: string | null) => (
-        <span className={v === 'enabled' ? 'text-green-600' : ''}>
-          {v === 'enabled' ? 'Yes' : v === 'disabled' ? 'No' : '-'}
-        </span>
-      ),
     },
     {
       title: 'Created At',
@@ -281,19 +267,6 @@ export const Component = () => {
             </Form.Item>
             <Form.Item name="status" label="Status" className="mb-0!">
               <Input placeholder="Custom status" />
-            </Form.Item>
-            <Form.Item
-              name="ignoreBuildTime"
-              label="Ignore Build Time"
-              className="mb-0!"
-            >
-              <Select
-                allowClear
-                options={[
-                  { value: 'enabled', label: 'Enabled' },
-                  { value: 'disabled', label: 'Disabled' },
-                ]}
-              />
             </Form.Item>
           </Space>
         </Form>

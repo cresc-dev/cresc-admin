@@ -11,7 +11,7 @@ import type { MenuProps } from 'antd';
 import { Button, Dropdown, Grid, Layout, Menu, message } from 'antd';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { DOCUMENTATION_LINK } from '@/constants/links';
 import { logout } from '@/services/auth';
 import { useUserInfo } from '@/utils/hooks';
@@ -21,8 +21,10 @@ import Sider, { SiderDrawer } from './sider';
 
 const MainLayout = () => {
   const { user } = useUserInfo();
+  const location = useLocation();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
+  const isLoginPage = location.pathname === '/login';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -84,9 +86,14 @@ const MainLayout = () => {
           onClose={() => setMobileNavOpen(false)}
         />
       )}
-      <Layout>
+      <Layout className={isLoginPage ? 'login-layout' : undefined}>
         <Layout.Header
-          style={{ ...style.header, paddingInline: isMobile ? 12 : 24 }}
+          className={isLoginPage ? 'login-layout-header' : undefined}
+          style={{
+            ...style.header,
+            ...(isLoginPage ? style.loginHeader : null),
+            paddingInline: isMobile ? 12 : 24,
+          }}
         >
           <div className="flex w-full items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -118,7 +125,11 @@ const MainLayout = () => {
             </div>
           </div>
         </Layout.Header>
-        <Layout.Content id="main-body" style={style.body}>
+        <Layout.Content
+          id="main-body"
+          className={isLoginPage ? 'login-layout-body' : undefined}
+          style={style.body}
+        >
           <div className="h-full">
             <Outlet />
           </div>
@@ -154,6 +165,10 @@ const style: Style = {
     lineHeight: '46px',
     boxShadow: '2px 1px 4px rgba(0, 21, 41, 0.08)',
     zIndex: 1,
+  },
+  loginHeader: {
+    background: 'transparent',
+    boxShadow: 'none',
   },
   body: {
     overflow: 'auto',

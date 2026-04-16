@@ -1,12 +1,15 @@
-import { GithubOutlined, GoogleOutlined } from '@ant-design/icons';
-import { Button, Divider, Form, Input, Row } from 'antd';
+import { GithubOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { Button, Divider, Form, Input } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { login, loginWithOAuth, type OAuthProvider } from '@/services/auth';
-import { ReactComponent as Logo } from '../assets/logo.svg';
+import { ReactComponent as Logo } from '../assets/logo-h.svg';
+import './login.css';
 
-let email: string;
-let password: string;
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -20,104 +23,179 @@ export const Login = () => {
       await loginWithOAuth(provider);
     } catch {
       // The auth service already shows the user-facing error.
-    } finally {
       setOauthProvider(null);
     }
   }
 
+  async function submit(values: LoginFormValues) {
+    setLoading(true);
+    try {
+      await login(values.email.trim(), values.password);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div style={style.body}>
-      <form
-        style={style.form}
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setLoading(true);
-          await login(email, password);
-          setLoading(false);
-        }}
-      >
-        <div style={style.logo}>
-          <Logo className="mx-auto h-16 w-auto" />
-          <div style={style.slogan}>
-            Blazing-fast OTA updates for React Native
+    <main className="login-page">
+      <div className="login-shell">
+        <section className="login-story" aria-label="Cresc release operations">
+          <Logo className="login-logo" />
+          <div className="login-story-copy">
+            <p className="login-eyebrow">Release control plane</p>
+            <h1>Ship React Native updates with fewer moving parts.</h1>
+            <p>
+              Watch rollout health, package drift, and api access from one
+              workspace built for fast release cycles.
+            </p>
           </div>
-        </div>
-        <Form.Item>
-          <Input
-            placeholder="Email"
-            size="large"
-            type="email"
-            autoComplete=""
-            onChange={({ target }) => (email = target.value)}
-            required
-          />
-        </Form.Item>
-        <Form.Item>
-          <Input
-            type="password"
-            placeholder="Password"
-            size="large"
-            autoComplete=""
-            onChange={({ target }) => (password = target.value)}
-            required
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="large"
-            loading={loading}
-            disabled={Boolean(oauthProvider)}
-            block
+        </section>
+
+        <section className="login-card" aria-labelledby="login-title">
+          <div className="login-card-header">
+            <p className="login-eyebrow">Secure sign in</p>
+            <h2 id="login-title">Welcome back</h2>
+            <p>Use the same identity your team already trusts.</p>
+          </div>
+
+          <div className="login-provider-stack">
+            <button
+              type="button"
+              className="oauth-material-button oauth-material-button-google"
+              disabled={
+                loading ||
+                (oauthProvider !== null && oauthProvider !== 'google')
+              }
+              aria-busy={oauthProvider === 'google'}
+              onClick={() => void startOAuth('google')}
+            >
+              <div className="oauth-material-button-state" />
+              <div className="oauth-material-button-content-wrapper">
+                <div className="oauth-material-button-icon">
+                  <svg
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 48 48"
+                    xmlnsXlink="http://www.w3.org/1999/xlink"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path
+                      fill="#EA4335"
+                      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                    />
+                    <path
+                      fill="#4285F4"
+                      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                    />
+                    <path fill="none" d="M0 0h48v48H0z" />
+                  </svg>
+                </div>
+                <span className="oauth-material-button-contents">
+                  {oauthProvider === 'google'
+                    ? 'Signing in with Google'
+                    : 'Sign in with Google'}
+                </span>
+                <span style={{ display: 'none' }}>Sign in with Google</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className="oauth-material-button oauth-material-button-github"
+              disabled={
+                loading ||
+                (oauthProvider !== null && oauthProvider !== 'github')
+              }
+              aria-busy={oauthProvider === 'github'}
+              onClick={() => void startOAuth('github')}
+            >
+              <div className="oauth-material-button-state" />
+              <div className="oauth-material-button-content-wrapper">
+                <div className="oauth-material-button-icon">
+                  <GithubOutlined />
+                </div>
+                <span className="oauth-material-button-contents">
+                  {oauthProvider === 'github'
+                    ? 'Signing in with GitHub'
+                    : 'Sign in with GitHub'}
+                </span>
+              </div>
+            </button>
+          </div>
+
+          <Divider plain className="login-divider">
+            Password login
+          </Divider>
+
+          <Form<LoginFormValues>
+            layout="vertical"
+            requiredMark={false}
+            onFinish={submit}
+            className="login-form"
           >
-            Log in
-          </Button>
-        </Form.Item>
-        <Divider plain style={style.divider}>
-          Or continue with
-        </Divider>
-        <Form.Item>
-          <Button
-            size="large"
-            block
-            icon={<GoogleOutlined />}
-            loading={oauthProvider === 'google'}
-            disabled={loading || oauthProvider === 'github'}
-            onClick={() => void startOAuth('google')}
-          >
-            Continue with Google
-          </Button>
-        </Form.Item>
-        <Form.Item>
-          <Button
-            size="large"
-            block
-            icon={<GithubOutlined />}
-            loading={oauthProvider === 'github'}
-            disabled={loading || oauthProvider === 'google'}
-            onClick={() => void startOAuth('github')}
-          >
-            Continue with GitHub
-          </Button>
-        </Form.Item>
-        <Form.Item>
-          <Row justify="space-between">
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: 'Please enter your email' },
+                {
+                  type: 'email',
+                  message: 'Please enter a valid email address',
+                },
+              ]}
+            >
+              <Input
+                placeholder="you@company.com"
+                size="large"
+                type="email"
+                prefix={<MailOutlined />}
+                autoComplete="email"
+              />
+            </Form.Item>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: 'Please enter your password' },
+              ]}
+            >
+              <Input.Password
+                placeholder="Your password"
+                size="large"
+                prefix={<LockOutlined />}
+                autoComplete="current-password"
+              />
+            </Form.Item>
+            <Form.Item className="login-submit">
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={loading}
+                disabled={Boolean(oauthProvider)}
+                block
+              >
+                Log in with password
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <div className="login-links">
             <Link to="/register">Create account</Link>
             <Link to="/reset-password/0">Forgot password?</Link>
-          </Row>
-        </Form.Item>
-      </form>
-    </div>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 };
 
 export const Component = Login;
-
-const style: Style = {
-  body: { display: 'flex', flexDirection: 'column', height: '100%' },
-  form: { width: 320, margin: 'auto', paddingTop: 16, flex: 1 },
-  logo: { textAlign: 'center', margin: '48px 0' },
-  slogan: { marginTop: 16, color: '#00000073', fontSize: 18 },
-  divider: { margin: '20px 0' },
-};

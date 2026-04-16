@@ -24,20 +24,20 @@
     "json-diff-kit": "^1.0.35",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.0",
+    "react-router-dom": "^7.14.1",
     "ua-parser-js": "^2.0.9",
     "vanilla-jsoneditor": "^3.12.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.11",
+    "@biomejs/biome": "2.4.12",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/git-url-parse": "^16.0.2",
     "@types/node": "^25.6.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript/native-preview": "^7.0.0-dev.20260412.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260415.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2"
   },

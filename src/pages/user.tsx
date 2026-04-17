@@ -6,14 +6,16 @@ import {
   Dropdown,
   Grid,
   message,
+  Modal,
   Popconfirm,
   Spin,
 } from 'antd';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { api } from '@/services/api';
 import { useUserInfo } from '@/utils/hooks';
 import { PRICING_LINK } from '../constants/links';
-import { quotas } from '../constants/quotas';
+import { products, quotas } from '../constants/quotas';
 
 const CancelResumeButton = ({
   cancelAtPeriodEnd,
@@ -87,8 +89,12 @@ const CancelResumeButton = ({
 
 const UpgradeDropdown = ({
   currentQuota,
+  currentTier,
+  tierExpiresAt,
 }: {
   currentQuota: (typeof quotas)[keyof typeof quotas];
+  currentTier: Tier;
+  tierExpiresAt?: string;
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -114,9 +120,8 @@ const UpgradeDropdown = ({
     return null; // No upgrade options available
   }
 
-  const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
-    setLoading(true);
-    await purchase(key);
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    confirmUpgrade(key as keyof typeof products);
   };
 
   const menuItems: MenuProps['items'] = upgradeOptions.map((option) => ({
@@ -125,12 +130,72 @@ const UpgradeDropdown = ({
     icon: <CreditCardOutlined />,
   }));
 
-  const handleMainButtonClick = async () => {
+  const handleMainButtonClick = () => {
     // Click main button to select the first upgrade option
     if (upgradeOptions.length > 0) {
-      setLoading(true);
-      await purchase(upgradeOptions[0].tier);
+      confirmUpgrade(upgradeOptions[0].tier as keyof typeof products);
     }
+  };
+
+  const confirmUpgrade = (targetTier: keyof typeof products) => {
+    const preview = calculateUpgradePreview({
+      currentTier,
+      targetTier,
+      tierExpiresAt,
+    });
+    const targetQuota = quotas[targetTier as keyof typeof quotas];
+    const targetTitle = targetQuota?.title || products[targetTier].title;
+
+    Modal.confirm({
+      title: `Upgrade to ${targetTitle}?`,
+      width: 620,
+      okText: 'Continue to payment',
+      cancelText: 'Cancel',
+      content: (
+        <div className="space-y-3 text-sm leading-6">
+          <p>
+            The upgrade takes effect immediately after payment. You pay the new
+            plan monthly price, and any unused value on your current plan is
+            converted into extra days on the new plan.
+          </p>
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+            <div>
+              New plan price:{' '}
+              <strong>${products[targetTier].price}/month</strong>
+            </div>
+            {preview.remainingDays > 0 && (
+              <div>
+                Current plan remaining time: approximately{' '}
+                <strong>{preview.remainingDays} days</strong>, converted into{' '}
+                <strong>{preview.transferredDays} extra days</strong> on{' '}
+                {targetTitle}.
+              </div>
+            )}
+            <div>
+              Estimated new-plan access after payment:{' '}
+              <strong>{preview.totalDays} days</strong>
+              {preview.estimatedExpiry
+                ? `, until about ${preview.estimatedExpiry}`
+                : ''}
+              .
+            </div>
+          </div>
+          <p>
+            No unused value is lost. The old subscription is cancelled after the
+            new payment succeeds, and the higher quota is available without
+            changing your app integration or release flow.
+          </p>
+        </div>
+      ),
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await purchase(targetTier);
+        } catch {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   return (
@@ -220,7 +285,11 @@ function UserPanel() {
               )}
             </div>
             {!quota && defaultQuota && (
-              <UpgradeDropdown currentQuota={defaultQuota} />
+              <UpgradeDropdown
+                currentQuota={defaultQuota}
+                currentTier={tier}
+                tierExpiresAt={user.tierExpiresAt}
+              />
             )}
           </div>
         </Descriptions.Item>
@@ -271,6 +340,41 @@ async function purchase(tier?: string) {
   if (orderResponse?.payUrl) {
     window.location.href = orderResponse.payUrl;
   }
+}
+
+function calculateUpgradePreview({
+  currentTier,
+  targetTier,
+  tierExpiresAt,
+}: {
+  currentTier: Tier;
+  targetTier: keyof typeof products;
+  tierExpiresAt?: string;
+}) {
+  const currentProduct = products[currentTier as keyof typeof products];
+  const targetProduct = products[targetTier];
+  const now = dayjs();
+  let remainingDays = 0;
+  let transferredDays = 0;
+
+  if (currentProduct && currentTier !== 'free' && tierExpiresAt) {
+    const expiresAt = dayjs(tierExpiresAt);
+    if (now.isBefore(expiresAt)) {
+      remainingDays = expiresAt.diff(now, 'day');
+      const remainingValue = (remainingDays / 30) * currentProduct.price;
+      const targetDailyRate = targetProduct.price / 30;
+      transferredDays = Math.floor(remainingValue / targetDailyRate);
+    }
+  }
+
+  const totalDays = 30 + transferredDays;
+
+  return {
+    remainingDays,
+    transferredDays,
+    totalDays,
+    estimatedExpiry: now.add(totalDays, 'day').format('YYYY-MM-DD'),
+  };
 }
 
 export const Component = UserPanel;

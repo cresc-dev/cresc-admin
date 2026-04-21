@@ -25,6 +25,19 @@ const MainLayout = () => {
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const isLoginPage = location.pathname === '/login';
+  const usesPublicChrome = [
+    '/activate',
+    '/inactivated',
+    '/login',
+    '/oauth-callback',
+    '/register',
+    '/reset-password',
+    '/welcome',
+  ].some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
+  const showAuthenticatedChrome = Boolean(user) && !usesPublicChrome;
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -55,7 +68,7 @@ const MainLayout = () => {
         <ExtLink href="https://reactnative.cn/about.html">About Us</ExtLink>
       ),
     },
-    ...(user
+    ...(showAuthenticatedChrome && user
       ? [
           {
             key: 'user',
@@ -79,8 +92,8 @@ const MainLayout = () => {
 
   return (
     <Layout>
-      {!isMobile && <Sider />}
-      {isMobile && (
+      {showAuthenticatedChrome && !isMobile && <Sider />}
+      {showAuthenticatedChrome && isMobile && (
         <SiderDrawer
           open={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
@@ -97,7 +110,7 @@ const MainLayout = () => {
         >
           <div className="flex w-full items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              {user && isMobile && (
+              {showAuthenticatedChrome && isMobile && (
                 <Button
                   type="text"
                   icon={<MenuOutlined />}

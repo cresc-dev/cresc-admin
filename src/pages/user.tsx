@@ -5,8 +5,8 @@ import {
   Descriptions,
   Dropdown,
   Grid,
-  message,
   Modal,
+  message,
   Popconfirm,
   Spin,
 } from 'antd';
@@ -137,7 +137,21 @@ const UpgradeDropdown = ({
     }
   };
 
+  const startPurchase = async (targetTier: keyof typeof products) => {
+    setLoading(true);
+    try {
+      await purchase(targetTier);
+    } catch {
+      setLoading(false);
+    }
+  };
+
   const confirmUpgrade = (targetTier: keyof typeof products) => {
+    if (currentTier === 'free') {
+      startPurchase(targetTier);
+      return;
+    }
+
     const preview = calculateUpgradePreview({
       currentTier,
       targetTier,
@@ -188,12 +202,7 @@ const UpgradeDropdown = ({
         </div>
       ),
       onOk: async () => {
-        setLoading(true);
-        try {
-          await purchase(targetTier);
-        } catch {
-          setLoading(false);
-        }
+        await startPurchase(targetTier);
       },
     });
   };
@@ -279,7 +288,10 @@ function UserPanel() {
             <div className="flex items-center gap-2 shrink-0">
               <span className="whitespace-nowrap">{currentQuota.title}</span>
               {cancelAtPeriodEnd && (
-                <span className="whitespace-nowrap" style={{ color: '#faad14', fontSize: 12 }}>
+                <span
+                  className="whitespace-nowrap"
+                  style={{ color: '#faad14', fontSize: 12 }}
+                >
                   (cancelling)
                 </span>
               )}

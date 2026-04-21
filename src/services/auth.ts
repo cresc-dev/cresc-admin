@@ -19,7 +19,13 @@ function getSearchParam(name: string) {
 }
 
 function resolveLoginFrom(loginFrom?: string | null) {
-  if (!loginFrom || !loginFrom.startsWith('/') || loginFrom.startsWith('//')) {
+  if (!loginFrom?.startsWith('/') || loginFrom.startsWith('//')) {
+    return rootRouterPath.user;
+  }
+  if (
+    loginFrom === rootRouterPath.login ||
+    loginFrom.startsWith(`${rootRouterPath.login}?`)
+  ) {
     return rootRouterPath.user;
   }
   return loginFrom;
@@ -68,9 +74,9 @@ export async function loginWithOAuth(provider: OAuthProvider) {
 
 export function logout() {
   const currentPath = router.state.location.pathname;
+  setToken('');
   if (currentPath !== rootRouterPath.login) {
-    setToken('');
     router.navigate(rootRouterPath.login);
-    window.location.reload();
   }
+  window.location.reload();
 }

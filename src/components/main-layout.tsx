@@ -1,6 +1,5 @@
 import {
   CommentOutlined,
-  InfoCircleOutlined,
   LogoutOutlined,
   MenuOutlined,
   MoreOutlined,
@@ -60,13 +59,6 @@ const MainLayout = () => {
       key: 'document',
       icon: <ReadOutlined />,
       label: <ExtLink href={DOCUMENTATION_LINK}>Documentation</ExtLink>,
-    },
-    {
-      key: 'about',
-      icon: <InfoCircleOutlined />,
-      label: (
-        <ExtLink href="https://reactnative.cn/about.html">About Us</ExtLink>
-      ),
     },
     ...(showAuthenticatedChrome && user
       ? [

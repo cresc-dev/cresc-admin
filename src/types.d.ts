@@ -168,10 +168,6 @@ interface AppDetail extends App {
   downloadUrl?: string;
 }
 
-interface SiderMenuProps {
-  selectedKeys?: string[];
-}
-
 interface ContentProps {
   app: App;
 }

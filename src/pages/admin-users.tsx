@@ -18,6 +18,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   type Content,
   createJSONEditor,
@@ -26,14 +27,17 @@ import {
 } from 'vanilla-jsoneditor';
 import { quotas } from '@/constants/quotas';
 import { adminApi } from '@/services/admin-api';
+import { patchSearchParams } from '@/utils/helper';
 
 const { Title } = Typography;
 
 const tierOptions = [
-  ...Object.entries(quotas).map(([value, quota]) => ({
-    value,
-    label: quota.title,
-  })),
+  { value: 'free', label: 'Free' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'premium', label: 'Premium' },
+  { value: 'pro', label: 'Pro' },
+  { value: 'max', label: 'Max' },
+  { value: 'ultra', label: 'Ultra' },
   { value: 'custom', label: 'Custom' },
 ];
 
@@ -43,6 +47,11 @@ const tierLabelMap = new Map(
 const defaultPremiumQuotaText = JSON.stringify(quotas.premium, null, 2);
 const expiryShortcutDays = [7, 30, 365] as const;
 
+const parsePositiveInt = (value: string | null, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 const getInitialQuotaValue = (record: AdminUser) => {
   if (record.quota) {
     return JSON.stringify(record.quota, null, 2);
@@ -51,7 +60,6 @@ const getInitialQuotaValue = (record: AdminUser) => {
   return record.tier === 'custom' ? defaultPremiumQuotaText : '';
 };
 
-// JSON Editor wrapper component for quota editing
 const JsonEditorWrapper = ({
   height = 200,
   value,
@@ -63,13 +71,8 @@ const JsonEditorWrapper = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReturnType<typeof createJSONEditor> | null>(null);
-  const initialValueRef = useRef(value);
-  const onChangeRef = useRef(onChange);
 
-  useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: create the editor only once
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
       const handleChange: OnChange = (
@@ -79,9 +82,9 @@ const JsonEditorWrapper = ({
       ) => {
         if (!contentErrors) {
           if ('json' in content && content.json !== undefined) {
-            onChangeRef.current(JSON.stringify(content.json, null, 2));
+            onChange(JSON.stringify(content.json, null, 2));
           } else if ('text' in content) {
-            onChangeRef.current(content.text);
+            onChange(content.text);
           }
         }
       };
@@ -89,7 +92,7 @@ const JsonEditorWrapper = ({
       editorRef.current = createJSONEditor({
         target: containerRef.current,
         props: {
-          content: { text: initialValueRef.current },
+          content: { text: value },
           onChange: handleChange,
           mode: Mode.text,
         },
@@ -98,7 +101,7 @@ const JsonEditorWrapper = ({
 
     return () => {
       if (editorRef.current) {
-        void editorRef.current.destroy();
+        editorRef.current.destroy();
         editorRef.current = null;
       }
     };
@@ -106,7 +109,7 @@ const JsonEditorWrapper = ({
 
   useEffect(() => {
     if (editorRef.current) {
-      editorRef.current.update({ text: value });
+      editorRef.current.updateProps({ content: { text: value } });
     }
   }, [value]);
 
@@ -117,23 +120,55 @@ export const Component = () => {
   const queryClient = useQueryClient();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form] = Form.useForm();
   const [quotaValue, setQuotaValue] = useState('');
 
-  // Debounce search
+  const searchQuery = searchParams.get('search')?.trim() ?? '';
+  const currentPage = parsePositiveInt(searchParams.get('page'), 1);
+  const pageSize = parsePositiveInt(
+    searchParams.get('pageSize'),
+    isMobile ? 10 : 20,
+  );
+  const [searchKeyword, setSearchKeyword] = useState(searchQuery);
+
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchKeyword), 300);
-    return () => clearTimeout(timer);
-  }, [searchKeyword]);
+    setSearchKeyword(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const trimmedKeyword = searchKeyword.trim();
+    if (trimmedKeyword === searchQuery) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      patchSearchParams(setSearchParams, {
+        search: trimmedKeyword || undefined,
+        page: '1',
+      });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [searchKeyword, searchQuery, setSearchParams]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['adminUsers', debouncedSearch],
-    queryFn: () => adminApi.searchUsers(debouncedSearch || undefined),
+    queryKey: ['adminUsers', searchQuery],
+    queryFn: () => adminApi.searchUsers(searchQuery || undefined),
   });
+
+  const total = data?.data.length ?? 0;
+  const maxPage = Math.max(1, Math.ceil(total / pageSize));
+
+  useEffect(() => {
+    if (currentPage > maxPage) {
+      patchSearchParams(setSearchParams, { page: String(maxPage) });
+    }
+  }, [currentPage, maxPage, setSearchParams]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<AdminUser> }) =>
@@ -182,12 +217,11 @@ export const Component = () => {
           : null,
       };
 
-      // Parse quota if provided
       if (quotaValue.trim()) {
         try {
           updateData.quota = JSON.parse(quotaValue);
         } catch {
-          message.error('Invalid quota JSON format');
+          message.error('Invalid quota JSON');
           return;
         }
       } else {
@@ -258,7 +292,7 @@ export const Component = () => {
       render: (tier: string) => tierLabelMap.get(tier) || tier || '-',
     },
     {
-      title: 'Tier Expires At',
+      title: 'Tier Expires',
       dataIndex: 'tierExpiresAt',
       key: 'tierExpiresAt',
       responsive: ['lg'],
@@ -267,27 +301,18 @@ export const Component = () => {
         date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      responsive: ['lg'],
-      width: 180,
-      render: (date: string | null | undefined) =>
-        date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
-    },
-    {
       title: 'Custom Quota',
       dataIndex: 'quota',
       key: 'quota',
       responsive: ['md'],
-      width: 100,
-      render: (quota: Quota | null) => (quota ? 'Yes' : '-'),
+      width: 120,
+      render: (quota: Quota | null) => (quota ? 'Custom' : '-'),
     },
     {
-      title: 'Action',
+      title: 'Actions',
       key: 'action',
       width: 80,
-      render: (_: unknown, record: AdminUser) => (
+      render: (_value, record) => (
         <Button
           type="link"
           icon={<EditOutlined />}
@@ -302,15 +327,21 @@ export const Component = () => {
   return (
     <div className="page-section">
       <Card>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-          <Title level={4} className="m-0!">
-            User Management
-          </Title>
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Title level={4} className="m-0!">
+              User Management
+            </Title>
+            <div className="text-sm text-gray-500">
+              Search and pagination stay in the URL so the same review context
+              is easy to reopen.
+            </div>
+          </div>
           <Input
             placeholder="Search by name or email"
             prefix={<SearchOutlined />}
             value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
+            onChange={(event) => setSearchKeyword(event.target.value)}
             allowClear
             className="w-full md:w-72"
           />
@@ -322,11 +353,21 @@ export const Component = () => {
             columns={columns}
             rowKey="id"
             size={isMobile ? 'small' : 'middle'}
-            pagination={
-              isMobile
-                ? { pageSize: 10, simple: true }
-                : { pageSize: 20, showSizeChanger: true }
-            }
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              simple: isMobile,
+              showQuickJumper: !isMobile,
+              showSizeChanger: !isMobile,
+              showTotal: isMobile ? undefined : (count) => `${count} users`,
+              onChange: (page, nextPageSize) => {
+                patchSearchParams(setSearchParams, {
+                  page: String(page),
+                  pageSize: String(nextPageSize),
+                });
+              },
+            }}
             scroll={{ x: 760 }}
           />
         </Spin>
@@ -335,6 +376,7 @@ export const Component = () => {
       <Modal
         title={`Edit User: ${editingUser?.email}`}
         open={isModalOpen}
+        width={isMobile ? 'calc(100vw - 32px)' : 600}
         onCancel={() => setIsModalOpen(false)}
         footer={[
           <Button key="cancel" onClick={() => setIsModalOpen(false)}>
@@ -349,7 +391,6 @@ export const Component = () => {
             Save
           </Button>,
         ]}
-        width={isMobile ? 'calc(100vw - 32px)' : 600}
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Space className="w-full" direction="vertical" size="middle">
@@ -375,7 +416,7 @@ export const Component = () => {
                 ]}
               />
             </Form.Item>
-            <Form.Item label="Tier Expires At" className="mb-0!">
+            <Form.Item label="Tier Expires" className="mb-0!">
               <Space direction="vertical" size="small" className="w-full">
                 <Form.Item name="tierExpiresAt" noStyle>
                   <DatePicker showTime className="w-full" />
@@ -397,7 +438,7 @@ export const Component = () => {
               </Space>
             </Form.Item>
             <Form.Item
-              label="Custom Quota (JSON, leave empty for default)"
+              label="Custom Quota (JSON, leave empty to use defaults)"
               className="mb-0!"
             >
               <JsonEditorWrapper

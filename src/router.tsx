@@ -1,12 +1,11 @@
-import { Alert } from 'antd';
-import { createHashRouter, Navigate, redirect } from 'react-router-dom';
+import { createHashRouter, redirect } from 'react-router-dom';
 import { ErrorBoundary } from './components/error-boundary';
 import MainLayout from './components/main-layout';
 import { getToken } from './services/request';
 
 export const rootRouterPath = {
+  apps: '/',
   user: '/user',
-  apps: '/apps',
   versions: (id: string) => `/apps/${id}`,
   resetPassword: (step: string) => `/reset-password/${step}`,
   activate: '/activate',
@@ -44,13 +43,13 @@ export const needAuthLoader = ({ request }: { request: Request }) => {
 
 function resolveAuthenticatedRedirect(loginFrom?: string | null) {
   if (!loginFrom?.startsWith('/') || loginFrom.startsWith('//')) {
-    return rootRouterPath.user;
+    return rootRouterPath.apps;
   }
   if (
     loginFrom === rootRouterPath.login ||
     loginFrom.startsWith(`${rootRouterPath.login}?`)
   ) {
-    return rootRouterPath.user;
+    return rootRouterPath.apps;
   }
   return loginFrom;
 }
@@ -72,8 +71,14 @@ export const router = createHashRouter([
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: '',
-        element: <Navigate to={rootRouterPath.user} />,
+        index: true,
+        loader: needAuthLoader,
+        lazy: () => import('./pages/apps'),
+      },
+      {
+        path: 'apps',
+        loader: needAuthLoader,
+        lazy: () => import('./pages/apps'),
       },
       {
         path: 'welcome',
@@ -103,11 +108,6 @@ export const router = createHashRouter([
       {
         path: 'oauth-callback',
         lazy: () => import('./pages/oauth-callback'),
-      },
-      {
-        path: 'apps',
-        loader: needAuthLoader,
-        element: <Alert message="Please select an app" showIcon />,
       },
       {
         path: 'apps/:id',

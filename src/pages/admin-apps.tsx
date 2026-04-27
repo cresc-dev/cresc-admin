@@ -1,4 +1,10 @@
-import { CopyOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  EditOutlined,
+  LineChartOutlined,
+  LinkOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
@@ -17,30 +23,70 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { rootRouterPath } from '@/router';
 import { adminApi } from '@/services/admin-api';
+import { patchSearchParams } from '@/utils/helper';
 
 const { Title } = Typography;
+
+const parsePositiveInt = (value: string | null, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 export const Component = () => {
   const queryClient = useQueryClient();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<AdminApp | null>(null);
   const [form] = Form.useForm();
 
-  // Debounce search
+  const searchQuery = searchParams.get('search')?.trim() ?? '';
+  const currentPage = parsePositiveInt(searchParams.get('page'), 1);
+  const pageSize = parsePositiveInt(
+    searchParams.get('pageSize'),
+    isMobile ? 10 : 20,
+  );
+  const [searchKeyword, setSearchKeyword] = useState(searchQuery);
+
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchKeyword), 300);
-    return () => clearTimeout(timer);
-  }, [searchKeyword]);
+    setSearchKeyword(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const trimmedKeyword = searchKeyword.trim();
+    if (trimmedKeyword === searchQuery) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      patchSearchParams(setSearchParams, {
+        search: trimmedKeyword || undefined,
+        page: '1',
+      });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [searchKeyword, searchQuery, setSearchParams]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['adminApps', debouncedSearch],
-    queryFn: () => adminApi.searchApps(debouncedSearch || undefined),
+    queryKey: ['adminApps', searchQuery],
+    queryFn: () => adminApi.searchApps(searchQuery || undefined),
   });
+
+  const total = data?.data.length ?? 0;
+  const maxPage = Math.max(1, Math.ceil(total / pageSize));
+
+  useEffect(() => {
+    if (currentPage > maxPage) {
+      patchSearchParams(setSearchParams, { page: String(maxPage) });
+    }
+  }, [currentPage, maxPage, setSearchParams]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<AdminApp> }) =>
@@ -106,10 +152,10 @@ export const Component = () => {
       title: 'App Key',
       dataIndex: 'appKey',
       key: 'appKey',
-      width: 200,
+      width: 220,
       render: (key: string) => (
         <Space wrap size={[4, 8]}>
-          <span className="font-mono text-xs">{key}</span>
+          <span className="font-mono text-xs break-all">{key}</span>
           <Button
             type="text"
             size="small"
@@ -166,17 +212,33 @@ export const Component = () => {
         date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: 'Action',
+      title: 'Actions',
       key: 'action',
-      width: 80,
-      render: (_: unknown, record: AdminApp) => (
-        <Button
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          Edit
-        </Button>
+      width: isMobile ? 136 : 220,
+      render: (_value, record) => (
+        <Space size={[0, 0]} wrap>
+          <Link to={rootRouterPath.versions(String(record.id))}>
+            <Button type="link" icon={<LinkOutlined />}>
+              Open
+            </Button>
+          </Link>
+          <Link
+            to={`${rootRouterPath.realtimeMetrics}?${new URLSearchParams({
+              appKey: record.appKey,
+            }).toString()}`}
+          >
+            <Button type="link" icon={<LineChartOutlined />}>
+              Metrics
+            </Button>
+          </Link>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            Edit
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -184,15 +246,21 @@ export const Component = () => {
   return (
     <div className="page-section">
       <Card>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-          <Title level={4} className="m-0!">
-            App Management
-          </Title>
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Title level={4} className="m-0!">
+              App Management
+            </Title>
+            <div className="text-sm text-gray-500">
+              Search and pagination stay in the URL, so refresh and shareable
+              links preserve the same view.
+            </div>
+          </div>
           <Input
             placeholder="Search by name or App Key"
             prefix={<SearchOutlined />}
             value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
+            onChange={(event) => setSearchKeyword(event.target.value)}
             allowClear
             className="w-full md:w-72"
           />
@@ -204,12 +272,22 @@ export const Component = () => {
             columns={columns}
             rowKey="id"
             size={isMobile ? 'small' : 'middle'}
-            pagination={
-              isMobile
-                ? { pageSize: 10, simple: true }
-                : { pageSize: 20, showSizeChanger: true }
-            }
-            scroll={{ x: 760 }}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              simple: isMobile,
+              showQuickJumper: !isMobile,
+              showSizeChanger: !isMobile,
+              showTotal: isMobile ? undefined : (count) => `${count} apps`,
+              onChange: (page, nextPageSize) => {
+                patchSearchParams(setSearchParams, {
+                  page: String(page),
+                  pageSize: String(nextPageSize),
+                });
+              },
+            }}
+            scroll={{ x: 840 }}
           />
         </Spin>
       </Card>

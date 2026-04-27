@@ -1,8 +1,8 @@
 import { Button, Result, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { completeLogin } from '@/services/auth';
 import { rootRouterPath, router } from '@/router';
+import { completeLogin } from '@/services/auth';
 
 function buildLoginUrl(loginFrom?: string | null) {
   if (!loginFrom || !loginFrom.startsWith('/') || loginFrom.startsWith('//')) {

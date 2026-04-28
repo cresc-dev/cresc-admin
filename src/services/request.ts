@@ -19,12 +19,13 @@ const SERVER = {
       : [process.env.PUBLIC_API ?? 'http://localhost:9000'],
 };
 
+const testPath = '/task/list';
 const getBaseUrl = (async () => {
-  return testUrls(SERVER.main.map((url) => `${url}/status`)).then((ret) => {
+  return testUrls(SERVER.main.map((url) => `${url}${testPath}`)).then((ret) => {
     let baseUrl = SERVER.main[0];
     if (ret) {
-      // remove /status
-      baseUrl = ret.replace('/status', '');
+      // remove testPath
+      baseUrl = ret.replace(testPath, '');
     }
     console.log('baseUrl', baseUrl);
     return baseUrl;

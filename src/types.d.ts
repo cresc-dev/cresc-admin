@@ -77,6 +77,7 @@ interface AdminApp {
   name: string;
   appKey: string;
   appSecret: string;
+  checkCount?: number;
   downloadUrl: string | null;
   status: string | null;
   ignoreBuildTime: 'enabled' | 'disabled' | null;

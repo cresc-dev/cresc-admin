@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, DatePicker, Input, Radio, Select, Spin, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { adminApi } from '@/services/admin-api';
 import { api } from '@/services/api';
 import { patchSearchParams } from '@/utils/helper';
 import { useAppList, useUserInfo } from '@/utils/hooks';
@@ -81,6 +83,26 @@ const attributeOptions = [
   { label: 'Package', value: 'packageVersion_buildTime' },
 ];
 
+type MetricsAppOptionSource = {
+  id: number;
+  name: string;
+  platform: App['platform'];
+  appKey?: string | null;
+  checkCount?: number;
+};
+
+const formatCheckCount = (checkCount?: number) =>
+  `${(checkCount ?? 0).toLocaleString()} checks`;
+
+const formatAppOptionLabel = (app: MetricsAppOptionSource) => (
+  <span className="flex min-w-0 items-center justify-between gap-3">
+    <span className="truncate">{app.name}</span>
+    <span className="shrink-0 text-gray-500 text-xs tabular-nums">
+      {formatCheckCount(app.checkCount)}
+    </span>
+  </span>
+);
+
 const formatTooltipItem = (point: ChartDataPoint) => {
   const countLabel = `${point.value.toLocaleString()} checks`;
   if (point.isTotal || point.sharePercent === undefined) {
@@ -108,20 +130,33 @@ export const Component = () => {
   const { apps } = useAppList();
   const { user } = useUserInfo();
   const isAdmin = user?.admin === true;
+  const { data: adminAppsData, isLoading: isLoadingAdminApps } = useQuery({
+    queryKey: ['adminApps', 'realtimeMetricsDropdown'],
+    queryFn: () => adminApi.searchApps({ limit: 1000 }),
+    enabled: isAdmin,
+  });
   const urlAppKey = searchParams.get('appKey') || undefined;
   const selectedAttribute: MetricAttribute =
     searchParams.get('attribute') === 'packageVersion_buildTime'
       ? 'packageVersion_buildTime'
       : 'hash';
 
+  const selectableApps = useMemo<MetricsAppOptionSource[]>(() => {
+    return isAdmin ? (adminAppsData?.data ?? []) : (apps ?? []);
+  }, [adminAppsData?.data, apps, isAdmin]);
+  const totalAppCount = isAdmin
+    ? (adminAppsData?.count ?? selectableApps.length)
+    : selectableApps.length;
+
   const appOptions = useMemo(() => {
-    return (apps || [])
+    return selectableApps
       .filter((app) => !!app.appKey)
-      .map((app) => ({
-        label: app.name,
+      .map((app): { label: ReactNode; value: string; searchText: string } => ({
+        label: formatAppOptionLabel(app),
         value: app.appKey as string,
+        searchText: `${app.name} ${app.appKey} ${app.platform} ${app.id}`,
       }));
-  }, [apps]);
+  }, [selectableApps]);
   const selectedAppKey = useMemo(() => {
     if (!urlAppKey) {
       return undefined;
@@ -388,12 +423,16 @@ export const Component = () => {
               <Select
                 placeholder="Select an app"
                 showSearch
-                optionFilterProp="label"
+                optionFilterProp="searchText"
                 value={selectedAppKey}
                 onChange={handleAppChange}
                 options={appOptions}
+                loading={isAdmin && isLoadingAdminApps}
                 style={{ width: '100%' }}
               />
+            </div>
+            <div className="text-xs text-gray-500">
+              {totalAppCount.toLocaleString()} apps
             </div>
             <Radio.Group
               value={selectedAttribute}

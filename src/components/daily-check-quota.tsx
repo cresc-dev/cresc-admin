@@ -35,12 +35,9 @@ const useDailyCheckQuotaState = () => {
               quotas[user.tier as keyof typeof quotas]?.title ??
               user.tier}
           </div>
-          <div>
-            Expires:{' '}
-            {user.tierExpiresAt
-              ? dayjs(user.tierExpiresAt).format('YYYY-MM-DD')
-              : 'N/A'}
-          </div>
+          {user.cancelAtPeriodEnd && user.tierExpiresAt && (
+            <div>Expires: {dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}</div>
+          )}
         </>
       )}
       {hasData && (
@@ -94,9 +91,10 @@ export function DailyCheckQuotaUserTrigger({
       quotas[user.tier as keyof typeof quotas]?.title ??
       user.tier)
     : '';
-  const expireLabel = user?.tierExpiresAt
+  const expireLabel = user?.cancelAtPeriodEnd && user.tierExpiresAt
     ? `Expires ${dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}`
-    : 'No expiry';
+    : null;
+  const planDetails = [tierTitle, expireLabel].filter(Boolean).join(' · ');
   const warningIcon = (quotaState.isExceeded || quotaState.isLow) && (
     <WarningOutlined
       className={`shrink-0 ${
@@ -133,7 +131,7 @@ export function DailyCheckQuotaUserTrigger({
         </span>
         {showPlanDetails && user && (
           <span className="block truncate text-[11px] text-slate-500 leading-4">
-            {tierTitle} · {expireLabel}
+            {planDetails}
           </span>
         )}
         {progress}

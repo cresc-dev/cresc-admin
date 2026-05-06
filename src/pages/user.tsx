@@ -25,7 +25,7 @@ import { products, quotas } from '../constants/quotas';
 const CancelResumeButton = ({
   cancelAtPeriodEnd,
 }: {
-  cancelAtPeriodEnd?: boolean;
+  cancelAtPeriodEnd: boolean;
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -340,6 +340,7 @@ function UserPanel() {
     message.info('You have been logged out.');
     logout();
   };
+  const canManageSubscription = typeof cancelAtPeriodEnd === 'boolean';
 
   return (
     <div className="body">
@@ -359,24 +360,35 @@ function UserPanel() {
           <span className="break-all">{email}</span>
         </Descriptions.Item>
         <Descriptions.Item label="Subscription">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="whitespace-nowrap">{currentQuota.title}</span>
-              {cancelAtPeriodEnd && (
-                <span
-                  className="whitespace-nowrap"
-                  style={{ color: '#faad14', fontSize: 12 }}
-                >
-                  (cancelling)
-                </span>
+          <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="whitespace-nowrap">{currentQuota.title}</span>
+                {cancelAtPeriodEnd && (
+                  <span
+                    className="whitespace-nowrap"
+                    style={{ color: '#faad14', fontSize: 12 }}
+                  >
+                    (cancelling)
+                  </span>
+                )}
+              </div>
+              {!quota && defaultQuota && (
+                <UpgradeDropdown
+                  currentQuota={defaultQuota}
+                  currentTier={tier}
+                  tierExpiresAt={user.tierExpiresAt}
+                />
               )}
             </div>
-            {!quota && defaultQuota && (
-              <UpgradeDropdown
-                currentQuota={defaultQuota}
-                currentTier={tier}
-                tierExpiresAt={user.tierExpiresAt}
-              />
+            {tier !== 'free' && canManageSubscription && (
+              <div className="max-w-2xl text-sm leading-6 text-slate-500">
+                You can upgrade to a higher plan without losing unused value:
+                the remaining value of your current plan is converted into
+                extra days on the new plan. Direct downgrades are not available;
+                cancel the current subscription first, then subscribe to another
+                plan after it expires.
+              </div>
             )}
           </div>
         </Descriptions.Item>
@@ -395,7 +407,7 @@ function UserPanel() {
             ) : (
               'Not available'
             )}
-            {tier !== 'free' && (
+            {tier !== 'free' && canManageSubscription && (
               <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
             )}
           </div>

@@ -27,6 +27,7 @@ export const DepsTable = ({
   return (
     <Popover
       className="ant-typography-edit"
+      classNames={{ root: 'deps-popover' }}
       afterOpenChange={(visible) => {
         setPopoverOpen(visible);
         if (!visible) {
@@ -34,137 +35,126 @@ export const DepsTable = ({
         }
       }}
       content={
-        <div>
-          <div className="text-center my-1 mx-auto">
-            {deps ? (
-              <div>
-                <div className="flex flex-col items-center justify-center">
-                  <h4>
-                    JavaScript Dependencies{!diffs && `(${name})`}
-                    <div>
-                      {diffs && (
-                        <>
-                          <span className="font-normal">{diffs.newName}</span>
-                          {` <-> ${name}`}
-                        </>
-                      )}
+        <div className="deps-popover-content">
+          {deps ? (
+            <>
+              <div className="deps-popover-header">
+                <div className="deps-popover-title">
+                  <div>JavaScript Dependencies{!diffs && `(${name})`}</div>
+                  {diffs && (
+                    <div className="font-normal">
+                      <span>{diffs.newName}</span>
+                      {` <-> ${name}`}
                     </div>
-                    <div className="absolute right-8 top-7">
-                      {diffs ? (
-                        <Button
-                          className="content-end"
-                          onClick={() => {
-                            setDiffs(null);
-                          }}
-                        >
-                          Back
-                        </Button>
-                      ) : (
-                        <Dropdown.Button
-                          className=""
-                          menu={{
-                            items: [
-                              {
-                                key: 'package',
-                                type: 'group',
-                                label: 'Native Packages',
-                                children: packages
-                                  .filter((p) => !!p.deps)
-                                  .map((p) => ({
-                                    key: `p_${p.id}`,
-                                    label: p.name,
+                  )}
+                </div>
+                <div className="deps-popover-actions">
+                  {diffs ? (
+                    <Button
+                      onClick={() => {
+                        setDiffs(null);
+                      }}
+                    >
+                      Back
+                    </Button>
+                  ) : (
+                    <Dropdown.Button
+                      menu={{
+                        items: [
+                          {
+                            key: 'package',
+                            type: 'group',
+                            label: 'Native Packages',
+                            children: packages
+                              .filter((p) => !!p.deps)
+                              .map((p) => ({
+                                key: `p_${p.id}`,
+                                label: p.name,
+                              })),
+                          },
+                          {
+                            key: 'version',
+                            type: 'group',
+                            label: 'OTA Versions',
+                            children: versionsLoading
+                              ? [
+                                  {
+                                    key: 'version_loading',
+                                    label: 'Loading...',
+                                    disabled: true,
+                                  },
+                                ]
+                              : versions
+                                  .filter((v) => !!v.deps)
+                                  .map((v) => ({
+                                    key: `v_${v.id}`,
+                                    label: v.name,
                                   })),
-                              },
-                              {
-                                key: 'version',
-                                type: 'group',
-                                label: 'OTA Versions',
-                                children: versionsLoading
-                                  ? [
-                                      {
-                                        key: 'version_loading',
-                                        label: 'Loading...',
-                                        disabled: true,
-                                      },
-                                    ]
-                                  : versions
-                                      .filter((v) => !!v.deps)
-                                      .map((v) => ({
-                                        key: `v_${v.id}`,
-                                        label: v.name,
-                                      })),
-                              },
-                            ],
-                            onClick: ({ key }) => {
-                              if (!key.includes('_')) {
-                                return;
-                              }
-                              const [type, id] = key.split('_');
-                              if (type === 'p') {
-                                const pkg = packages.find((p) => p.id === +id);
-                                setDiffs({
-                                  oldDeps: pkg?.deps,
-                                  newDeps: deps,
-                                  newName: `Native Package ${pkg?.name}`,
-                                });
-                              } else {
-                                const version = versions.find(
-                                  (v) => v.id === +id,
-                                );
-                                setDiffs({
-                                  oldDeps: version?.deps,
-                                  newDeps: deps,
-                                  newName: `OTA Version ${version?.name}`,
-                                });
-                              }
-                            },
-                          }}
-                        >
-                          Compare
-                        </Dropdown.Button>
-                      )}
-                    </div>
-                  </h4>
-                  <div className="max-h-[vh50] overflow-y-auto">
-                    {diffs ? (
-                      <DepsDiff
-                        oldDeps={diffs.oldDeps}
-                        newDeps={diffs.newDeps}
-                      />
-                    ) : (
-                      <JsonEditor
-                        content={{
-                          json: Object.keys(deps)
-                            .sort() // Sort the keys alphabetically
-                            .reduce(
-                              (obj, key) => {
-                                obj[key] = deps[key]; // Rebuild the object with sorted keys
-                                return obj;
-                              },
-                              {} as Record<string, string>,
-                            ),
-                        }}
-                        mode={Mode.tree}
-                        mainMenuBar={false}
-                        statusBar={false}
-                        readOnly
-                      />
-                    )}
-                  </div>
-
-                  <div className="text-gray-500 my-4">
-                    Note: Dependencies listed here are extracted directly from
-                    `package.json` during the upload process. They might not
-                    perfectly represent the final contents of the package.
-                  </div>
+                          },
+                        ],
+                        onClick: ({ key }) => {
+                          if (!key.includes('_')) {
+                            return;
+                          }
+                          const [type, id] = key.split('_');
+                          if (type === 'p') {
+                            const pkg = packages.find((p) => p.id === +id);
+                            setDiffs({
+                              oldDeps: pkg?.deps,
+                              newDeps: deps,
+                              newName: `Native Package ${pkg?.name}`,
+                            });
+                          } else {
+                            const version = versions.find((v) => v.id === +id);
+                            setDiffs({
+                              oldDeps: version?.deps,
+                              newDeps: deps,
+                              newName: `OTA Version ${version?.name}`,
+                            });
+                          }
+                        },
+                      }}
+                    >
+                      Compare
+                    </Dropdown.Button>
+                  )}
                 </div>
               </div>
-            ) : (
-              <div>
-                <h4 className="font-bold">JavaScript Dependencies</h4>
+              <div className="deps-popover-body">
+                {diffs ? (
+                  <DepsDiff oldDeps={diffs.oldDeps} newDeps={diffs.newDeps} />
+                ) : (
+                  <JsonEditor
+                    className="deps-popover-json"
+                    content={{
+                      json: Object.keys(deps)
+                        .sort() // Sort the keys alphabetically
+                        .reduce(
+                          (obj, key) => {
+                            obj[key] = deps[key]; // Rebuild the object with sorted keys
+                            return obj;
+                          },
+                          {} as Record<string, string>,
+                        ),
+                    }}
+                    mode={Mode.tree}
+                    mainMenuBar={false}
+                    statusBar={false}
+                    readOnly
+                  />
+                )}
               </div>
-            )}
-          </div>
+              <div className="deps-popover-note">
+                Note: Dependencies listed here are extracted directly from
+                `package.json` during the upload process. They might not
+                perfectly represent the final contents of the package.
+              </div>
+            </>
+          ) : (
+            <div>
+              <h4 className="font-bold">JavaScript Dependencies</h4>
+            </div>
+          )}
         </div>
       }
     >

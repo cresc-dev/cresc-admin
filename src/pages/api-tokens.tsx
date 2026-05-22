@@ -2,7 +2,6 @@ import { CopyOutlined, DeleteOutlined, KeyOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
-  Card,
   Checkbox,
   Form,
   Grid,
@@ -179,39 +178,37 @@ function ApiTokensPage() {
   ];
 
   return (
-    <div className="body">
-      <Card>
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="text-lg font-semibold">API Tokens</div>
-            <Paragraph type="secondary" className="mb-0 mt-1">
-              API Tokens can be used for CI/CD pipelines or automation scripts
-              to call{' '}
-              <a target="_blank" href={API_REFERENCE_LINK} rel="noopener">
-                Cresc API
-              </a>
-              . Each user can have up to 10 active tokens.
-            </Paragraph>
-          </div>
-          <Button
-            type="primary"
-            icon={<KeyOutlined />}
-            onClick={() => setCreateModalVisible(true)}
-            className="w-full md:w-auto"
-          >
-            Create Token
-          </Button>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-lg font-semibold">API Tokens</div>
+          <Paragraph type="secondary" className="mb-0 mt-1">
+            API Tokens can be used for CI/CD pipelines or automation scripts to
+            call{' '}
+            <a target="_blank" href={API_REFERENCE_LINK} rel="noopener">
+              Cresc API
+            </a>
+            . Each user can have up to 10 active tokens.
+          </Paragraph>
         </div>
-        <Table
-          columns={columns}
-          dataSource={data?.data}
-          loading={isLoading}
-          rowKey="id"
-          size={isMobile ? 'small' : 'middle'}
-          pagination={false}
-          scroll={{ x: 720 }}
-        />
-      </Card>
+        <Button
+          type="primary"
+          icon={<KeyOutlined />}
+          onClick={() => setCreateModalVisible(true)}
+          className="w-full md:w-auto"
+        >
+          Create Token
+        </Button>
+      </div>
+      <Table
+        columns={columns}
+        dataSource={data?.data}
+        loading={isLoading}
+        rowKey="id"
+        size={isMobile ? 'small' : 'middle'}
+        pagination={false}
+        scroll={{ x: 720 }}
+      />
 
       <Modal
         title="Create API Token"

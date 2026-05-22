@@ -19,6 +19,10 @@ import { Button, Drawer, Empty, Input, Menu, Popover, Tag } from 'antd';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import {
+  type AppDrawerItem,
+  useAppWorkspaceList,
+} from '@/components/app-drawer';
 import { DOCUMENTATION_LINK } from '@/constants/links';
 import { rootRouterPath, router } from '@/router';
 import {
@@ -29,13 +33,14 @@ import {
   rememberRecentApp,
   setManageAppDrawerPlacement,
 } from '@/utils/helper';
-import { useAppList, useUserInfo } from '@/utils/hooks';
+import { useUserInfo } from '@/utils/hooks';
 import { ReactComponent as LogoH } from '../assets/logo-h.svg';
+import { useAppSettingsModal } from './app-settings-modal';
 import { showCreateAppModal } from './create-app-modal';
 import { DailyCheckQuotaUserTrigger } from './daily-check-quota';
 import PlatformIcon from './platform-icon';
 
-type AppItem = NonNullable<ReturnType<typeof useAppList>['apps']>[number];
+type AppItem = AppDrawerItem;
 type MenuItems = NonNullable<MenuProps['items']>;
 
 interface TopNavigationProps {
@@ -79,11 +84,6 @@ export default function TopNavigation({
     showAuthenticatedChrome && user
       ? [
           {
-            key: 'api-tokens',
-            icon: <KeyOutlined />,
-            label: <Link to={rootRouterPath.apiTokens}>API Tokens</Link>,
-          },
-          {
             key: 'audit-logs',
             icon: <FileTextOutlined />,
             label: <Link to={rootRouterPath.auditLogs}>Audit Logs</Link>,
@@ -94,6 +94,11 @@ export default function TopNavigation({
             label: (
               <Link to={rootRouterPath.realtimeMetrics}>Real-time Metrics</Link>
             ),
+          },
+          {
+            key: 'api-tokens',
+            icon: <KeyOutlined />,
+            label: <Link to={rootRouterPath.apiTokens}>API Tokens</Link>,
           },
           ...(user.admin
             ? [
@@ -249,9 +254,9 @@ function MobileMenuSheet({
 }
 
 function AppSwitcher({ compact }: { compact: boolean }) {
-  const { apps: appList } = useAppList();
-  const { pathname } = useLocation();
-  const apps = appList ?? [];
+  const { apps } = useAppWorkspaceList();
+  const { contextHolder, openAppSettings } = useAppSettingsModal();
+  const { pathname, search } = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [recentAppIds, setRecentAppIds] = useState(() => getRecentAppIds());
@@ -259,7 +264,17 @@ function AppSwitcher({ compact }: { compact: boolean }) {
     getManageAppDrawerPlacement,
   );
   const currentAppId = getCurrentAppId(pathname);
-  const currentApp = apps.find((app) => app.id === currentAppId);
+  const currentAppKey = getCurrentAppKey(pathname, search);
+  const currentApp = apps.find((app) => {
+    if (currentAppId) {
+      return app.id === currentAppId;
+    }
+    if (currentAppKey) {
+      return app.appKey === currentAppKey;
+    }
+    return false;
+  });
+  const activeAppId = currentApp?.id ?? currentAppId;
   const appMap = useMemo(() => {
     return new Map(apps.map((app) => [app.id, app]));
   }, [apps]);
@@ -279,10 +294,10 @@ function AppSwitcher({ compact }: { compact: boolean }) {
   });
 
   useEffect(() => {
-    if (currentAppId) {
-      setRecentAppIds(rememberRecentApp(currentAppId));
+    if (activeAppId) {
+      setRecentAppIds(rememberRecentApp(activeAppId));
     }
-  }, [currentAppId]);
+  }, [activeAppId]);
 
   useEffect(() => {
     if (!open) {
@@ -312,6 +327,11 @@ function AppSwitcher({ compact }: { compact: boolean }) {
     router.navigate(rootRouterPath.versions(String(appId)));
   };
 
+  const openSettings = (app: AppItem) => {
+    setOpen(false);
+    openAppSettings(app);
+  };
+
   const createApp = () => {
     setOpen(false);
     showCreateAppModal({
@@ -323,21 +343,29 @@ function AppSwitcher({ compact }: { compact: boolean }) {
   };
 
   const isAppDrawerVisible = appDrawerPlacement !== 'hidden';
+  const canOpenAppList = compact || !isAppDrawerVisible;
   const toggleAppDrawer = () => {
     const nextPlacement = isAppDrawerVisible ? 'hidden' : 'left';
     setAppDrawerPlacementState(nextPlacement);
     setManageAppDrawerPlacement(nextPlacement);
   };
 
+  useEffect(() => {
+    if (!canOpenAppList && open) {
+      setOpen(false);
+    }
+  }, [canOpenAppList, open]);
+
   const triggerLabel = currentApp?.name ?? 'Select app';
   const content = (
     <AppSwitcherContent
-      currentAppId={currentAppId}
+      currentAppId={activeAppId}
       filteredApps={filteredApps}
       isAppDrawerVisible={isAppDrawerVisible}
       isSheet={compact}
       onCreateApp={createApp}
       onNavigateToApp={navigateToApp}
+      onSettings={openSettings}
       onToggleAppDrawer={toggleAppDrawer}
       query={query}
       recentApps={recentApps}
@@ -352,7 +380,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
         compact ? 'max-w-[150px] flex-1 px-2' : 'w-72 lg:w-80',
       )}
       onClick={compact ? () => setOpen(true) : undefined}
-      aria-expanded={open}
+      aria-expanded={canOpenAppList ? open : undefined}
       type="button"
     >
       <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -367,7 +395,9 @@ function AppSwitcher({ compact }: { compact: boolean }) {
             <Tag className="m-0 shrink-0">Paused</Tag>
           )}
         </span>
-        <DownOutlined className="ml-auto shrink-0 text-xs" />
+        {canOpenAppList && (
+          <DownOutlined className="ml-auto shrink-0 text-xs" />
+        )}
       </span>
     </button>
   );
@@ -375,6 +405,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
   if (compact) {
     return (
       <>
+        {contextHolder}
         {trigger}
         <Drawer
           height="72vh"
@@ -390,19 +421,26 @@ function AppSwitcher({ compact }: { compact: boolean }) {
     );
   }
 
+  if (!canOpenAppList) {
+    return null;
+  }
+
   return (
-    <Popover
-      arrow={false}
-      content={content}
-      mouseEnterDelay={0.08}
-      mouseLeaveDelay={0.18}
-      open={open}
-      onOpenChange={setOpen}
-      placement="bottomLeft"
-      trigger={['hover', 'click']}
-    >
-      {trigger}
-    </Popover>
+    <>
+      {contextHolder}
+      <Popover
+        arrow={false}
+        content={content}
+        mouseEnterDelay={0.08}
+        mouseLeaveDelay={0.18}
+        open={open}
+        onOpenChange={setOpen}
+        placement="bottomLeft"
+        trigger={['hover', 'click']}
+      >
+        {trigger}
+      </Popover>
+    </>
   );
 }
 
@@ -413,6 +451,7 @@ interface AppSwitcherContentProps {
   isSheet?: boolean;
   onCreateApp: () => void;
   onNavigateToApp: (appId: number) => void;
+  onSettings: (app: AppItem) => void;
   onToggleAppDrawer: () => void;
   query: string;
   recentApps: AppItem[];
@@ -427,6 +466,7 @@ function AppSwitcherContent({
   isSheet = false,
   onCreateApp,
   onNavigateToApp,
+  onSettings,
   onToggleAppDrawer,
   query,
   recentApps,
@@ -492,6 +532,7 @@ function AppSwitcherContent({
                 isActive={app.id === currentAppId}
                 key={app.id}
                 onSelect={onNavigateToApp}
+                onSettings={onSettings}
               />
             ))
           ) : (
@@ -530,59 +571,77 @@ function AppRow({
   app,
   isActive,
   onSelect,
+  onSettings,
 }: {
   app: AppItem;
   isActive: boolean;
   onSelect: (appId: number) => void;
+  onSettings: (app: AppItem) => void;
 }) {
   const appKeyLabel = formatAppKey(app.appKey);
 
   return (
-    <button
+    <div
       className={cn(
-        'flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-gray-50',
+        'group flex w-full items-center rounded-lg transition-colors hover:bg-gray-50',
         isActive ? 'bg-blue-50' : undefined,
       )}
-      onClick={() => onSelect(app.id)}
-      type="button"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
-        <PlatformIcon platform={app.platform} className="text-lg!" />
-      </span>
-      <span className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="min-w-0 flex-1">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-medium">{app.name}</span>
-            {app.status === 'paused' && <Tag className="m-0">Paused</Tag>}
+      <button
+        className="flex min-w-0 flex-1 items-center gap-3 border-0 bg-transparent px-3 py-3 text-left"
+        onClick={() => onSelect(app.id)}
+        type="button"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+          <PlatformIcon platform={app.platform} className="text-lg!" />
+        </span>
+        <span className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="min-w-0 flex-1">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-medium">{app.name}</span>
+              {app.status === 'paused' && <Tag className="m-0">Paused</Tag>}
+            </span>
+            <span className="mt-0.5 flex min-w-0 items-center gap-2 text-gray-500 text-xs">
+              <span>{platformLabels[app.platform]}</span>
+              {appKeyLabel && (
+                <span
+                  className="truncate font-mono"
+                  title={app.appKey || undefined}
+                >
+                  App Key: {appKeyLabel}
+                </span>
+              )}
+            </span>
           </span>
-          <span className="mt-0.5 flex min-w-0 items-center gap-2 text-gray-500 text-xs">
-            <span>{platformLabels[app.platform]}</span>
-            {appKeyLabel && (
-              <span className="truncate font-mono" title={app.appKey}>
-                App Key: {appKeyLabel}
-              </span>
-            )}
+          <span className="w-20 shrink-0 text-right">
+            <span className="block font-semibold text-slate-800 text-sm tabular-nums">
+              {(app.checkCount ?? 0).toLocaleString()}
+            </span>
+            <span className="block text-[10px] text-gray-500">checks</span>
           </span>
         </span>
-        <span className="w-20 shrink-0 text-right">
-          <span className="block font-semibold text-slate-800 text-sm tabular-nums">
-            {(app.checkCount ?? 0).toLocaleString()}
-          </span>
-          <span className="block text-[10px] text-gray-500">checks</span>
+        <span className="flex w-16 shrink-0 justify-end">
+          {isActive && (
+            <Tag color="blue" className="m-0 shrink-0">
+              Current
+            </Tag>
+          )}
         </span>
-      </span>
-      <span className="flex w-16 shrink-0 justify-end">
-        {isActive && (
-          <Tag color="blue" className="m-0 shrink-0">
-            Current
-          </Tag>
-        )}
-      </span>
-    </button>
+      </button>
+      <button
+        aria-label={`Open ${app.name} app settings`}
+        className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-slate-400 transition-colors hover:bg-white hover:text-blue-600"
+        onClick={() => onSettings(app)}
+        title="App Settings"
+        type="button"
+      >
+        <SettingOutlined className="text-base" />
+      </button>
+    </div>
   );
 }
 
-function formatAppKey(appKey?: string) {
+function formatAppKey(appKey?: string | null) {
   if (!appKey) {
     return null;
   }
@@ -623,6 +682,13 @@ function getSelectedKeys(pathname: string) {
 function getCurrentAppId(pathname: string) {
   const match = pathname.match(/^\/apps\/(\d+)/);
   return match ? Number(match[1]) : null;
+}
+
+function getCurrentAppKey(pathname: string, search: string) {
+  if (pathname !== rootRouterPath.realtimeMetrics) {
+    return null;
+  }
+  return new URLSearchParams(search).get('appKey');
 }
 
 interface ExtLinkProps {

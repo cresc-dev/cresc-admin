@@ -282,7 +282,17 @@ const BindPackage = ({
     bindings,
     packageMap,
   } = useManageContext();
-  const availablePackages = allPackages;
+  const matchedBindings: {
+    id?: number;
+    packageId: number;
+    rollout: number | null | undefined;
+  }[] = bindings.filter((b) => b.versionId === versionId);
+  const matchedPackageIds = new Set(
+    matchedBindings.map((binding) => binding.packageId),
+  );
+  const availablePackages = allPackages.filter(
+    (p) => !matchedPackageIds.has(p.id),
+  );
 
   const publishToPackage = (
     pkg: { id: number; name: string; deps?: Record<string, string> },
@@ -322,12 +332,6 @@ const BindPackage = ({
 
   const bindedPackages = (() => {
     const result = [];
-    const matchedBindings: {
-      id?: number;
-      packageId: number;
-      rollout: number | null | undefined;
-    }[] = bindings.filter((b) => b.versionId === versionId);
-
     if (matchedBindings.length === 0 || allPackages.length === 0) return null;
 
     for (const binding of matchedBindings) {

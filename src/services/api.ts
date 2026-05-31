@@ -2,6 +2,25 @@ import { versionKeys } from '@/utils/query-keys';
 import { queryClient } from '@/utils/queryClient';
 import request from './request';
 
+type BindingRequest = {
+  versionId: number;
+  packageId: number;
+  rollout?: number | null;
+  config?: Record<string, any>;
+};
+
+type UpsertBindingsParams = { appId: number } & (
+  | {
+      versionId: number;
+      packageIds: number[];
+      rollout?: number | null;
+      config?: Record<string, any>;
+    }
+  | {
+      bindings: BindingRequest[];
+    }
+);
+
 export const api = {
   login: (params: { email: string; pwd: string }) =>
     request<{ token: string }>('post', '/user/login', params, {
@@ -187,6 +206,10 @@ export const api = {
     }).then(() => {
       queryClient.invalidateQueries({ queryKey: ['bindings', appId] });
     }),
+  upsertBindings: ({ appId, ...params }: UpsertBindingsParams) =>
+    request('post', `/app/${appId}/binding/`, params).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['bindings', appId] });
+    }),
   deleteBinding: ({ appId, bindingId }: { appId: number; bindingId: number }) =>
     request('delete', `/app/${appId}/binding/${bindingId}`).then(() => {
       queryClient.setQueriesData(
@@ -194,6 +217,26 @@ export const api = {
         (old?: { data: Binding[] }) =>
           old
             ? { ...old, data: old.data?.filter((i) => i.id !== bindingId) }
+            : undefined,
+      );
+    }),
+  deleteBindings: ({
+    appId,
+    bindingIds,
+  }: {
+    appId: number;
+    bindingIds: number[];
+  }) =>
+    request('delete', `/app/${appId}/binding`, { bindingIds }).then(() => {
+      const bindingIdSet = new Set(bindingIds);
+      queryClient.setQueriesData(
+        { queryKey: ['bindings', appId] },
+        (old?: { data: Binding[] }) =>
+          old
+            ? {
+                ...old,
+                data: old.data?.filter((i) => !bindingIdSet.has(i.id)),
+              }
             : undefined,
       );
     }),

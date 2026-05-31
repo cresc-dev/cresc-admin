@@ -96,6 +96,7 @@ const actionMap: Record<string, string> = {
   'PUT /app/{id}/version/{id}': 'Update Hot Update Package Settings',
   'DELETE /app/{id}/version/{id}': 'Delete Hot Update Package',
   'POST /app/{id}/binding': 'Create/Update Binding',
+  'DELETE /app/{id}/binding': 'Batch Delete Binding',
   'DELETE /app/{id}/binding/{id}': 'Delete Binding',
   'POST /api-token/create': 'Create API Key',
   'DELETE /api-token/{id}': 'Delete API Key',

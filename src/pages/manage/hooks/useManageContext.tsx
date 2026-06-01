@@ -43,6 +43,12 @@ export const ManageContext = createContext<{
 
 export const useManageContext = () => useContext(ManageContext);
 
+function hasLegacyVersionBinding(pkg: Package) {
+  return Array.isArray(pkg.versions)
+    ? pkg.versions.length > 0
+    : pkg.versions !== null && pkg.versions !== undefined;
+}
+
 export const ManageProvider = ({
   children,
   appId,
@@ -57,12 +63,23 @@ export const ManageProvider = ({
   );
   const {
     packages,
-    unusedPackages,
     isLoading: packagesLoading,
     packageMap,
   } = usePackages(appId);
 
   const { bindings, isLoading: bindingsLoading } = useBinding(appId);
+  const unusedPackages = useMemo(() => {
+    if (bindingsLoading) {
+      return [];
+    }
+
+    const boundPackageIds = new Set(
+      bindings.map((binding) => binding.packageId),
+    );
+    return packages.filter(
+      (pkg) => !hasLegacyVersionBinding(pkg) && !boundPackageIds.has(pkg.id),
+    );
+  }, [bindings, bindingsLoading, packages]);
   const {
     packageTimestampWarnings,
     isLoading: packageTimestampWarningsLoading,

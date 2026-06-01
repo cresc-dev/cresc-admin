@@ -19,7 +19,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useMemo, useState } from 'react';
+import { type Dispatch, type SetStateAction, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { rootRouterPath } from '@/router';
 import { api } from '@/services/api';
@@ -30,30 +30,23 @@ import { DepsTable } from './deps-table';
 const PackageList = ({
   dataSource,
   loading,
+  selectedPackageIds,
+  setSelectedPackageIds,
 }: {
   dataSource?: Package[];
   loading?: boolean;
+  selectedPackageIds: number[];
+  setSelectedPackageIds: Dispatch<SetStateAction<number[]>>;
 }) => {
   const { app, appId, packageTimestampWarnings } = useManageContext();
-  const [selectedPackageIds, setSelectedPackageIds] = useState<number[]>([]);
   const selectedPackageIdSet = useMemo(
     () => new Set(selectedPackageIds),
     [selectedPackageIds],
-  );
-  const visiblePackageIds = useMemo(
-    () => dataSource?.map((item) => item.id) ?? [],
-    [dataSource],
   );
   const selectedPackages = useMemo(
     () => dataSource?.filter((item) => selectedPackageIdSet.has(item.id)) ?? [],
     [dataSource, selectedPackageIdSet],
   );
-  const selectedVisibleCount = visiblePackageIds.filter((id) =>
-    selectedPackageIdSet.has(id),
-  ).length;
-  const allVisibleSelected =
-    visiblePackageIds.length > 0 &&
-    selectedVisibleCount === visiblePackageIds.length;
   const hasSelectedVisiblePackages = selectedPackages.length > 0;
   const realtimeMetricsPath = app?.appKey
     ? `${rootRouterPath.realtimeMetrics}?${new URLSearchParams({
@@ -71,30 +64,18 @@ const PackageList = ({
     });
   };
 
-  const toggleAllVisiblePackages = (checked: boolean) => {
-    setSelectedPackageIds((prev) => {
-      if (checked) {
-        return [...new Set([...prev, ...visiblePackageIds])];
-      }
-      return prev.filter((id) => !visiblePackageIds.includes(id));
-    });
-  };
-
   return (
-    <>
-      {visiblePackageIds.length > 0 && (
-        <div className="mb-2 flex items-center gap-2 px-2">
-          <Checkbox
-            checked={allVisibleSelected}
-            indeterminate={selectedVisibleCount > 0 && !allVisibleSelected}
-            onChange={({ target }) => {
-              toggleAllVisiblePackages(target.checked);
-            }}
-          />
-          {hasSelectedVisiblePackages && (
+    <List
+      loading={loading}
+      className="packages"
+      size="small"
+      dataSource={dataSource}
+      footer={
+        hasSelectedVisiblePackages ? (
+          <div className="px-2">
             <Button
+              className="w-full sm:w-auto"
               danger
-              size="small"
               icon={<DeleteOutlined />}
               onClick={() =>
                 removeSelectedPackages(selectedPackages, appId, () => {
@@ -108,27 +89,21 @@ const PackageList = ({
             >
               Delete
             </Button>
-          )}
-        </div>
+          </div>
+        ) : undefined
+      }
+      renderItem={(item) => (
+        <Item
+          item={item}
+          selected={selectedPackageIdSet.has(item.id)}
+          onSelectedChange={(checked) =>
+            togglePackageSelection(item.id, checked)
+          }
+          warningTimestamps={packageTimestampWarnings.get(item.id) ?? []}
+          realtimeMetricsPath={realtimeMetricsPath}
+        />
       )}
-      <List
-        loading={loading}
-        className="packages"
-        size="small"
-        dataSource={dataSource}
-        renderItem={(item) => (
-          <Item
-            item={item}
-            selected={selectedPackageIdSet.has(item.id)}
-            onSelectedChange={(checked) =>
-              togglePackageSelection(item.id, checked)
-            }
-            warningTimestamps={packageTimestampWarnings.get(item.id) ?? []}
-            realtimeMetricsPath={realtimeMetricsPath}
-          />
-        )}
-      />
-    </>
+    />
   );
 };
 export default PackageList;
@@ -142,12 +117,18 @@ function removeSelectedPackages(
     return;
   }
   Modal.confirm({
-    title: 'Delete selected native packages:',
+    title: 'Permanently delete selected native packages?',
     content: (
-      <div className="max-h-48 overflow-y-auto">
-        {items.map((item) => (
-          <div key={item.id}>{item.name}</div>
-        ))}
+      <div>
+        <Typography.Paragraph type="danger">
+          This cannot be undone. Make sure these native packages are no longer
+          needed.
+        </Typography.Paragraph>
+        <div className="max-h-48 overflow-y-auto">
+          {items.map((item) => (
+            <div key={item.id}>{item.name}</div>
+          ))}
+        </div>
       </div>
     ),
     maskClosable: true,
@@ -164,7 +145,13 @@ function removeSelectedPackages(
 
 function remove(item: Package, appId: number) {
   Modal.confirm({
-    title: `This action cannot be undone. Delete "${item.name}"?`,
+    title: `Permanently delete native package "${item.name}"?`,
+    content: (
+      <Typography.Paragraph type="danger">
+        This cannot be undone. Make sure this native package is no longer
+        needed.
+      </Typography.Paragraph>
+    ),
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
@@ -269,13 +256,14 @@ const Item = ({
       <List.Item className="p-2">
         <List.Item.Meta
           title={
-            <Row align="middle">
-              <Checkbox
-                className="mr-2"
-                checked={selected}
-                onChange={({ target }) => onSelectedChange(target.checked)}
-              />
-              <Col flex={1}>
+            <Row align="middle" className="w-full" wrap={false}>
+              <Col flex="none" className="pr-4 leading-none">
+                <Checkbox
+                  checked={selected}
+                  onChange={({ target }) => onSelectedChange(target.checked)}
+                />
+              </Col>
+              <Col flex="auto" className="min-w-0">
                 <div className="flex flex-wrap items-center">
                   <span>{item.name}</span>
                   {hasTimestampWarning && realtimeMetricsPath && (

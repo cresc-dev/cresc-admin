@@ -149,7 +149,7 @@ export const useLocalStorageCooldown = ({
 };
 
 export const useUserInfo = () => {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['userInfo'],
     queryFn: api.me,
     enabled: () => !!getToken(),
@@ -164,6 +164,7 @@ export const useUserInfo = () => {
     user: getToken() ? data : null,
     displayExpireDay,
     displayRemainingDays,
+    isLoading,
   };
 };
 

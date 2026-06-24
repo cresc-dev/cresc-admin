@@ -47,6 +47,7 @@ export class RequestError extends Error {
 }
 
 export interface RequestOptions {
+  baseUrl?: string;
   suppressErrorToast?: boolean;
 }
 
@@ -58,8 +59,8 @@ export default async function request<T extends Record<any, any>>(
 ) {
   const headers: HeadersInit = {};
   const options: RequestInit = { method, headers };
-  const baseUrl = await getBaseUrl;
-  let url = `${baseUrl}${path}`;
+  const baseUrl = requestOptions.baseUrl ?? (await getBaseUrl);
+  let url = `${baseUrl.replace(/\/$/, '')}${path}`;
   if (_token) {
     headers['x-accesstoken'] = _token;
   }

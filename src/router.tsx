@@ -4,7 +4,8 @@ import MainLayout from './components/main-layout';
 import { getToken } from './services/request';
 
 export const rootRouterPath = {
-  apps: '/',
+  home: '/',
+  apps: '/apps',
   user: '/user',
   versions: (id: string) => `/apps/${id}`,
   resetPassword: (step: string) => `/reset-password/${step}`,
@@ -20,6 +21,7 @@ export const rootRouterPath = {
   adminUsers: '/admin-users',
   adminApps: '/admin-apps',
   adminMetrics: '/admin-metrics',
+  adminServiceStatus: '/admin-service-status',
   apiTokens: '/api-tokens',
 };
 
@@ -43,13 +45,13 @@ export const needAuthLoader = ({ request }: { request: Request }) => {
 
 function resolveAuthenticatedRedirect(loginFrom?: string | null) {
   if (!loginFrom?.startsWith('/') || loginFrom.startsWith('//')) {
-    return rootRouterPath.apps;
+    return rootRouterPath.home;
   }
   if (
     loginFrom === rootRouterPath.login ||
     loginFrom.startsWith(`${rootRouterPath.login}?`)
   ) {
-    return rootRouterPath.apps;
+    return rootRouterPath.home;
   }
   return loginFrom;
 }
@@ -73,7 +75,7 @@ export const router = createHashRouter([
       {
         index: true,
         loader: needAuthLoader,
-        lazy: () => import('./pages/apps'),
+        lazy: () => import('./pages/home'),
       },
       {
         path: 'apps',
@@ -148,6 +150,11 @@ export const router = createHashRouter([
         path: 'admin-metrics',
         loader: needAuthLoader,
         lazy: () => import('./pages/admin-metrics'),
+      },
+      {
+        path: 'admin-service-status',
+        loader: needAuthLoader,
+        lazy: () => import('./pages/admin-service-status'),
       },
       {
         path: 'api-tokens',

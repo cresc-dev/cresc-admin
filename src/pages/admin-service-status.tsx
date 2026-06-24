@@ -62,16 +62,16 @@ type ServiceStatusSummary = {
 
 const SERVICE_STATUS_TARGETS = [
   {
-    key: 'primary',
-    label: 'primary',
-    host: 'api.cresc.dev',
-    baseUrl: 'https://api.cresc.dev',
+    key: 'sg',
+    label: 'sg',
+    host: 'sg.cresc.dev',
+    baseUrl: 'https://sg.cresc.dev',
   },
   {
-    key: 'fallback',
-    label: 'fallback',
-    host: 'api.cresc.app',
-    baseUrl: 'https://api.cresc.app',
+    key: 'kr',
+    label: 'kr',
+    host: 'kr.cresc.dev',
+    baseUrl: 'https://kr.cresc.dev',
   },
 ] as const;
 

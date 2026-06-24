@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import {
   api,
-  type InternalErrorLogEntry,
+  type InternalApi5xxEvent,
   type InternalMetricCounter,
   type InternalMetricDuration,
   type InternalMetricsResponse,
@@ -26,7 +26,7 @@ import { cn } from '@/utils/helper';
 
 const { Paragraph, Text, Title } = Typography;
 
-const ERROR_LOG_PAGE_SIZE = 20;
+const API_5XX_EVENT_PAGE_SIZE = 20;
 const DEFAULT_DURATION_BUCKETS_MS = [
   10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000,
 ];
@@ -509,31 +509,70 @@ const endpointColumns: ColumnsType<EndpointRow> = [
   },
 ];
 
-const errorLogColumns: ColumnsType<InternalErrorLogEntry> = [
+const api5xxEventColumns: ColumnsType<InternalApi5xxEvent> = [
   {
     dataIndex: 'time',
-    render: (time: string | undefined) =>
-      time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-',
+    render: (time: string) => dayjs(time).format('YYYY-MM-DD HH:mm:ss'),
     title: 'Time',
     width: 180,
   },
   {
-    align: 'right',
-    dataIndex: 'index',
-    title: 'Line',
-    width: 80,
+    dataIndex: 'statusCode',
+    render: (statusCode: number) => <Tag color="red">{statusCode}</Tag>,
+    title: 'Status',
+    width: 90,
   },
   {
-    dataIndex: 'line',
-    render: (line: string, entry) => (
-      <Paragraph className="m-0! whitespace-pre-wrap break-all font-mono text-xs">
-        {line}
-        {entry.lineTruncated ? (
-          <Text type="secondary"> line truncated</Text>
-        ) : null}
-      </Paragraph>
+    dataIndex: 'method',
+    render: (method: string) => <Tag>{method}</Tag>,
+    title: 'Method',
+    width: 90,
+  },
+  {
+    dataIndex: 'path',
+    render: (value: string) => (
+      <Text className="font-mono text-xs" copyable>
+        {value}
+      </Text>
     ),
-    title: 'Content',
+    title: 'Path',
+    width: 260,
+  },
+  {
+    align: 'right',
+    dataIndex: 'durationMs',
+    render: (value: number) => formatMs(value),
+    title: 'Duration',
+    width: 100,
+  },
+  {
+    dataIndex: 'requestId',
+    render: (value: string | undefined) =>
+      value ? (
+        <Text className="font-mono text-xs" copyable>
+          {value}
+        </Text>
+      ) : (
+        '-'
+      ),
+    title: 'Request ID',
+    width: 180,
+  },
+  {
+    dataIndex: 'message',
+    render: (_: string | undefined, entry) => (
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap gap-1">
+          {entry.errorCode && <Tag>{entry.errorCode}</Tag>}
+          {entry.errorName && <Tag>{entry.errorName}</Tag>}
+          <Tag>PID {entry.pid}</Tag>
+        </div>
+        <Paragraph className="m-0! whitespace-pre-wrap break-all text-xs">
+          {entry.message || '-'}
+        </Paragraph>
+      </div>
+    ),
+    title: 'Error',
   },
 ];
 
@@ -550,17 +589,17 @@ function ServiceStatusPanel({
   snapshot?: InternalMetricsResponse;
   target: ServiceStatusTarget;
 }) {
-  const [errorLogPage, setErrorLogPage] = useState(1);
-  const errorLogOffset = (errorLogPage - 1) * ERROR_LOG_PAGE_SIZE;
-  const errorLogsQuery = useQuery({
+  const [api5xxEventPage, setApi5xxEventPage] = useState(1);
+  const api5xxEventOffset = (api5xxEventPage - 1) * API_5XX_EVENT_PAGE_SIZE;
+  const api5xxEventsQuery = useQuery({
     queryFn: () =>
-      api.getInternalErrorLogs({
+      api.getInternalApi5xxEvents({
         baseUrl: target.baseUrl,
-        limit: ERROR_LOG_PAGE_SIZE,
-        offset: errorLogOffset,
+        limit: API_5XX_EVENT_PAGE_SIZE,
+        offset: api5xxEventOffset,
         suppressErrorToast: true,
       }),
-    queryKey: ['internalErrorLogs', target.key, errorLogOffset],
+    queryKey: ['internalApi5xxEvents', target.key, api5xxEventOffset],
     refetchInterval: 30_000,
   });
   const apiDuration = useMemo(
@@ -625,10 +664,10 @@ function ServiceStatusPanel({
         </div>
         <Button
           icon={<ReloadOutlined />}
-          loading={isFetching || errorLogsQuery.isFetching}
+          loading={isFetching || api5xxEventsQuery.isFetching}
           onClick={() => {
             refetch();
-            errorLogsQuery.refetch();
+            api5xxEventsQuery.refetch();
           }}
         >
           Refresh
@@ -750,48 +789,44 @@ function ServiceStatusPanel({
         </Card>
 
         <Card
+          className="mb-4"
           extra={
-            errorLogsQuery.data ? (
+            api5xxEventsQuery.data ? (
               <Text type="secondary">
-                {errorLogsQuery.data.logFile}
-                {errorLogsQuery.data.truncated
-                  ? ` · recent ${formatBytes(errorLogsQuery.data.windowBytes)}`
-                  : ''}
+                Recent {formatCount(api5xxEventsQuery.data.total)} / Capacity{' '}
+                {formatCount(api5xxEventsQuery.data.capacity)}
               </Text>
             ) : null
           }
-          title="Error Logs"
+          title="5xx Events"
         >
-          {errorLogsQuery.error && (
+          {api5xxEventsQuery.error && (
             <div className="mb-3">
               <Text type="danger">
-                {(errorLogsQuery.error as Error).message || 'Request failed'}
+                {(api5xxEventsQuery.error as Error).message || 'Request failed'}
               </Text>
             </div>
           )}
-          {errorLogsQuery.data?.message && (
-            <div className="mb-3">
-              <Text type="secondary">{errorLogsQuery.data.message}</Text>
-            </div>
-          )}
           <Table
-            columns={errorLogColumns}
-            dataSource={errorLogsQuery.data?.data ?? []}
-            loading={errorLogsQuery.isFetching}
+            columns={api5xxEventColumns}
+            dataSource={api5xxEventsQuery.data?.data ?? []}
+            loading={api5xxEventsQuery.isFetching}
             locale={{
-              emptyText: errorLogsQuery.error ? 'Request failed' : 'No errors',
+              emptyText: api5xxEventsQuery.error
+                ? 'Request failed'
+                : 'No 5xx events',
             }}
             pagination={{
-              current: errorLogPage,
+              current: api5xxEventPage,
               hideOnSinglePage: false,
-              onChange: setErrorLogPage,
-              pageSize: ERROR_LOG_PAGE_SIZE,
+              onChange: setApi5xxEventPage,
+              pageSize: API_5XX_EVENT_PAGE_SIZE,
               showSizeChanger: false,
-              showTotal: (total) => `${formatCount(total)} lines`,
-              total: errorLogsQuery.data?.total ?? 0,
+              showTotal: (total) => `${formatCount(total)} events`,
+              total: api5xxEventsQuery.data?.total ?? 0,
             }}
-            rowKey="index"
-            scroll={{ x: 900 }}
+            rowKey="id"
+            scroll={{ x: 1100 }}
             size="small"
           />
         </Card>

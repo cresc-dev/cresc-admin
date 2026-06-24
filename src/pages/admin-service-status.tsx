@@ -795,6 +795,14 @@ function ServiceStatusPanel({
               <Text type="secondary">
                 Recent {formatCount(api5xxEventsQuery.data.total)} / Capacity{' '}
                 {formatCount(api5xxEventsQuery.data.capacity)}
+                {api5xxEventsQuery.data.log ? (
+                  <>
+                    {' '}
+                    / Filtered {formatCount(api5xxEventsQuery.data.log.ignored)}
+                    / Log window{' '}
+                    {formatBytes(api5xxEventsQuery.data.log.readBytes)}
+                  </>
+                ) : null}
               </Text>
             ) : null
           }

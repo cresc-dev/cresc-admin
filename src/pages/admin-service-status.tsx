@@ -1,6 +1,6 @@
 import { Line } from '@ant-design/charts';
 import { ReloadOutlined } from '@ant-design/icons';
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import {
   Button,
   Card,
@@ -17,14 +17,16 @@ import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import {
   api,
+  type InternalErrorLogEntry,
   type InternalMetricCounter,
   type InternalMetricDuration,
   type InternalMetricsResponse,
 } from '@/services/api';
 import { cn } from '@/utils/helper';
 
-const { Text, Title } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
+const ERROR_LOG_PAGE_SIZE = 20;
 const DEFAULT_DURATION_BUCKETS_MS = [
   10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000,
 ];
@@ -507,6 +509,34 @@ const endpointColumns: ColumnsType<EndpointRow> = [
   },
 ];
 
+const errorLogColumns: ColumnsType<InternalErrorLogEntry> = [
+  {
+    dataIndex: 'time',
+    render: (time: string | undefined) =>
+      time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-',
+    title: 'Time',
+    width: 180,
+  },
+  {
+    align: 'right',
+    dataIndex: 'index',
+    title: 'Line',
+    width: 80,
+  },
+  {
+    dataIndex: 'line',
+    render: (line: string, entry) => (
+      <Paragraph className="m-0! whitespace-pre-wrap break-all font-mono text-xs">
+        {line}
+        {entry.lineTruncated ? (
+          <Text type="secondary"> line truncated</Text>
+        ) : null}
+      </Paragraph>
+    ),
+    title: 'Content',
+  },
+];
+
 function ServiceStatusPanel({
   error,
   isFetching,
@@ -520,6 +550,19 @@ function ServiceStatusPanel({
   snapshot?: InternalMetricsResponse;
   target: ServiceStatusTarget;
 }) {
+  const [errorLogPage, setErrorLogPage] = useState(1);
+  const errorLogOffset = (errorLogPage - 1) * ERROR_LOG_PAGE_SIZE;
+  const errorLogsQuery = useQuery({
+    queryFn: () =>
+      api.getInternalErrorLogs({
+        baseUrl: target.baseUrl,
+        limit: ERROR_LOG_PAGE_SIZE,
+        offset: errorLogOffset,
+        suppressErrorToast: true,
+      }),
+    queryKey: ['internalErrorLogs', target.key, errorLogOffset],
+    refetchInterval: 30_000,
+  });
   const apiDuration = useMemo(
     () =>
       aggregateDurations(
@@ -582,8 +625,11 @@ function ServiceStatusPanel({
         </div>
         <Button
           icon={<ReloadOutlined />}
-          loading={isFetching}
-          onClick={() => refetch()}
+          loading={isFetching || errorLogsQuery.isFetching}
+          onClick={() => {
+            refetch();
+            errorLogsQuery.refetch();
+          }}
         >
           Refresh
         </Button>
@@ -692,13 +738,60 @@ function ServiceStatusPanel({
           />
         </div>
 
-        <Card title="Top API Paths">
+        <Card className="mb-4" title="Top API Paths">
           <Table
             columns={endpointColumns}
             dataSource={endpointRows.slice(0, 12)}
             pagination={false}
             rowKey="key"
             scroll={{ x: 780 }}
+            size="small"
+          />
+        </Card>
+
+        <Card
+          extra={
+            errorLogsQuery.data ? (
+              <Text type="secondary">
+                {errorLogsQuery.data.logFile}
+                {errorLogsQuery.data.truncated
+                  ? ` · recent ${formatBytes(errorLogsQuery.data.windowBytes)}`
+                  : ''}
+              </Text>
+            ) : null
+          }
+          title="Error Logs"
+        >
+          {errorLogsQuery.error && (
+            <div className="mb-3">
+              <Text type="danger">
+                {(errorLogsQuery.error as Error).message || 'Request failed'}
+              </Text>
+            </div>
+          )}
+          {errorLogsQuery.data?.message && (
+            <div className="mb-3">
+              <Text type="secondary">{errorLogsQuery.data.message}</Text>
+            </div>
+          )}
+          <Table
+            columns={errorLogColumns}
+            dataSource={errorLogsQuery.data?.data ?? []}
+            loading={errorLogsQuery.isFetching}
+            locale={{
+              emptyText: errorLogsQuery.error ? 'Request failed' : 'No errors',
+            }}
+            pagination={{
+              current: errorLogPage,
+              hideOnSinglePage: false,
+              onChange: setErrorLogPage,
+              pageSize: ERROR_LOG_PAGE_SIZE,
+              showSizeChanger: false,
+              showTotal: (total) => `${formatCount(total)} lines`,
+              total: errorLogsQuery.data?.total ?? 0,
+            }}
+            rowKey="index"
+            scroll={{ x: 900 }}
             size="small"
           />
         </Card>

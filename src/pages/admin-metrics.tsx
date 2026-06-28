@@ -12,6 +12,7 @@ import {
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '@/services/api';
 import { patchSearchParams } from '@/utils/helper';
@@ -36,16 +37,18 @@ interface MetricsResponse {
 
 const TOTAL_SERIES_LABEL = 'total';
 const DEFAULT_RANGE_HOURS = 24;
-const modeLabels: Record<MetricMode, string> = {
-  pv: 'Requests',
-  uv: 'Users',
-};
+const getModeLabels = (
+  t: (key: string) => string,
+): Record<MetricMode, string> => ({
+  pv: t('admin_metrics.mode_requests'),
+  uv: t('admin_metrics.mode_users'),
+});
 
-const metricKeyOptions = [
-  { label: 'rn', value: 'rn' },
-  { label: 'os', value: 'os' },
-  { label: 'rnu', value: 'rnu' },
-] satisfies Array<{ label: string; value: MetricKeyPrefix }>;
+const getMetricKeyOptions = (t: (key: string) => string) => [
+  { label: t('admin_metrics.prefix_rn'), value: 'rn' as const },
+  { label: t('admin_metrics.prefix_os'), value: 'os' as const },
+  { label: t('admin_metrics.prefix_rnu'), value: 'rnu' as const },
+];
 
 const getCategoryPrefix = (category: string) => {
   const separatorIndex = category.indexOf(':');
@@ -92,8 +95,9 @@ type ChartController = {
 const parseMode = (value: string | null): MetricMode =>
   value === 'uv' ? 'uv' : 'pv';
 
+const VALID_KEY_PREFIXES = ['rn', 'os', 'rnu'] as const;
 const parseKeyPrefix = (value: string | null): MetricKeyPrefix =>
-  metricKeyOptions.some((option) => option.value === value)
+  VALID_KEY_PREFIXES.some((prefix) => prefix === value)
     ? (value as MetricKeyPrefix)
     : 'rn';
 
@@ -123,7 +127,10 @@ const parseDateRange = (
 };
 
 export const Component = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const modeLabels = getModeLabels(t);
+  const metricKeyOptions = getMetricKeyOptions(t);
   const legendValuesRef = useRef<string[]>([]);
   const defaultRangeRef = useRef<[Dayjs, Dayjs] | null>(null);
   defaultRangeRef.current ??= createDefaultDateRange();
@@ -308,7 +315,7 @@ export const Component = () => {
     shapeField: 'smooth',
     axis: {
       x: {
-        title: 'Time',
+        title: t('admin_metrics.time'),
         labelAutoRotate: true,
         labelFormatter: (value: string) => {
           const parsed = dayjs(value);
@@ -365,11 +372,10 @@ export const Component = () => {
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <Title level={4} className="m-0!">
-              Global Metrics
+              {t('admin_metrics.title')}
             </Title>
             <div className="text-sm text-gray-500">
-              Time range, metric mode, and prefix filter all stay in the URL so
-              the same view is easy to revisit.
+              {t('admin_metrics.description')}
             </div>
           </div>
           <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
@@ -382,11 +388,15 @@ export const Component = () => {
               }}
               className="w-full md:w-auto"
             >
-              <Radio.Button value="pv">Requests</Radio.Button>
-              <Radio.Button value="uv">Users</Radio.Button>
+              <Radio.Button value="pv">
+                {t('admin_metrics.mode_requests')}
+              </Radio.Button>
+              <Radio.Button value="uv">
+                {t('admin_metrics.mode_users')}
+              </Radio.Button>
             </Radio.Group>
             <Select
-              placeholder="Key Prefix"
+              placeholder={t('admin_metrics.key_prefix')}
               showSearch
               optionFilterProp="label"
               value={selectedKeyPrefix}
@@ -403,23 +413,23 @@ export const Component = () => {
               className="w-full md:w-auto"
               presets={[
                 {
-                  label: 'Past 1 hour',
+                  label: t('admin_metrics.range_1h'),
                   value: [dayjs().subtract(1, 'hour'), dayjs()],
                 },
                 {
-                  label: 'Past 6 hours',
+                  label: t('admin_metrics.range_6h'),
                   value: [dayjs().subtract(6, 'hour'), dayjs()],
                 },
                 {
-                  label: 'Past 24 hours',
+                  label: t('admin_metrics.range_24h'),
                   value: [dayjs().subtract(24, 'hour'), dayjs()],
                 },
                 {
-                  label: 'Past 7 days',
+                  label: t('admin_metrics.range_7d'),
                   value: [dayjs().subtract(7, 'day'), dayjs()],
                 },
                 {
-                  label: 'Past 30 days',
+                  label: t('admin_metrics.range_30d'),
                   value: [dayjs().subtract(30, 'day'), dayjs()],
                 },
               ]}
@@ -431,13 +441,13 @@ export const Component = () => {
           <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
             <Card size="small">
               <Statistic
-                title="Total Requests"
+                title={t('admin_metrics.total_requests')}
                 value={isLoadingPv ? '-' : totalPv.toLocaleString()}
               />
             </Card>
             <Card size="small">
               <Statistic
-                title="Total Users"
+                title={t('admin_metrics.total_users')}
                 value={isLoadingUv ? '-' : totalUv.toLocaleString()}
               />
             </Card>
@@ -448,13 +458,13 @@ export const Component = () => {
               <Line {...lineConfig} />
             ) : (
               <div className="flex h-80 items-center justify-center text-gray-400">
-                No data
+                {t('admin_metrics.no_data')}
               </div>
             )}
           </Card>
 
           {topCategories.length > 0 && (
-            <Card title="Category Breakdown (Top 10)" size="small">
+            <Card title={t('admin_metrics.category_breakdown')} size="small">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                 {topCategories.map(([category, value]) => (
                   <div key={category} className="rounded bg-gray-50 p-3">
@@ -468,7 +478,7 @@ export const Component = () => {
                       {value.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Share{' '}
+                      {t('admin_metrics.share')}{' '}
                       {displayTotals.total > 0
                         ? ((value / displayTotals.total) * 100).toFixed(1)
                         : '0.0'}

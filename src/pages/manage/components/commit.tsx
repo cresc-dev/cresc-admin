@@ -2,8 +2,10 @@ import { PullRequestOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import dayjs from 'dayjs';
 import gitUrlParse from 'git-url-parse';
+import { useTranslation } from 'react-i18next';
 
 export const Commit = ({ commit }: { commit?: Commit }) => {
+  const { t } = useTranslation();
   if (!commit) {
     return (
       <Popover
@@ -11,11 +13,8 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
         content={
           <div>
             <div className="text-center my-1 mx-auto">
-              <div className="font-bold">Recent Commit</div>
-              <div className="text-gray-500">
-                Require cli v1.42.0+ version to upload, and use git to manage
-                code to view commit records
-              </div>
+              <div className="font-bold">{t('commit.title')}</div>
+              <div className="text-gray-500">{t('commit.description')}</div>
             </div>
           </div>
         }
@@ -44,12 +43,17 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
       content={
         <div>
           <div className="my-1 mx-auto">
-            <div className="font-bold">Recent Commit</div>
-            <div>Author: {author}</div>
+            <div className="font-bold">{t('commit.title_with_commit')}</div>
             <div>
-              Time: {time.fromNow()} ({time.format('YYYY-MM-DD HH:mm:ss')})
+              {t('commit.author')} {author}
             </div>
-            <div>Summary: {message}</div>
+            <div>
+              {t('commit.time')} {time.fromNow()} (
+              {time.format('YYYY-MM-DD HH:mm:ss')})
+            </div>
+            <div>
+              {t('commit.summary')} {message}
+            </div>
             <hr />
             {url ? (
               <a

@@ -1,5 +1,6 @@
 import { Button, Result, Spin } from 'antd';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { rootRouterPath, router } from '@/router';
 import { completeLogin } from '@/services/auth';
@@ -12,6 +13,7 @@ function buildLoginUrl(loginFrom?: string | null) {
 }
 
 export const OAuthCallback = () => {
+  const { t } = useTranslation();
   const { search } = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [loginUrl, setLoginUrl] = useState(rootRouterPath.login);
@@ -28,13 +30,13 @@ export const OAuthCallback = () => {
       return;
     }
 
-    setError(params.get('error') || 'Failed to complete social login');
-  }, [search]);
+    setError(params.get('error') || t('oauth_callback.default_error'));
+  }, [search, t]);
 
   if (!error) {
     return (
       <div style={style.loadingWrap}>
-        <Spin size="large" tip="Signing you in..." />
+        <Spin size="large" tip={t('oauth_callback.signing_in')} />
       </div>
     );
   }
@@ -43,11 +45,11 @@ export const OAuthCallback = () => {
     <div style={style.resultWrap}>
       <Result
         status="error"
-        title="Social login failed"
+        title={t('oauth_callback.login_failed')}
         subTitle={error}
         extra={
           <Button type="primary" onClick={() => router.navigate(loginUrl)}>
-            Back to login
+            {t('oauth_callback.back_login')}
           </Button>
         }
       />

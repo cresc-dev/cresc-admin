@@ -1,12 +1,22 @@
 import '@ant-design/v5-patch-for-react-19';
+import { ConfigProvider } from 'antd';
+import enUS from 'antd/locale/en_US';
+import zhCN from 'antd/locale/zh_CN';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+import './i18n';
 // import { DndProvider } from "react-dnd";
 // import { HTML5Backend } from "react-dnd-html5-backend";
 import './index.css';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { router } from './router';
 import { queryClient } from './utils/queryClient';
+
+const antdLocales: Record<string, typeof enUS> = {
+  en: enUS,
+  'zh-CN': zhCN,
+};
 
 const isLocalHost = () => {
   const { hostname } = window.location;
@@ -59,9 +69,18 @@ if (hasServiceWorker() && shouldEnablePwa) {
 
 const root = document.getElementById('main');
 if (root) {
-  createRoot(root).render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
+  createRoot(root).render(<App />);
+}
+
+function App() {
+  const { i18n } = useTranslation();
+  const antdLocale = antdLocales[i18n.language] ?? enUS;
+
+  return (
+    <ConfigProvider locale={antdLocale}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ConfigProvider>
   );
 }

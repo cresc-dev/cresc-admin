@@ -2,6 +2,7 @@ import { DownOutlined } from '@ant-design/icons';
 import { Checkbox, Dropdown, Grid, Layout, type MenuProps, Tabs } from 'antd';
 
 import { type Dispatch, type SetStateAction, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './manage.css';
 
@@ -43,16 +44,18 @@ const PackageFilterControl = ({
   selectedPackageIds: number[];
   setSelectedPackageIds: Dispatch<SetStateAction<number[]>>;
 }) => {
-  const filterLabel = filter === 'all' ? 'All' : 'Unused';
+  const { t } = useTranslation();
+  const filterLabel =
+    filter === 'all' ? t('manage.filter_all') : t('manage.filter_unused');
   const items: MenuProps['items'] = [
     {
       key: 'all',
-      label: 'All',
+      label: t('manage.filter_all'),
       onClick: () => setFilter('all'),
     },
     {
       key: 'unused',
-      label: 'Unused',
+      label: t('manage.filter_unused'),
       onClick: () => setFilter('unused'),
     },
   ];
@@ -93,6 +96,7 @@ const PackageFilterControl = ({
 };
 
 const ManageDashBoard = () => {
+  const { t } = useTranslation();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const { packages, unusedPackages, packagesLoading, bindingsLoading } =
@@ -149,12 +153,12 @@ const ManageDashBoard = () => {
         items={[
           {
             key: 'versions',
-            label: 'OTA Versions',
+            label: t('manage.tab_versions'),
             children: <VersionTable />,
           },
           {
             key: 'packages',
-            label: 'Native Packages',
+            label: t('manage.tab_packages'),
             children: (
               <div className="rounded-lg bg-white p-4">{packageList}</div>
             ),
@@ -172,7 +176,7 @@ const ManageDashBoard = () => {
         width={280}
         style={{ marginRight: 16, maxWidth: '100%' }}
       >
-        <div className="py-4">Native Packages</div>
+        <div className="py-4">{t('manage.tab_packages')}</div>
         {packageList}
       </Layout.Sider>
       <Layout.Content className="!p-0" style={{ minWidth: 0 }}>
@@ -183,6 +187,7 @@ const ManageDashBoard = () => {
 };
 
 export const Manage = () => {
+  const { t } = useTranslation();
   const params = useParams<{ id?: string }>();
   const id = Number(params.id!);
   const { app } = useApp(id);
@@ -200,7 +205,7 @@ export const Manage = () => {
       <AppDetailHeader
         activeView="management"
         app={app}
-        appNameFallback="Loading app"
+        appNameFallback={t('manage.loading_app')}
         metricsDisabled={!realtimeMetricsPath}
         onMetricsClick={() => {
           if (realtimeMetricsPath) {
@@ -208,7 +213,7 @@ export const Manage = () => {
           }
         }}
         onSettingsClick={app ? () => openAppSettings(app) : undefined}
-        sectionLabel="Apps"
+        sectionLabel={t('manage.breadcrumb_apps')}
       />
       <ManageDashBoard />
     </ManageProvider>

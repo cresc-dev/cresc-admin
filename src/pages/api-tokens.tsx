@@ -18,12 +18,14 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { API_REFERENCE_LINK } from '@/constants/links';
 import { api } from '@/services/api';
 
 const { Paragraph } = Typography;
 
 function ApiTokensPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
@@ -42,24 +44,24 @@ function ApiTokensPage() {
       if (result?.token) {
         setNewToken(result.token);
         setCreateModalVisible(false);
-        message.success('API Token created successfully');
+        message.success(t('api_tokens.create_success'));
         queryClient.invalidateQueries({ queryKey: ['apiTokens'] });
         form.resetFields();
       }
     },
     onError: (error: Error) => {
-      message.error(error.message || 'Failed to create');
+      message.error(error.message || t('api_tokens.create_failed'));
     },
   });
 
   const revokeMutation = useMutation({
     mutationFn: api.revokeApiToken,
     onSuccess: () => {
-      message.success('Token revoked');
+      message.success(t('api_tokens.revoke_success'));
       queryClient.invalidateQueries({ queryKey: ['apiTokens'] });
     },
     onError: (error: Error) => {
-      message.error(error.message || 'Failed to revoke');
+      message.error(error.message || t('api_tokens.revoke_failed'));
     },
   });
 
@@ -85,29 +87,29 @@ function ApiTokensPage() {
 
   const columns: ColumnsType<ApiToken> = [
     {
-      title: 'ID',
+      title: t('api_tokens.col_id'),
       dataIndex: 'id',
       key: 'id',
       responsive: ['md'],
       width: 60,
     },
     {
-      title: 'Name',
+      title: t('api_tokens.col_name'),
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: ApiToken) => (
         <Space wrap size={[4, 8]}>
           <KeyOutlined />
           {name}
-          {record.isRevoked && <Tag color="red">Revoked</Tag>}
+          {record.isRevoked && <Tag color="red">{t('api_tokens.revoked')}</Tag>}
           {record.isExpired && !record.isRevoked && (
-            <Tag color="orange">Expired</Tag>
+            <Tag color="orange">{t('api_tokens.expired')}</Tag>
           )}
         </Space>
       ),
     },
     {
-      title: 'Token',
+      title: t('api_tokens.col_token'),
       dataIndex: 'tokenSuffix',
       key: 'tokenSuffix',
       render: (tokenSuffix: string) => (
@@ -117,35 +119,45 @@ function ApiTokensPage() {
       ),
     },
     {
-      title: 'Permissions',
+      title: t('api_tokens.col_permissions'),
       dataIndex: 'permissions',
       key: 'permissions',
       render: (permissions: ApiToken['permissions']) => (
         <Space>
-          {permissions?.read && <Tag color="blue">Read</Tag>}
-          {permissions?.write && <Tag color="green">Write</Tag>}
-          {permissions?.delete && <Tag color="red">Delete</Tag>}
+          {permissions?.read && (
+            <Tag color="blue">{t('api_tokens.perm_read')}</Tag>
+          )}
+          {permissions?.write && (
+            <Tag color="green">{t('api_tokens.perm_write')}</Tag>
+          )}
+          {permissions?.delete && (
+            <Tag color="red">{t('api_tokens.perm_delete')}</Tag>
+          )}
         </Space>
       ),
     },
     {
-      title: 'Expires At',
+      title: t('api_tokens.col_expires'),
       dataIndex: 'expiresAt',
       key: 'expiresAt',
       responsive: ['sm'],
       render: (expiresAt: string | null) =>
-        expiresAt ? dayjs(expiresAt).format('YYYY-MM-DD HH:mm') : 'Never',
+        expiresAt
+          ? dayjs(expiresAt).format('YYYY-MM-DD HH:mm')
+          : t('api_tokens.never'),
     },
     {
-      title: 'Last Used',
+      title: t('api_tokens.col_last_used'),
       dataIndex: 'lastUsedAt',
       key: 'lastUsedAt',
       responsive: ['lg'],
       render: (lastUsedAt: string | null) =>
-        lastUsedAt ? dayjs(lastUsedAt).format('YYYY-MM-DD HH:mm') : 'Never',
+        lastUsedAt
+          ? dayjs(lastUsedAt).format('YYYY-MM-DD HH:mm')
+          : t('api_tokens.never'),
     },
     {
-      title: 'Created At',
+      title: t('api_tokens.col_created'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       responsive: ['lg'],
@@ -153,15 +165,15 @@ function ApiTokensPage() {
         dayjs(createdAt).format('YYYY-MM-DD HH:mm'),
     },
     {
-      title: 'Action',
+      title: t('api_tokens.col_action'),
       key: 'action',
       render: (_: unknown, record: ApiToken) => (
         <Popconfirm
-          title="Revoke this token?"
-          description="This token will no longer be usable. Are you sure?"
+          title={t('api_tokens.revoke_title')}
+          description={t('api_tokens.revoke_desc')}
           onConfirm={() => revokeMutation.mutate(record.id)}
-          okText="Yes"
-          cancelText="No"
+          okText={t('api_tokens.yes')}
+          cancelText={t('api_tokens.no')}
           disabled={record.isRevoked}
         >
           <Button
@@ -170,7 +182,7 @@ function ApiTokensPage() {
             icon={<DeleteOutlined />}
             disabled={record.isRevoked}
           >
-            Revoke
+            {t('api_tokens.revoke_button')}
           </Button>
         </Popconfirm>
       ),
@@ -181,14 +193,13 @@ function ApiTokensPage() {
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:p-5">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="text-lg font-semibold">API Tokens</div>
+          <div className="text-lg font-semibold">{t('api_tokens.title')}</div>
           <Paragraph type="secondary" className="mb-0 mt-1">
-            API Tokens can be used for CI/CD pipelines or automation scripts to
-            call{' '}
+            {t('api_tokens.description_prefix')}{' '}
             <a target="_blank" href={API_REFERENCE_LINK} rel="noopener">
-              Cresc API
+              {t('api_tokens.cresc_api')}
             </a>
-            . Each user can have up to 10 active tokens.
+            {t('api_tokens.description_suffix')}
           </Paragraph>
         </div>
         <Button
@@ -197,7 +208,7 @@ function ApiTokensPage() {
           onClick={() => setCreateModalVisible(true)}
           className="w-full md:w-auto"
         >
-          Create Token
+          {t('api_tokens.create_token')}
         </Button>
       </div>
       <Table
@@ -211,7 +222,7 @@ function ApiTokensPage() {
       />
 
       <Modal
-        title="Create API Token"
+        title={t('api_tokens.create_modal_title')}
         open={createModalVisible}
         width={isMobile ? 'calc(100vw - 32px)' : 520}
         onCancel={() => {
@@ -223,48 +234,63 @@ function ApiTokensPage() {
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item
-            label="Token Name"
+            label={t('api_tokens.token_name')}
             name="name"
-            rules={[{ required: true, message: 'Please enter token name' }]}
+            rules={[
+              { required: true, message: t('api_tokens.token_name_required') },
+            ]}
           >
-            <Input placeholder="e.g., CI/CD Pipeline" maxLength={100} />
+            <Input
+              placeholder={t('api_tokens.token_name_placeholder')}
+              maxLength={100}
+            />
           </Form.Item>
           <Form.Item
-            label="Permissions"
+            label={t('api_tokens.permissions')}
             name="permissions"
             rules={[
               {
                 required: true,
-                message: 'Please select at least one permission',
+                message: t('api_tokens.permissions_required'),
               },
             ]}
           >
             <Checkbox.Group>
               <Space direction="vertical">
                 <Checkbox value="read">
-                  <b>Read</b> - View apps, versions, and packages
+                  <Trans i18nKey="api_tokens.perm_read_desc">
+                    <b>Read</b> - View apps, versions, and packages
+                  </Trans>
                 </Checkbox>
                 <Checkbox value="write">
-                  <b>Write</b> - Create and update apps, publish versions,
-                  upload packages
+                  <Trans i18nKey="api_tokens.perm_write_desc">
+                    <b>Write</b> - Create and update apps, publish versions,
+                    upload packages
+                  </Trans>
                 </Checkbox>
                 <Checkbox value="delete">
-                  <b>Delete</b> - Delete apps, versions, and packages
+                  <Trans i18nKey="api_tokens.perm_delete_desc">
+                    <b>Delete</b> - Delete apps, versions, and packages
+                  </Trans>
                 </Checkbox>
                 <div className="text-xs text-gray-500 mt-1">
-                  Note: Write access does not automatically include read access.
+                  {t('api_tokens.perm_note')}
                 </div>
               </Space>
             </Checkbox.Group>
           </Form.Item>
-          <Form.Item label="Expiration" name="expiresIn" initialValue={180}>
+          <Form.Item
+            label={t('api_tokens.expiration')}
+            name="expiresIn"
+            initialValue={180}
+          >
             <Select
               options={[
-                { value: 0, label: 'Never expires' },
-                { value: 30, label: '30 days' },
-                { value: 90, label: '90 days' },
-                { value: 180, label: '180 days' },
-                { value: 360, label: '360 days' },
+                { value: 0, label: t('api_tokens.exp_never') },
+                { value: 30, label: t('api_tokens.exp_30') },
+                { value: 90, label: t('api_tokens.exp_90') },
+                { value: 180, label: t('api_tokens.exp_180') },
+                { value: 360, label: t('api_tokens.exp_360') },
               ]}
             />
           </Form.Item>
@@ -275,24 +301,24 @@ function ApiTokensPage() {
               loading={createMutation.isPending}
               block
             >
-              Create
+              {t('api_tokens.create_button')}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="Token Created Successfully"
+        title={t('api_tokens.created_title')}
         open={!!newToken}
         width={isMobile ? 'calc(100vw - 32px)' : 520}
         onOk={() => setNewToken(null)}
         onCancel={() => setNewToken(null)}
         cancelButtonProps={{ style: { display: 'none' } }}
-        okText="I've saved it"
+        okText={t('api_tokens.created_ok')}
       >
         <div className="my-4">
           <Paragraph type="warning" className="mb-2">
-            ⚠️ Copy and save this token now. You won't be able to view it again.
+            ⚠️ {t('api_tokens.created_warning')}
           </Paragraph>
           <Input.TextArea
             value={newToken || ''}
@@ -307,11 +333,11 @@ function ApiTokensPage() {
             onClick={() => {
               if (newToken) {
                 navigator.clipboard.writeText(newToken);
-                message.success('Copied to clipboard');
+                message.success(t('api_tokens.copied'));
               }
             }}
           >
-            Copy Token
+            {t('api_tokens.copy_button')}
           </Button>
         </div>
       </Modal>

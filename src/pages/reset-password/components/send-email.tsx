@@ -1,17 +1,19 @@
 import { useMutation } from '@tanstack/react-query';
 import { Button, Form, Input, message, Result } from 'antd';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 
 export default function SendEmail() {
+  const { t } = useTranslation();
   const [sent, setSent] = useState<boolean>(false);
   const { mutateAsync: sendEmail, isPending } = useMutation({
     mutationFn: (email: string) => api.resetpwdSendMail({ email }),
     onSuccess: () => {
-      message.info('Reset email sent. Please check your inbox.');
+      message.info(t('reset_password.send_success'));
     },
     onError: () => {
-      message.error('Failed to send reset email.');
+      message.error(t('reset_password.send_failed'));
     },
   });
 
@@ -19,8 +21,8 @@ export default function SendEmail() {
     return (
       <Result
         status="success"
-        title="A verification email has been sent. Click the link in the email to continue."
-        subTitle="The verification link is valid for 24 hours."
+        title={t('reset_password.verification_sent')}
+        subTitle={t('reset_password.verification_valid')}
       />
     );
   }
@@ -35,13 +37,17 @@ export default function SendEmail() {
     >
       <Form.Item
         name="email"
-        rules={[{ type: 'email', message: 'Please enter a valid email' }]}
+        rules={[{ type: 'email', message: t('reset_password.email_invalid') }]}
       >
-        <Input placeholder="Enter your email" type="email" required />
+        <Input
+          placeholder={t('reset_password.email_placeholder')}
+          type="email"
+          required
+        />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={isPending} block>
-          Send email
+          {t('reset_password.send_button')}
         </Button>
       </Form.Item>
     </Form>

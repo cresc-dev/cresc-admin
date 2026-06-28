@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Button, message, Result } from 'antd';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { activationEmailResendCooldownStorageKey } from '@/constants/local-storage';
 import { api } from '@/services/api';
 import { getUserEmail } from '@/services/auth';
@@ -8,6 +9,7 @@ import { useLocalStorageCooldown } from '@/utils/hooks';
 import { rootRouterPath, router } from '../router';
 
 export const Welcome = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!getUserEmail()) {
       router.navigate(rootRouterPath.login);
@@ -24,10 +26,10 @@ export const Welcome = () => {
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
       startCooldown();
-      message.info('Activation email sent. Please check your inbox.');
+      message.info(t('welcome.email_sent'));
     },
     onError: () => {
-      message.error('Failed to send activation email.');
+      message.error(t('welcome.send_failed'));
     },
   });
 
@@ -35,15 +37,15 @@ export const Welcome = () => {
     <Result
       title={
         <>
-          Thanks for choosing Cresc hot updates for React Native.
+          {t('welcome.thanks')}
           <br />
-          We have sent an activation email to your address.
+          {t('welcome.email_sent_to')}
           <br />
-          Click the activation link in the email to activate your account.
+          {t('welcome.click_link')}
           <div className="h-6" />
         </>
       }
-      subTitle="Didn't receive the activation email?"
+      subTitle={t('welcome.no_email')}
       extra={
         <Button
           type="primary"
@@ -52,8 +54,8 @@ export const Welcome = () => {
           disabled={isCoolingDown}
         >
           {isCoolingDown
-            ? `Resend email in ${remainingSeconds}s`
-            : 'Resend email'}
+            ? t('welcome.resend_countdown', { seconds: remainingSeconds })
+            : t('welcome.resend_button')}
         </Button>
       }
     />

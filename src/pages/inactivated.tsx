@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Button, message, Result } from 'antd';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { activationEmailResendCooldownStorageKey } from '@/constants/local-storage';
 import { api } from '@/services/api';
@@ -9,6 +10,7 @@ import { useLocalStorageCooldown } from '@/utils/hooks';
 import { rootRouterPath, router } from '../router';
 
 export const Inactivated = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!getUserEmail()) {
       router.navigate(rootRouterPath.login);
@@ -25,16 +27,16 @@ export const Inactivated = () => {
     mutationFn: () => api.sendEmail({ email: getUserEmail() }),
     onSuccess: () => {
       startCooldown();
-      message.info('Activation email sent. Please check your inbox.');
+      message.info(t('inactivated.email_sent'));
     },
     onError: () => {
-      message.error('Failed to send activation email.');
+      message.error(t('inactivated.send_failed'));
     },
   });
   return (
     <Result
-      title="Your account is not activated yet."
-      subTitle="Didn't receive the activation email?"
+      title={t('inactivated.title')}
+      subTitle={t('inactivated.no_email')}
       extra={[
         <Button
           key="resend"
@@ -44,11 +46,11 @@ export const Inactivated = () => {
           disabled={isCoolingDown}
         >
           {isCoolingDown
-            ? `Resend email in ${remainingSeconds}s`
-            : 'Resend email'}
+            ? t('inactivated.resend_countdown', { seconds: remainingSeconds })
+            : t('inactivated.resend_button')}
         </Button>,
         <Link key="back" to={rootRouterPath.login} replace>
-          <Button>Back to log in</Button>
+          <Button>{t('inactivated.back_login')}</Button>
         </Link>,
       ]}
     />

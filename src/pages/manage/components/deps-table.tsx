@@ -1,6 +1,7 @@
 import { JavaScriptOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Popover } from 'antd';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Mode } from 'vanilla-jsoneditor';
 import { useAllVersions } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
@@ -13,6 +14,7 @@ export const DepsTable = ({
   deps?: Record<string, string>;
   name?: string;
 }) => {
+  const { t } = useTranslation();
   const { packages, appId } = useManageContext();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const { versions, isLoading: versionsLoading } = useAllVersions({
@@ -40,7 +42,10 @@ export const DepsTable = ({
             <>
               <div className="deps-popover-header">
                 <div className="deps-popover-title">
-                  <div>JavaScript Dependencies{!diffs && `(${name})`}</div>
+                  <div>
+                    {t('deps_table.js_deps_title')}
+                    {!diffs && `(${name})`}
+                  </div>
                   {diffs && (
                     <div className="font-normal">
                       <span>{diffs.newName}</span>
@@ -55,7 +60,7 @@ export const DepsTable = ({
                         setDiffs(null);
                       }}
                     >
-                      Back
+                      {t('deps_table.back')}
                     </Button>
                   ) : (
                     <Dropdown.Button
@@ -64,7 +69,7 @@ export const DepsTable = ({
                           {
                             key: 'package',
                             type: 'group',
-                            label: 'Native Packages',
+                            label: t('deps_table.native_packages'),
                             children: packages
                               .filter((p) => !!p.deps)
                               .map((p) => ({
@@ -75,12 +80,12 @@ export const DepsTable = ({
                           {
                             key: 'version',
                             type: 'group',
-                            label: 'OTA Versions',
+                            label: t('deps_table.ota_versions'),
                             children: versionsLoading
                               ? [
                                   {
                                     key: 'version_loading',
-                                    label: 'Loading...',
+                                    label: t('deps_table.loading'),
                                     disabled: true,
                                   },
                                 ]
@@ -115,7 +120,7 @@ export const DepsTable = ({
                         },
                       }}
                     >
-                      Compare
+                      {t('deps_table.compare')}
                     </Dropdown.Button>
                   )}
                 </div>
@@ -144,15 +149,11 @@ export const DepsTable = ({
                   />
                 )}
               </div>
-              <div className="deps-popover-note">
-                Note: Dependencies listed here are extracted directly from
-                `package.json` during the upload process. They might not
-                perfectly represent the final contents of the package.
-              </div>
+              <div className="deps-popover-note">{t('deps_table.note')}</div>
             </>
           ) : (
             <div>
-              <h4 className="font-bold">JavaScript Dependencies</h4>
+              <h4 className="font-bold">{t('deps_table.js_deps_heading')}</h4>
             </div>
           )}
         </div>

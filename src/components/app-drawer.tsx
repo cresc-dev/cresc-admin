@@ -8,6 +8,7 @@ import {
 import { Empty, Grid, Input, Radio, Tag } from 'antd';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   cn,
   getManageAppDrawerCollapsed,
@@ -75,6 +76,7 @@ export function AppDrawer({
   placement: Exclude<ManageAppDrawerPlacement, 'hidden'>;
 }) {
   const [query, setQuery] = useState('');
+  const { t } = useTranslation();
   const normalizedQuery = query.trim().toLowerCase();
   const filteredApps = useMemo(() => {
     if (!normalizedQuery) {
@@ -111,13 +113,15 @@ export function AppDrawer({
     >
       <div className="flex h-full flex-col">
         <button
-          aria-label={collapsed ? 'Expand app list' : 'Collapse app list'}
+          aria-label={
+            collapsed ? t('app_drawer.expand') : t('app_drawer.collapse')
+          }
           className={cn(
             'flex w-full items-center border-0 border-slate-100 border-b bg-transparent text-left transition-colors hover:bg-slate-50',
             collapsed ? 'h-14 justify-center' : 'justify-between p-3',
           )}
           onClick={() => onCollapsedChange(!collapsed)}
-          title={collapsed ? 'Expand app list' : 'Collapse app list'}
+          title={collapsed ? t('app_drawer.expand') : t('app_drawer.collapse')}
           type="button"
         >
           {collapsed ? (
@@ -129,9 +133,11 @@ export function AppDrawer({
                   <AppstoreOutlined className="text-slate-500" />
                 </span>
                 <div className="min-w-0">
-                  <div className="font-medium text-slate-900">App List</div>
+                  <div className="font-medium text-slate-900">
+                    {t('app_drawer.app_list')}
+                  </div>
                   <div className="text-slate-500 text-xs">
-                    {apps.length.toLocaleString()} apps
+                    {t('app_drawer.apps_count', { count: apps.length })}
                   </div>
                 </div>
               </div>
@@ -154,16 +160,22 @@ export function AppDrawer({
                 size="small"
                 value={placement}
               >
-                <Radio.Button value="left">Left</Radio.Button>
-                <Radio.Button value="right">Right</Radio.Button>
-                <Radio.Button value="hidden">Hide</Radio.Button>
+                <Radio.Button value="left">
+                  {t('app_drawer.placement_left')}
+                </Radio.Button>
+                <Radio.Button value="right">
+                  {t('app_drawer.placement_right')}
+                </Radio.Button>
+                <Radio.Button value="hidden">
+                  {t('app_drawer.placement_hide')}
+                </Radio.Button>
               </Radio.Group>
             </div>
             <div className="border-slate-100 border-b p-3">
               <Input
                 allowClear
                 prefix={<SearchOutlined />}
-                placeholder="Search apps"
+                placeholder={t('app_drawer.search_apps')}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -199,7 +211,7 @@ export function AppDrawer({
             !isLoading && (
               <Empty
                 className="my-8"
-                description="No matching apps"
+                description={t('app_drawer.no_matching_apps')}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             )
@@ -330,6 +342,7 @@ function AppIconButton({
   isActive: boolean;
   onSelect: (app: AppDrawerItem) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <button
       className={cn(
@@ -337,7 +350,7 @@ function AppIconButton({
         isActive ? 'bg-blue-50 text-blue-700 hover:bg-blue-50' : undefined,
       )}
       onClick={() => onSelect(app)}
-      title={`${app.name} · ${formatCheckCount(app)}`}
+      title={`${app.name} · ${formatCheckCount(app, t)}`}
       type="button"
     >
       <PlatformIcon platform={app.platform} />
@@ -356,6 +369,7 @@ function AppDrawerRow({
   onSelect: (app: AppDrawerItem) => void;
   onSettings?: (app: AppDrawerItem) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       aria-current={isActive ? 'page' : undefined}
@@ -386,7 +400,7 @@ function AppDrawerRow({
               {app.name}
             </span>
             {app.status === 'paused' && (
-              <Tag className="m-0 shrink-0">Paused</Tag>
+              <Tag className="m-0 shrink-0">{t('app_drawer.paused')}</Tag>
             )}
           </span>
           <span
@@ -395,19 +409,19 @@ function AppDrawerRow({
               isActive ? 'text-blue-700' : 'text-slate-500',
             )}
           >
-            {formatCheckCount(app)}
+            {formatCheckCount(app, t)}
           </span>
         </span>
       </button>
       {onSettings && (
         <button
-          aria-label={`Open ${app.name} app settings`}
+          aria-label={`${app.name} - ${t('app_drawer.app_settings')}`}
           className={cn(
             'mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 opacity-0 transition-all hover:bg-white/80 hover:text-blue-600 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100',
             isActive ? 'text-blue-600 hover:bg-blue-50' : undefined,
           )}
           onClick={() => onSettings(app)}
-          title="App Settings"
+          title={t('app_drawer.app_settings')}
           type="button"
         >
           <SettingOutlined />
@@ -417,6 +431,6 @@ function AppDrawerRow({
   );
 }
 
-function formatCheckCount(app: AppDrawerItem) {
-  return `${(app.checkCount ?? 0).toLocaleString()} checks`;
+function formatCheckCount(app: AppDrawerItem, t: (key: string) => string) {
+  return `${(app.checkCount ?? 0).toLocaleString()} ${t('app_drawer.checks')}`;
 }

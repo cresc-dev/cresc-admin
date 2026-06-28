@@ -20,7 +20,9 @@ import {
   Typography,
 } from 'antd';
 import { type Dispatch, type SetStateAction, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import i18n from '@/i18n';
 import { rootRouterPath } from '@/router';
 import { api } from '@/services/api';
 import { useManageContext } from '../hooks/useManageContext';
@@ -38,6 +40,7 @@ const PackageList = ({
   selectedPackageIds: number[];
   setSelectedPackageIds: Dispatch<SetStateAction<number[]>>;
 }) => {
+  const { t } = useTranslation();
   const { app, appId, packageTimestampWarnings } = useManageContext();
   const selectedPackageIdSet = useMemo(
     () => new Set(selectedPackageIds),
@@ -87,7 +90,7 @@ const PackageList = ({
                 })
               }
             >
-              Delete
+              {t('package_list.delete_button')}
             </Button>
           </div>
         ) : undefined
@@ -117,12 +120,11 @@ function removeSelectedPackages(
     return;
   }
   Modal.confirm({
-    title: 'Permanently delete selected native packages?',
+    title: i18n.t('package_list.batch_delete_title'),
     content: (
       <div>
         <Typography.Paragraph type="danger">
-          This cannot be undone. Make sure these native packages are no longer
-          needed.
+          {i18n.t('package_list.batch_delete_warning')}
         </Typography.Paragraph>
         <div className="max-h-48 overflow-y-auto">
           {items.map((item) => (
@@ -145,11 +147,10 @@ function removeSelectedPackages(
 
 function remove(item: Package, appId: number) {
   Modal.confirm({
-    title: `Permanently delete native package "${item.name}"?`,
+    title: i18n.t('package_list.single_delete_title', { name: item.name }),
     content: (
       <Typography.Paragraph type="danger">
-        This cannot be undone. Make sure this native package is no longer
-        needed.
+        {i18n.t('package_list.single_delete_warning')}
       </Typography.Paragraph>
     ),
     maskClosable: true,
@@ -168,21 +169,27 @@ function edit(item: Package, appId: number) {
     maskClosable: true,
     content: (
       <Form layout="vertical" initialValues={item}>
-        <Form.Item name="note" label="Note">
+        <Form.Item name="note" label={i18n.t('package_list.note')}>
           <Input
-            placeholder="Add a note"
+            placeholder={i18n.t('package_list.add_note')}
             onChange={({ target }) => (note = target.value)}
           />
         </Form.Item>
-        <Form.Item name="status" label="Status">
+        <Form.Item name="status" label={i18n.t('package_list.status')}>
           <Select
             onSelect={(value: Package['status']) => {
               status = value;
             }}
           >
-            <Select.Option value="normal">Normal</Select.Option>
-            <Select.Option value="paused">Paused</Select.Option>
-            <Select.Option value="expired">Expired</Select.Option>
+            <Select.Option value="normal">
+              {i18n.t('package_list.status_normal')}
+            </Select.Option>
+            <Select.Option value="paused">
+              {i18n.t('package_list.status_paused')}
+            </Select.Option>
+            <Select.Option value="expired">
+              {i18n.t('package_list.status_expired')}
+            </Select.Option>
           </Select>
         </Form.Item>
       </Form>
@@ -203,37 +210,34 @@ const TimestampWarning = ({
 }: {
   warningTimestamps: string[];
   realtimeMetricsPath: string;
-}) => (
-  <Popover
-    trigger="hover"
-    content={
-      <div className="max-w-72 text-xs leading-5">
-        <div>Detected mismatched timestamps:</div>
-        <div className="mt-1 break-all text-gray-700">
-          {warningTimestamps.map((timestamp) => (
-            <div key={timestamp}>{timestamp}</div>
-          ))}
+}) => {
+  const { t } = useTranslation();
+  return (
+    <Popover
+      trigger="hover"
+      content={
+        <div className="max-w-72 text-xs leading-5">
+          <div>{t('package_list.mismatch_title')}</div>
+          <div className="mt-1 break-all text-gray-700">
+            {warningTimestamps.map((timestamp) => (
+              <div key={timestamp}>{timestamp}</div>
+            ))}
+          </div>
+          <div className="mt-2">{t('package_list.mismatch_desc')}</div>
+          <div className="mt-1">
+            <Link to={realtimeMetricsPath}>
+              {t('package_list.view_realtime')}
+            </Link>
+          </div>
         </div>
-        <div className="mt-2">
-          Updates can still be delivered. A mismatch means the same native
-          package version is running from multiple native builds, so clients may
-          start from different embedded bundles. That lowers diff reuse and can
-          force larger full-bundle downloads or extra diff generation,
-          increasing latency and bandwidth.
-        </div>
-        <div className="mt-1">
-          <Link to={realtimeMetricsPath}>
-            Click here to view real-time data
-          </Link>
-        </div>
-      </div>
-    }
-  >
-    <span className="ml-2 inline-flex cursor-help items-center text-amber-500">
-      <ExclamationCircleFilled />
-    </span>
-  </Popover>
-);
+      }
+    >
+      <span className="ml-2 inline-flex cursor-help items-center text-amber-500">
+        <ExclamationCircleFilled />
+      </span>
+    </Popover>
+  );
+};
 
 const Item = ({
   item,
@@ -248,6 +252,7 @@ const Item = ({
   warningTimestamps: string[];
   realtimeMetricsPath?: string;
 }) => {
+  const { t } = useTranslation();
   const { appId } = useManageContext();
   const hasTimestampWarning = warningTimestamps.length > 0;
   return (
@@ -300,10 +305,10 @@ const Item = ({
                   type="secondary"
                   ellipsis={{ tooltip: item.note }}
                 >
-                  Note: {item.note}
+                  {t('package_list.note_prefix')} {item.note}
                 </Typography.Paragraph>
               )}
-              Build time: {item.buildTime}
+              {t('package_list.build_time')} {item.buildTime}
             </>
           }
         />
@@ -312,6 +317,6 @@ const Item = ({
   );
 };
 const status = {
-  paused: 'Paused',
-  expired: 'Expired',
+  paused: i18n.t('package_list.status_map_paused'),
+  expired: i18n.t('package_list.status_map_expired'),
 };

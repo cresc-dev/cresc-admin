@@ -24,6 +24,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
 import { patchSearchParams } from '@/utils/helper';
@@ -38,12 +39,12 @@ dayjs.extend(isSameOrBefore);
 
 type AuditStatusFilter = 'all' | 'success' | 'client-error' | 'server-error';
 
-const statusFilterOptions = [
-  { label: 'All Statuses', value: 'all' },
-  { label: '2xx Success', value: 'success' },
-  { label: '4xx Client Errors', value: 'client-error' },
-  { label: '5xx Server Errors', value: 'server-error' },
-] satisfies Array<{ label: string; value: AuditStatusFilter }>;
+const STATUS_FILTER_VALUES: AuditStatusFilter[] = [
+  'all',
+  'success',
+  'client-error',
+  'server-error',
+];
 
 export const getUA = (userAgent: string) => {
   if (userAgent.startsWith('react-native-update-cli')) {
@@ -103,12 +104,31 @@ const actionMap: Record<string, string> = {
   'DELETE /api-token/{id}': 'Delete API Key',
 };
 
-const actionOptions = Object.values(actionMap)
-  .sort()
-  .map((value) => ({
-    label: value,
-    value,
-  }));
+const actionI18nKeys: Record<string, string> = {
+  Login: 'action_login',
+  Register: 'action_register',
+  'Activate Account': 'action_activate',
+  'Send Activation Email': 'action_send_activation',
+  'Send Password Reset Email': 'action_send_reset',
+  'Reset Password': 'action_reset_password',
+  'Create App': 'action_create_app',
+  'Update App': 'action_update_app',
+  'Delete App': 'action_delete_app',
+  'Create Order': 'action_create_order',
+  'Upload File': 'action_upload_file',
+  'Create Native Package': 'action_create_pkg',
+  'Update Native Package Settings': 'action_update_pkg',
+  'Batch Delete Native Package': 'action_batch_delete_pkg',
+  'Delete Native Package': 'action_delete_pkg',
+  'Create Hot Update Package': 'action_create_hotfix',
+  'Update Hot Update Package Settings': 'action_update_hotfix',
+  'Batch Delete Hot Update Package': 'action_batch_delete_hotfix',
+  'Delete Hot Update Package': 'action_delete_hotfix',
+  'Create/Update Binding': 'action_binding',
+  'Delete Binding': 'action_delete_binding',
+  'Create API Key': 'action_create_key',
+  'Delete API Key': 'action_delete_key',
+};
 
 const getActionLabel = (method: string, path: string): string => {
   const normalizedPath = normalizePath(path);
@@ -122,7 +142,7 @@ const parsePositiveInt = (value: string | null, fallback: number) => {
 };
 
 const parseStatusFilter = (value: string | null): AuditStatusFilter => {
-  return statusFilterOptions.some((option) => option.value === value)
+  return STATUS_FILTER_VALUES.includes(value as AuditStatusFilter)
     ? (value as AuditStatusFilter)
     : 'all';
 };
@@ -191,6 +211,23 @@ const buildSearchText = (log: AuditLog) => {
 };
 
 export const AuditLogs = () => {
+  const { t } = useTranslation();
+  const statusFilterOptions = [
+    { label: t('audit_logs.status_all'), value: 'all' },
+    { label: t('audit_logs.status_2xx'), value: 'success' },
+    { label: t('audit_logs.status_4xx'), value: 'client-error' },
+    { label: t('audit_logs.status_5xx'), value: 'server-error' },
+  ] satisfies Array<{ label: string; value: AuditStatusFilter }>;
+  const translateAction = (actionLabel: string): string => {
+    const i18nKey = actionI18nKeys[actionLabel];
+    return i18nKey ? t(`audit_logs.${i18nKey}`) : actionLabel;
+  };
+  const actionOptions = Object.values(actionMap)
+    .sort()
+    .map((value) => ({
+      label: translateAction(value),
+      value,
+    }));
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const [searchParams, setSearchParams] = useSearchParams();
@@ -406,13 +443,15 @@ export const AuditLogs = () => {
         `audit-logs_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`,
       );
     } catch (error) {
-      message.error(`Export failed: ${(error as Error).message}`);
+      message.error(
+        `${t('audit_logs.export_failed')} ${(error as Error).message}`,
+      );
     }
   };
 
   const columns: ColumnType<AuditLog>[] = [
     {
-      title: 'Time',
+      title: t('audit_logs.col_time'),
       dataIndex: 'createdAt',
       width: 180,
       render: (createdAt: string) => {
@@ -428,20 +467,20 @@ export const AuditLogs = () => {
       },
     },
     {
-      title: 'Action',
+      title: t('audit_logs.col_action'),
       width: 160,
       render: (_value, record) => {
         const actionLabel = getActionLabel(record.method, record.path);
         const isDelete = record.method.toUpperCase() === 'DELETE';
         return (
           <span style={isDelete ? { color: '#ff4d4f' } : undefined}>
-            {actionLabel}
+            {translateAction(actionLabel)}
           </span>
         );
       },
     },
     {
-      title: 'Path',
+      title: t('audit_logs.col_path'),
       width: 260,
       responsive: ['md'],
       render: (_value, record) => (
@@ -456,7 +495,7 @@ export const AuditLogs = () => {
       ),
     },
     {
-      title: 'Status',
+      title: t('audit_logs.col_status'),
       dataIndex: 'statusCode',
       width: 110,
       render: (statusCode: string) => {
@@ -473,7 +512,7 @@ export const AuditLogs = () => {
       },
     },
     {
-      title: 'Payload',
+      title: t('audit_logs.col_payload'),
       responsive: ['lg'],
       width: 320,
       render: (_value, record) => {
@@ -499,7 +538,7 @@ export const AuditLogs = () => {
       },
     },
     {
-      title: 'Device Info',
+      title: t('audit_logs.col_device'),
       dataIndex: 'userAgent',
       responsive: ['xl'],
       width: 220,
@@ -514,11 +553,13 @@ export const AuditLogs = () => {
           <div>
             {userAgent && <div>{getUA(userAgent)}</div>}
             {record.ip && (
-              <div className="mt-1 text-xs text-gray-500">IP: {record.ip}</div>
+              <div className="mt-1 text-xs text-gray-500">
+                {t('audit_logs.ip_prefix')} {record.ip}
+              </div>
             )}
             {apiToken && (
               <div className="mt-1 font-mono text-xs text-gray-500">
-                API Key: {apiToken}
+                {t('audit_logs.apikey_prefix')} {apiToken}
               </div>
             )}
           </div>
@@ -526,7 +567,7 @@ export const AuditLogs = () => {
       },
     },
     {
-      title: 'Details',
+      title: t('audit_logs.col_details'),
       key: 'detail',
       width: 90,
       render: (_value, record) => (
@@ -538,7 +579,7 @@ export const AuditLogs = () => {
             patchSearchParams(setSearchParams, { logId: String(record.id) });
           }}
         >
-          View
+          {t('audit_logs.view')}
         </Button>
       ),
     },
@@ -551,11 +592,10 @@ export const AuditLogs = () => {
           <div>
             <h2 className="flex items-center gap-2 text-lg font-semibold md:text-xl">
               <FileTextOutlined />
-              Audit Logs
+              {t('audit_logs.title')}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Logs are kept for the most recent 180 days. Filters and the open
-              detail panel stay in the URL.
+              {t('audit_logs.description')}
             </p>
           </div>
           <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
@@ -563,13 +603,13 @@ export const AuditLogs = () => {
               allowClear
               value={searchInput}
               prefix={<SearchOutlined />}
-              placeholder="Search action, path, IP, or API Key"
+              placeholder={t('audit_logs.search_placeholder')}
               onChange={(event) => setSearchInput(event.target.value)}
               className="w-full md:w-64"
             />
             <Select
               allowClear
-              placeholder="Action"
+              placeholder={t('audit_logs.action_placeholder')}
               options={actionOptions}
               value={selectedAction}
               onChange={(value) => {
@@ -596,7 +636,10 @@ export const AuditLogs = () => {
               value={dateRange}
               onChange={handleDateRangeChange}
               format="YYYY-MM-DD"
-              placeholder={['Start date', 'End date']}
+              placeholder={[
+                t('audit_logs.start_date'),
+                t('audit_logs.end_date'),
+              ]}
               allowClear
               disabledDate={disabledDate}
             />
@@ -607,13 +650,15 @@ export const AuditLogs = () => {
               disabled={filteredAuditLogs.length === 0}
               className="w-full md:w-auto"
             >
-              Export Excel
+              {t('audit_logs.export_excel')}
             </Button>
           </div>
         </div>
         <div className="text-sm text-gray-500">
-          {filteredAuditLogs.length} matching logs out of {allAuditLogs.length}{' '}
-          recent entries.
+          {t('audit_logs.matching_logs', {
+            filtered: filteredAuditLogs.length,
+            total: allAuditLogs.length,
+          })}
         </div>
       </div>
 
@@ -629,7 +674,9 @@ export const AuditLogs = () => {
           showSizeChanger: !isMobile,
           showQuickJumper: !isMobile,
           simple: isMobile,
-          showTotal: isMobile ? undefined : (count) => `${count} records`,
+          showTotal: isMobile
+            ? undefined
+            : (count) => t('audit_logs.records_count', { count }),
           onChange: (page, nextPageSize) => {
             patchSearchParams(setSearchParams, {
               page: String(page),
@@ -648,7 +695,11 @@ export const AuditLogs = () => {
       />
 
       <Drawer
-        title={selectedLog ? `Log Details #${selectedLog.id}` : 'Log Details'}
+        title={
+          selectedLog
+            ? t('audit_logs.detail_title', { id: selectedLog.id })
+            : t('audit_logs.detail_title_default')
+        }
         width={isMobile ? '100%' : 720}
         open={Boolean(selectedLog)}
         onClose={() => patchSearchParams(setSearchParams, { logId: undefined })}
@@ -662,14 +713,14 @@ export const AuditLogs = () => {
               items={[
                 {
                   key: 'time',
-                  label: 'Time',
+                  label: t('audit_logs.detail_time'),
                   children: dayjs(selectedLog.createdAt).format(
                     'YYYY-MM-DD HH:mm:ss',
                   ),
                 },
                 {
                   key: 'action',
-                  label: 'Action',
+                  label: t('audit_logs.detail_action'),
                   children: getActionLabel(
                     selectedLog.method,
                     selectedLog.path,
@@ -677,12 +728,12 @@ export const AuditLogs = () => {
                 },
                 {
                   key: 'method',
-                  label: 'Method',
+                  label: t('audit_logs.detail_method'),
                   children: selectedLog.method.toUpperCase(),
                 },
                 {
                   key: 'path',
-                  label: 'Path',
+                  label: t('audit_logs.detail_path'),
                   children: (
                     <Paragraph className="!mb-0 font-mono" copyable>
                       {selectedLog.path}
@@ -691,24 +742,26 @@ export const AuditLogs = () => {
                 },
                 {
                   key: 'status',
-                  label: 'Status',
+                  label: t('audit_logs.detail_status'),
                   children: selectedLog.statusCode,
                 },
                 {
                   key: 'ip',
-                  label: 'IP',
+                  label: t('audit_logs.detail_ip'),
                   children: selectedLog.ip || '-',
                 },
                 {
                   key: 'apiToken',
-                  label: 'API Key',
+                  label: t('audit_logs.detail_apikey'),
                   children: getApiTokenLabel(selectedLog.apiTokens) || '-',
                 },
               ]}
             />
 
             <div>
-              <div className="mb-2 font-medium">Payload</div>
+              <div className="mb-2 font-medium">
+                {t('audit_logs.detail_payload')}
+              </div>
               <pre className="max-h-96 overflow-auto rounded bg-gray-50 p-3 text-xs">
                 {JSON.stringify(
                   getPreviewData(selectedLog.data) ?? {},
@@ -719,7 +772,9 @@ export const AuditLogs = () => {
             </div>
 
             <div>
-              <div className="mb-2 font-medium">User-Agent</div>
+              <div className="mb-2 font-medium">
+                {t('audit_logs.detail_ua')}
+              </div>
               <pre className="whitespace-pre-wrap break-all rounded bg-gray-50 p-3 text-xs">
                 {selectedLog.userAgent || '-'}
               </pre>

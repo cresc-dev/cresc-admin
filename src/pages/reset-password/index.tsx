@@ -1,4 +1,5 @@
 import { Card, Steps } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import SendEmail from './components/send-email';
 import SetPassword from './components/set-password';
@@ -11,11 +12,12 @@ const body = {
 };
 
 export const ResetPassword = () => {
+  const { t } = useTranslation();
   const { step = '0' } = useParams() as { step?: keyof typeof body };
   const steps = [
-    { title: 'Enter your email' },
-    { title: 'Set a new password' },
-    { title: 'Success' },
+    { title: t('reset_password.step_email') },
+    { title: t('reset_password.step_password') },
+    { title: t('reset_password.step_success') },
   ];
   const currentStep = step === '3' ? 2 : Number(step);
   return (

@@ -2,6 +2,7 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 import { md5 } from 'hash-wasm';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
@@ -19,6 +20,7 @@ interface RegisterFormValues {
 }
 
 export const Register = () => {
+  const { t } = useTranslation();
   const [form] = Form.useForm<RegisterFormValues>();
   const [loading, setLoading] = useState<boolean>(false);
   const password = Form.useWatch('pwd', form) || '';
@@ -27,17 +29,17 @@ export const Register = () => {
   const passwordChecks = [
     {
       key: 'length',
-      label: '6-16 characters',
+      label: t('register.password_check_length'),
       passed: password.length >= 6 && password.length <= 16,
     },
     {
       key: 'letters',
-      label: 'Uppercase and lowercase letters',
+      label: t('register.password_check_case'),
       passed: /[a-z]/.test(password) && /[A-Z]/.test(password),
     },
     {
       key: 'number',
-      label: 'At least 1 number',
+      label: t('register.password_check_number'),
       passed: /\d/.test(password),
     },
   ];
@@ -58,18 +60,14 @@ export const Register = () => {
         form.setFields([
           {
             name: 'email',
-            errors: [
-              error.message || 'This email address is already registered',
-            ],
+            errors: [error.message || t('register.email_exists')],
           },
         ]);
         return;
       }
 
       message.error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to create your account. Please try again.',
+        error instanceof Error ? error.message : t('register.create_failed'),
       );
     } finally {
       setLoading(false);
@@ -90,60 +88,54 @@ export const Register = () => {
       >
         <div style={style.logoBlock}>
           <Logo className="mx-auto h-16 w-auto" />
-          <div style={style.eyebrow}>Start your 7-day Pro trial</div>
-          <div style={style.title}>Create your Cresc workspace</div>
-          <div style={style.slogan}>
-            Ship OTA updates, manage releases, and invite your team from one
-            clean dashboard.
-          </div>
+          <div style={style.eyebrow}>{t('register.eyebrow_trial')}</div>
+          <div style={style.title}>{t('register.title')}</div>
+          <div style={style.slogan}>{t('register.slogan')}</div>
           <div style={style.badgeRow}>
-            <span style={style.badge}>No credit card</span>
-            <span style={style.badge}>Activation email included</span>
-            <span style={style.badge}>Ready in minutes</span>
+            <span style={style.badge}>{t('register.badge_no_card')}</span>
+            <span style={style.badge}>{t('register.badge_activation')}</span>
+            <span style={style.badge}>{t('register.badge_ready')}</span>
           </div>
         </div>
-        <div style={style.tipCard}>
-          Your account will be created immediately, and we will send an
-          activation email before you start using Pro features.
-        </div>
+        <div style={style.tipCard}>{t('register.tip_card')}</div>
         <Form.Item
-          label="Username"
+          label={t('register.username')}
           name="name"
           hasFeedback
           rules={[
             {
               required: true,
               whitespace: true,
-              message: 'Please enter a username',
+              message: t('register.username_required'),
             },
-            { min: 2, message: 'Use at least 2 characters' },
-            { max: 32, message: 'Keep it under 32 characters' },
+            { min: 2, message: t('register.username_min') },
+            { max: 32, message: t('register.username_max') },
           ]}
         >
           <Input
-            placeholder="Your team or personal name"
+            placeholder={t('register.username_placeholder')}
             size="large"
             autoComplete="username"
           />
         </Form.Item>
         <Form.Item
-          label="Email"
+          label={t('register.email')}
           name="email"
           hasFeedback
           rules={[
-            { required: true, message: 'Please enter your email' },
-            { type: 'email', message: 'Please enter a valid email address' },
+            { required: true, message: t('register.email_required') },
+            { type: 'email', message: t('register.email_invalid') },
           ]}
         >
           <Input
-            placeholder="you@company.com"
+            placeholder={t('register.email_placeholder')}
             size="large"
             type="email"
             autoComplete="email"
           />
         </Form.Item>
         <Form.Item
-          label="Password"
+          label={t('register.password')}
           hasFeedback
           name="pwd"
           validateTrigger="onBlur"
@@ -168,13 +160,11 @@ export const Register = () => {
             </div>
           }
           rules={[
-            { required: true, message: 'Please create a password' },
+            { required: true, message: t('register.password_required') },
             () => ({
               async validator(_, value: string) {
                 if (value && !isPasswordValid(value)) {
-                  throw Error(
-                    'Password must include uppercase and lowercase letters, at least 1 number, and be 6-16 characters long',
-                  );
+                  throw Error(t('register.password_rules'));
                 }
               },
             }),
@@ -182,23 +172,26 @@ export const Register = () => {
         >
           <Input
             type="password"
-            placeholder="Create a strong password"
+            placeholder={t('register.password_placeholder')}
             size="large"
             autoComplete="new-password"
           />
         </Form.Item>
         <Form.Item
-          label="Confirm password"
+          label={t('register.confirm_password')}
           hasFeedback
           name="pwd2"
           dependencies={['pwd']}
           validateTrigger="onBlur"
           rules={[
-            { required: true, message: 'Please confirm your password' },
+            {
+              required: true,
+              message: t('register.confirm_password_required'),
+            },
             ({ getFieldValue }) => ({
               async validator(_, value: string) {
                 if (value && getFieldValue('pwd') !== value) {
-                  throw Error('The passwords do not match');
+                  throw Error(t('register.password_mismatch'));
                 }
               },
             }),
@@ -206,7 +199,7 @@ export const Register = () => {
         >
           <Input
             type="password"
-            placeholder="Confirm password"
+            placeholder={t('register.confirm_password_placeholder')}
             size="large"
             autoComplete="new-password"
           />
@@ -219,22 +212,18 @@ export const Register = () => {
               validator: (_, value) =>
                 value
                   ? Promise.resolve()
-                  : Promise.reject(
-                      Error(
-                        'Please read and accept the User Service Agreement and Privacy Policy to continue',
-                      ),
-                    ),
+                  : Promise.reject(Error(t('register.agreement_required'))),
             },
           ]}
         >
           <Checkbox>
-            I have read and agree to the{' '}
+            {t('register.agreement_prefix')}{' '}
             <a
               target="_blank"
               href="https://cresc.dev/policy/"
               rel="noreferrer"
             >
-              User Service Agreement and Privacy Policy
+              {t('register.agreement_link')}
             </a>
           </Checkbox>
         </Form.Item>
@@ -247,12 +236,12 @@ export const Register = () => {
             disabled={loading || !agreed}
             block
           >
-            Create account
+            {t('register.create_button')}
           </Button>
         </Form.Item>
         <div style={style.footer}>
-          <span style={style.footerText}>Already have an account?</span>
-          <Link to="/login">Log in</Link>
+          <span style={style.footerText}>{t('register.has_account')}</span>
+          <Link to="/login">{t('register.login_link')}</Link>
         </div>
       </Form>
     </div>

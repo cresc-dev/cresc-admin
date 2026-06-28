@@ -1,6 +1,7 @@
 import { WarningOutlined } from '@ant-design/icons';
 import { Alert, Progress, Tag, Tooltip, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import { quotas } from '@/constants/quotas';
 import { useUserInfo } from '@/utils/hooks';
 
@@ -11,6 +12,7 @@ interface DailyCheckQuotaProps {
 }
 
 const useDailyCheckQuotaState = () => {
+  const { t } = useTranslation();
   const { user } = useUserInfo();
   const quota = user
     ? (user.quota ?? quotas[user.tier as keyof typeof quotas])
@@ -30,30 +32,39 @@ const useDailyCheckQuotaState = () => {
       {user && (
         <>
           <div>
-            Tier:{' '}
+            {t('daily_check_quota.tier')}{' '}
             {quota?.title ??
               quotas[user.tier as keyof typeof quotas]?.title ??
               user.tier}
           </div>
           {user.cancelAtPeriodEnd && user.tierExpiresAt && (
-            <div>Expires: {dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}</div>
+            <div>
+              {t('daily_check_quota.expires')}{' '}
+              {dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}
+            </div>
           )}
         </>
       )}
       {hasData && (
         <>
           <div>
-            Remaining today: {Math.max(0, remaining).toLocaleString()} /{' '}
-            {dailyQuota.toLocaleString()} checks
+            {t('daily_check_quota.remaining_today')}{' '}
+            {Math.max(0, remaining).toLocaleString()} /{' '}
+            {dailyQuota.toLocaleString()} {t('daily_check_quota.checks')}
           </div>
           {remaining < 0 && (
-            <div>Over quota: {Math.abs(remaining).toLocaleString()} checks</div>
+            <div>
+              {t('daily_check_quota.over_quota')}{' '}
+              {Math.abs(remaining).toLocaleString()}{' '}
+              {t('daily_check_quota.checks')}
+            </div>
           )}
         </>
       )}
       {user?.last7dAvg !== undefined && (
         <div>
-          7-day average remaining: {user.last7dAvg.toLocaleString()} checks
+          {t('daily_check_quota.avg_remaining')}{' '}
+          {user.last7dAvg.toLocaleString()} {t('daily_check_quota.checks')}
         </div>
       )}
     </div>
@@ -79,6 +90,7 @@ export function DailyCheckQuotaUserTrigger({
   showPlanDetails?: boolean;
   userName: string;
 }) {
+  const { t } = useTranslation();
   const quotaState = useDailyCheckQuotaState();
   const { user } = quotaState;
   const strokeColor = quotaState.isExceeded
@@ -91,9 +103,12 @@ export function DailyCheckQuotaUserTrigger({
       quotas[user.tier as keyof typeof quotas]?.title ??
       user.tier)
     : '';
-  const expireLabel = user?.cancelAtPeriodEnd && user.tierExpiresAt
-    ? `Expires ${dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}`
-    : null;
+  const expireLabel =
+    user?.cancelAtPeriodEnd && user.tierExpiresAt
+      ? t('daily_check_quota.expires_date', {
+          date: dayjs(user.tierExpiresAt).format('YYYY-MM-DD'),
+        })
+      : null;
   const planDetails = [tierTitle, expireLabel].filter(Boolean).join(' · ');
   const warningIcon = (quotaState.isExceeded || quotaState.isLow) && (
     <WarningOutlined
@@ -148,6 +163,7 @@ export function DailyCheckQuotaUserTrigger({
 }
 
 export default function DailyCheckQuota(_props: DailyCheckQuotaProps) {
+  const { t } = useTranslation();
   const quotaState = useDailyCheckQuotaState();
   const { user } = quotaState;
   if (!user) {
@@ -156,28 +172,24 @@ export default function DailyCheckQuota(_props: DailyCheckQuotaProps) {
 
   if (!quotaState.hasData) {
     return (
-      <Text type="secondary">
-        Today's check quota is not available yet. It is shared by all apps under
-        this account.
-      </Text>
+      <Text type="secondary">{t('daily_check_quota.quota_not_available')}</Text>
     );
   }
 
   const message = quotaState.isExceeded
-    ? "Today's check quota is exhausted. Upgrade your plan or wait for the daily reset."
+    ? t('daily_check_quota.quota_exhausted')
     : quotaState.isLow
-      ? "Today's check quota is running low. Keep an eye on releases and high client traffic."
-      : "Today's check quota is healthy.";
+      ? t('daily_check_quota.quota_low')
+      : t('daily_check_quota.quota_healthy');
 
   return (
     <div className="space-y-3">
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div className="font-medium">Daily check quota</div>
+            <div className="font-medium">{t('daily_check_quota.title')}</div>
             <div className="text-gray-500 text-sm">
-              Used when clients check for OTA updates. The quota is shared by
-              all apps in this account and resets daily.
+              {t('daily_check_quota.description')}
             </div>
           </div>
           <Tag
@@ -190,10 +202,10 @@ export default function DailyCheckQuota(_props: DailyCheckQuotaProps) {
             }
           >
             {quotaState.isExceeded
-              ? 'Exhausted'
+              ? t('daily_check_quota.status_exhausted')
               : quotaState.isLow
-                ? 'Low'
-                : 'Healthy'}
+                ? t('daily_check_quota.status_low')
+                : t('daily_check_quota.status_healthy')}
           </Tag>
         </div>
         <Tooltip title={quotaState.tooltip}>
@@ -205,8 +217,7 @@ export default function DailyCheckQuota(_props: DailyCheckQuotaProps) {
           />
         </Tooltip>
         <div className="mt-2 text-gray-500 text-xs">
-          Exact numbers are hidden by default. Hover over the bar to see the
-          remaining quota, plan limit, and 7-day average.
+          {t('daily_check_quota.hint')}
         </div>
       </div>
       {(quotaState.isExceeded || quotaState.isLow) && (

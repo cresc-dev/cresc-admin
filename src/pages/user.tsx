@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { logout } from '@/services/auth';
 import { useAppList, useUserInfo } from '@/utils/hooks';
@@ -27,33 +28,34 @@ const CancelResumeButton = ({
 }: {
   cancelAtPeriodEnd: boolean;
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   if (cancelAtPeriodEnd) {
     return (
       <Popconfirm
-        title="Resume subscription?"
-        description="Your subscription will continue to renew automatically."
+        title={t('user.resume_title')}
+        description={t('user.resume_desc')}
         onConfirm={async () => {
           setLoading(true);
           try {
             await api.resumeSubscription();
-            message.success('Subscription resumed.');
+            message.success(t('user.resume_success'));
           } catch {
-            message.error('Failed to resume subscription.');
+            message.error(t('user.resume_failed'));
           } finally {
             setLoading(false);
           }
         }}
-        okText="Resume"
-        cancelText="No"
+        okText={t('user.resume_ok')}
+        cancelText={t('user.no')}
       >
         <Button
           type="link"
           loading={loading}
           className="mt-2 self-start px-0 md:mt-0"
         >
-          Resume subscription
+          {t('user.resume_button')}
         </Button>
       </Popconfirm>
     );
@@ -61,22 +63,20 @@ const CancelResumeButton = ({
 
   return (
     <Popconfirm
-      title="Cancel subscription?"
-      description="You will retain access until the end of the current billing period. No refund will be issued."
+      title={t('user.cancel_title')}
+      description={t('user.cancel_desc')}
       onConfirm={async () => {
         setLoading(true);
         try {
           await api.cancelSubscription();
-          message.success(
-            'Your subscription will end at the end of the current billing period.',
-          );
+          message.success(t('user.cancel_success'));
         } catch {
-          message.error('Failed to cancel subscription.');
+          message.error(t('user.cancel_failed'));
         } finally {
           setLoading(false);
         }
       }}
-      okText="Yes, cancel"
+      okText={t('user.cancel_ok')}
       okButtonProps={{ danger: true }}
       cancelText="No"
     >
@@ -86,7 +86,7 @@ const CancelResumeButton = ({
         loading={loading}
         className="mt-2 self-start px-0 md:mt-0"
       >
-        Cancel subscription
+        {t('user.cancel_button')}
       </Button>
     </Popconfirm>
   );
@@ -101,16 +101,29 @@ const UpgradeDropdown = ({
   currentTier: Tier;
   tierExpiresAt?: string;
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   // Get all upgradeable tiers
   const getUpgradeOptions = () => {
     const allTiers = [
-      { key: 'standard', title: 'Upgrade to Standard', tier: 'standard' },
-      { key: 'premium', title: 'Upgrade to Premium', tier: 'premium' },
-      { key: 'pro', title: 'Upgrade to Pro', tier: 'pro' },
-      { key: 'max', title: 'Upgrade to Max', tier: 'max' },
-      { key: 'ultra', title: 'Upgrade to Ultra', tier: 'ultra' },
+      {
+        key: 'standard',
+        title: t('user.upgrade_to', { tier: 'Standard' }),
+        tier: 'standard',
+      },
+      {
+        key: 'premium',
+        title: t('user.upgrade_to', { tier: 'Premium' }),
+        tier: 'premium',
+      },
+      { key: 'pro', title: t('user.upgrade_to', { tier: 'Pro' }), tier: 'pro' },
+      { key: 'max', title: t('user.upgrade_to', { tier: 'Max' }), tier: 'max' },
+      {
+        key: 'ultra',
+        title: t('user.upgrade_to', { tier: 'Ultra' }),
+        tier: 'ultra',
+      },
     ];
 
     return allTiers.filter(
@@ -166,44 +179,45 @@ const UpgradeDropdown = ({
     const targetTitle = targetQuota?.title || products[targetTier].title;
 
     Modal.confirm({
-      title: `Upgrade to ${targetTitle}?`,
+      title: t('user.upgrade_confirm_title', { tier: targetTitle }),
       width: 620,
-      okText: 'Continue to payment',
-      cancelText: 'Cancel',
+      okText: t('user.upgrade_ok'),
+      cancelText: t('user.cancel'),
       content: (
         <div className="space-y-3 text-sm leading-6">
-          <p>
-            The upgrade takes effect immediately after payment. You pay the new
-            plan monthly price, and any unused value on your current plan is
-            converted into extra days on the new plan.
-          </p>
+          <p>{t('user.upgrade_desc')}</p>
           <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
             <div>
-              New plan price:{' '}
-              <strong>${products[targetTier].price}/month</strong>
+              {t('user.new_plan_price')}{' '}
+              <strong>
+                {t('user.price_month', { price: products[targetTier].price })}
+              </strong>
             </div>
             {preview.remainingDays > 0 && (
               <div>
-                Current plan remaining time: approximately{' '}
-                <strong>{preview.remainingDays} days</strong>, converted into{' '}
-                <strong>{preview.transferredDays} extra days</strong> on{' '}
-                {targetTitle}.
+                {t('user.current_remaining')}{' '}
+                <strong>
+                  {t('user.remaining_days', { days: preview.remainingDays })}
+                </strong>
+                , {t('user.converted_into')}{' '}
+                <strong>
+                  {t('user.extra_days', { days: preview.transferredDays })}
+                </strong>{' '}
+                on {targetTitle}.
               </div>
             )}
             <div>
-              Estimated new-plan access after payment:{' '}
-              <strong>{preview.totalDays} days</strong>
+              {t('user.estimated_access')}{' '}
+              <strong>
+                {t('user.total_days', { days: preview.totalDays })}
+              </strong>
               {preview.estimatedExpiry
-                ? `, until about ${preview.estimatedExpiry}`
+                ? `, ${t('user.until_about', { date: preview.estimatedExpiry })}`
                 : ''}
               .
             </div>
           </div>
-          <p>
-            No unused value is lost. The old subscription is cancelled after the
-            new payment succeeds, and the higher quota is available without
-            changing your app integration or release flow.
-          </p>
+          <p>{t('user.upgrade_no_loss')}</p>
         </div>
       ),
       onOk: async () => {
@@ -223,12 +237,15 @@ const UpgradeDropdown = ({
       }}
       onClick={handleMainButtonClick}
     >
-      {loading ? 'Preparing payment...' : upgradeOptions[0]?.title || 'Upgrade'}
+      {loading
+        ? t('user.preparing_payment')
+        : upgradeOptions[0]?.title || t('user.upgrade_button')}
     </Dropdown.Button>
   );
 };
 
 function UserPanel() {
+  const { t } = useTranslation();
   const { user, displayExpireDay, displayRemainingDays } = useUserInfo();
   const { apps } = useAppList();
   const screens = Grid.useBreakpoint();
@@ -282,62 +299,62 @@ function UserPanel() {
   const quotaUsageRows: QuotaUsageRow[] = [
     {
       key: 'app',
-      label: 'Apps',
+      label: t('user.apps'),
       limit: currentQuota.app,
-      note: 'Total apps under this account',
+      note: t('user.apps_note'),
       percent: Math.min(100, (appCount / currentQuota.app) * 100),
       status: appCount > currentQuota.app ? 'exception' : 'normal',
       value: `${appCount.toLocaleString()} / ${currentQuota.app.toLocaleString()}`,
     },
     {
       key: 'bundle',
-      label: 'OTA bundles',
+      label: t('user.ota_bundles'),
       limit: currentQuota.bundle,
       loading: isVersionCountLoading,
       note: isVersionCountLoading
-        ? 'Counting OTA bundles across apps'
-        : 'Highest usage in one app',
+        ? t('user.counting_bundles')
+        : t('user.highest_usage'),
       percent: isVersionCountLoading
         ? 0
         : Math.min(100, (maxVersionCount / currentQuota.bundle) * 100),
       status: maxVersionCount > currentQuota.bundle ? 'exception' : 'normal',
       value: isVersionCountLoading
-        ? 'Counting'
+        ? t('user.counting')
         : `${maxVersionCount.toLocaleString()} / ${currentQuota.bundle.toLocaleString()}`,
     },
     {
       key: 'package',
-      label: 'Native packages',
+      label: t('user.native_packages'),
       limit: currentQuota.package,
       loading: isPackageCountLoading,
       note: isPackageCountLoading
-        ? 'Counting native packages across apps'
-        : 'Highest usage in one app',
+        ? t('user.counting_packages')
+        : t('user.highest_usage'),
       percent: isPackageCountLoading
         ? 0
         : Math.min(100, (maxPackageCount / currentQuota.package) * 100),
       status: maxPackageCount > currentQuota.package ? 'exception' : 'normal',
       value: isPackageCountLoading
-        ? 'Counting'
+        ? t('user.counting')
         : `${maxPackageCount.toLocaleString()} / ${currentQuota.package.toLocaleString()}`,
     },
   ];
   const quotaSizeLimits = [
     {
-      label: 'Native package size',
+      label: t('user.native_package_size'),
       value: currentQuota.packageSize,
     },
     {
-      label: 'OTA bundle size',
+      label: t('user.ota_bundle_size'),
       value: currentQuota.bundleSize,
     },
     {
-      label: 'Daily checks limit',
+      label: t('user.daily_checks_limit'),
       value: `${currentQuota.pv.toLocaleString()} / day`,
     },
   ];
   const handleLogout = () => {
-    message.info('You have been logged out.');
+    message.info(t('user.logged_out'));
     logout();
   };
   const canManageSubscription = typeof cancelAtPeriodEnd === 'boolean';
@@ -345,7 +362,7 @@ function UserPanel() {
   return (
     <div className="body">
       <Descriptions
-        title="Account Information"
+        title={t('user.account_info')}
         column={1}
         layout={isMobile ? 'vertical' : 'horizontal'}
         size={isMobile ? 'small' : undefined}
@@ -355,11 +372,11 @@ function UserPanel() {
         }}
         bordered
       >
-        <Descriptions.Item label="Username">{name}</Descriptions.Item>
-        <Descriptions.Item label="Email">
+        <Descriptions.Item label={t('user.username')}>{name}</Descriptions.Item>
+        <Descriptions.Item label={t('user.email')}>
           <span className="break-all">{email}</span>
         </Descriptions.Item>
-        <Descriptions.Item label="Subscription">
+        <Descriptions.Item label={t('user.subscription')}>
           <div className="flex min-w-0 flex-col gap-2">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <div className="flex items-center gap-2 shrink-0">
@@ -369,7 +386,7 @@ function UserPanel() {
                     className="whitespace-nowrap"
                     style={{ color: '#faad14', fontSize: 12 }}
                   >
-                    (cancelling)
+                    {t('user.cancelling')}
                   </span>
                 )}
               </div>
@@ -383,16 +400,12 @@ function UserPanel() {
             </div>
             {tier !== 'free' && canManageSubscription && (
               <div className="max-w-2xl text-sm leading-6 text-slate-500">
-                You can upgrade to a higher plan without losing unused value:
-                the remaining value of your current plan is converted into
-                extra days on the new plan. Direct downgrades are not available;
-                cancel the current subscription first, then subscribe to another
-                plan after it expires.
+                {t('user.upgrade_note')}
               </div>
             )}
           </div>
         </Descriptions.Item>
-        <Descriptions.Item label="Next billing date">
+        <Descriptions.Item label={t('user.next_billing')}>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {displayExpireDay ? (
               <div className="flex min-w-0 flex-col">
@@ -405,14 +418,14 @@ function UserPanel() {
                 )}
               </div>
             ) : (
-              'Not available'
+              t('user.not_available')
             )}
             {tier !== 'free' && canManageSubscription && (
               <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
             )}
           </div>
         </Descriptions.Item>
-        <Descriptions.Item label="Quota details">
+        <Descriptions.Item label={t('user.quota_details')}>
           <QuotaDetailsPanel
             dailyQuota={currentQuota.pv}
             last7dAvg={user.last7dAvg}
@@ -430,7 +443,7 @@ function UserPanel() {
           target="_blank"
           className="w-full md:w-auto"
         >
-          View pricing
+          {t('user.view_pricing')}
         </Button>
         <Button
           danger
@@ -438,7 +451,7 @@ function UserPanel() {
           onClick={handleLogout}
           className="w-full md:w-auto"
         >
-          Logout
+          {t('user.logout')}
         </Button>
       </div>
     </div>
@@ -471,6 +484,7 @@ function QuotaDetailsPanel({
   rows: QuotaUsageRow[];
   sizeLimits: Array<{ label: string; value: string }>;
 }) {
+  const { t } = useTranslation();
   const remainingPercent =
     typeof remainingChecks === 'number'
       ? Math.max(0, Math.min(100, (remainingChecks / dailyQuota) * 100))
@@ -486,16 +500,22 @@ function QuotaDetailsPanel({
         <div className="flex min-h-[150px] flex-col">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <div className="font-medium text-slate-900">Daily checks</div>
+              <div className="font-medium text-slate-900">
+                {t('user.daily_checks')}
+              </div>
               <div className="mt-0.5 text-slate-500 text-xs">
-                Used when clients check for OTA updates, shared by all apps.
+                {t('user.daily_checks_desc')}
               </div>
             </div>
-            {status === 'exception' && <Tag color="red">Over limit</Tag>}
+            {status === 'exception' && (
+              <Tag color="red">{t('user.over_limit')}</Tag>
+            )}
           </div>
           <div className="mt-4">
             <div>
-              <div className="text-[11px] text-gray-500">Remaining today</div>
+              <div className="text-[11px] text-gray-500">
+                {t('user.remaining_today')}
+              </div>
               <div className="mt-1 font-semibold text-2xl leading-none tabular-nums">
                 {remainingChecks === undefined
                   ? dailyQuota.toLocaleString()
@@ -534,7 +554,7 @@ function QuotaDetailsPanel({
               <div className="flex items-center gap-2">
                 <span className="font-medium text-slate-800">{row.label}</span>
                 {row.status === 'exception' && (
-                  <Tag color="red">Over limit</Tag>
+                  <Tag color="red">{t('user.over_limit')}</Tag>
                 )}
               </div>
               <div className="mt-0.5 text-slate-500 text-xs">{row.note}</div>
@@ -551,7 +571,9 @@ function QuotaDetailsPanel({
       </div>
 
       <div className="border-slate-100 border-t bg-slate-50/70 px-4 py-3">
-        <div className="mb-2 font-medium text-slate-700 text-xs">Limits</div>
+        <div className="mb-2 font-medium text-slate-700 text-xs">
+          {t('user.limits')}
+        </div>
         <div className="grid gap-2 sm:grid-cols-3">
           {sizeLimits.map((item) => (
             <div key={item.label}>
@@ -576,6 +598,7 @@ function MiniQuotaBars({
   tooltipSuffix: string;
   values?: number[];
 }) {
+  const { t } = useTranslation();
   const bars = (values ?? [])
     .slice(0, 7)
     .reverse()
@@ -627,7 +650,7 @@ function MiniQuotaBars({
         </div>
       ) : (
         <div className="mt-2 flex flex-1 items-center justify-center rounded bg-white text-gray-400 text-xs">
-          No 7-day details yet
+          {t('user.no_7day_details')}
         </div>
       )}
     </div>

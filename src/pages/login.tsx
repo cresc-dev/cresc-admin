@@ -1,6 +1,7 @@
 import { GithubOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Divider, Form, Input } from 'antd';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { login, loginWithOAuth, type OAuthProvider } from '@/services/auth';
 import { ReactComponent as Logo } from '../assets/logo-h.svg';
@@ -12,6 +13,7 @@ interface LoginFormValues {
 }
 
 export const Login = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [oauthProvider, setOauthProvider] = useState<OAuthProvider | null>(
     null,
@@ -42,20 +44,17 @@ export const Login = () => {
         <section className="login-story" aria-label="Cresc release operations">
           <Logo className="login-logo" />
           <div className="login-story-copy">
-            <p className="login-eyebrow">Release control plane</p>
-            <h1>Ship React Native updates with fewer moving parts.</h1>
-            <p>
-              Watch rollout health, package drift, and api access from one
-              workspace built for fast release cycles.
-            </p>
+            <p className="login-eyebrow">{t('login.eyebrow_story')}</p>
+            <h1>{t('login.heading_story')}</h1>
+            <p>{t('login.description_story')}</p>
           </div>
         </section>
 
         <section className="login-card" aria-labelledby="login-title">
           <div className="login-card-header">
-            <p className="login-eyebrow">Secure sign in</p>
-            <h2 id="login-title">Welcome back</h2>
-            <p>Use the same identity your team already trusts.</p>
+            <p className="login-eyebrow">{t('login.eyebrow_secure')}</p>
+            <h2 id="login-title">{t('login.welcome_back')}</h2>
+            <p>{t('login.identity_trust')}</p>
           </div>
 
           <div className="login-provider-stack">
@@ -101,10 +100,12 @@ export const Login = () => {
                 </div>
                 <span className="oauth-material-button-contents">
                   {oauthProvider === 'google'
-                    ? 'Signing in with Google'
-                    : 'Sign in with Google'}
+                    ? t('login.signing_in_google')
+                    : t('login.sign_in_google')}
                 </span>
-                <span style={{ display: 'none' }}>Sign in with Google</span>
+                <span style={{ display: 'none' }}>
+                  {t('login.sign_in_google')}
+                </span>
               </div>
             </button>
             <button
@@ -124,15 +125,15 @@ export const Login = () => {
                 </div>
                 <span className="oauth-material-button-contents">
                   {oauthProvider === 'github'
-                    ? 'Signing in with GitHub'
-                    : 'Sign in with GitHub'}
+                    ? t('login.signing_in_github')
+                    : t('login.sign_in_github')}
                 </span>
               </div>
             </button>
           </div>
 
           <Divider plain className="login-divider">
-            Password login
+            {t('login.password_login')}
           </Divider>
 
           <Form<LoginFormValues>
@@ -142,18 +143,18 @@ export const Login = () => {
             className="login-form"
           >
             <Form.Item
-              label="Email"
+              label={t('login.email')}
               name="email"
               rules={[
-                { required: true, message: 'Please enter your email' },
+                { required: true, message: t('login.email_required') },
                 {
                   type: 'email',
-                  message: 'Please enter a valid email address',
+                  message: t('login.email_invalid'),
                 },
               ]}
             >
               <Input
-                placeholder="you@company.com"
+                placeholder={t('login.email_placeholder')}
                 size="large"
                 type="email"
                 prefix={<MailOutlined />}
@@ -161,14 +162,14 @@ export const Login = () => {
               />
             </Form.Item>
             <Form.Item
-              label="Password"
+              label={t('login.password')}
               name="password"
               rules={[
-                { required: true, message: 'Please enter your password' },
+                { required: true, message: t('login.password_required') },
               ]}
             >
               <Input.Password
-                placeholder="Your password"
+                placeholder={t('login.password_placeholder')}
                 size="large"
                 prefix={<LockOutlined />}
                 autoComplete="current-password"
@@ -183,14 +184,14 @@ export const Login = () => {
                 disabled={Boolean(oauthProvider)}
                 block
               >
-                Log in with password
+                {t('login.login_button')}
               </Button>
             </Form.Item>
           </Form>
 
           <div className="login-links">
-            <Link to="/register">Create account</Link>
-            <Link to="/reset-password/0">Forgot password?</Link>
+            <Link to="/register">{t('login.create_account')}</Link>
+            <Link to="/reset-password/0">{t('login.forgot_password')}</Link>
           </div>
         </section>
       </div>

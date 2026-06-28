@@ -1,12 +1,14 @@
 import { Button, Form, Input, message } from 'antd';
 import { md5 } from 'hash-wasm';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { api } from '@/services/api';
 import { rootRouterPath, router } from '../../../router';
 import { isPasswordValid } from '../../../utils/helper';
 
 export default function SetPassword() {
+  const { t } = useTranslation();
   const { search } = useLocation();
   const [loading, setLoading] = useState<boolean>(false);
   return (
@@ -22,7 +24,9 @@ export default function SetPassword() {
           router.navigate(rootRouterPath.resetPassword('3'));
         } catch (e) {
           console.log(e);
-          message.error((e as Error).message ?? 'Network error');
+          message.error(
+            (e as Error).message ?? t('reset_password.network_error'),
+          );
         }
         setLoading(false);
       }}
@@ -36,9 +40,7 @@ export default function SetPassword() {
             validator(_, value: string) {
               if (value && !isPasswordValid(value)) {
                 return Promise.reject(
-                  Error(
-                    'Password must include uppercase and lowercase letters, numbers, and be at least 6 characters long',
-                  ),
+                  Error(t('reset_password.password_rules')),
                 );
               }
               return Promise.resolve();
@@ -48,7 +50,7 @@ export default function SetPassword() {
       >
         <Input
           type="password"
-          placeholder="New Password"
+          placeholder={t('reset_password.new_password_placeholder')}
           autoComplete=""
           required
         />
@@ -61,7 +63,9 @@ export default function SetPassword() {
           ({ getFieldValue }) => ({
             validator(_, value: string) {
               if (getFieldValue('newPwd') !== value) {
-                return Promise.reject(Error('The passwords do not match'));
+                return Promise.reject(
+                  Error(t('reset_password.password_mismatch')),
+                );
               }
               return Promise.resolve();
             },
@@ -70,14 +74,14 @@ export default function SetPassword() {
       >
         <Input
           type="password"
-          placeholder="Confirm new password"
+          placeholder={t('reset_password.confirm_placeholder')}
           autoComplete=""
           required
         />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading} block>
-          Save new password
+          {t('reset_password.save_button')}
         </Button>
       </Form.Item>
     </Form>

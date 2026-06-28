@@ -6,6 +6,7 @@ import {
   EyeInvisibleOutlined,
   EyeOutlined,
   FileTextOutlined,
+  GlobalOutlined,
   KeyOutlined,
   LineChartOutlined,
   MenuOutlined,
@@ -16,9 +17,10 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Button, Drawer, Empty, Input, Menu, Popover, Tag } from 'antd';
+import { Button, Drawer, Empty, Input, Menu, Popover, Select, Tag } from 'antd';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import {
   type AppDrawerItem,
@@ -44,25 +46,61 @@ import PlatformIcon from './platform-icon';
 type AppItem = AppDrawerItem;
 type MenuItems = NonNullable<MenuProps['items']>;
 
+const languageOptions = [
+  { label: 'English', value: 'en' },
+  { label: '中文', value: 'zh-CN' },
+];
+
+function LanguageSwitcher({ compact }: { compact?: boolean }) {
+  const { i18n } = useTranslation();
+  if (compact) {
+    return (
+      <Select
+        size="small"
+        value={i18n.language}
+        options={languageOptions}
+        onChange={(lang) => void i18n.changeLanguage(lang)}
+        style={{ width: '100%' }}
+        suffixIcon={<GlobalOutlined />}
+      />
+    );
+  }
+  return (
+    <Select
+      size="small"
+      value={i18n.language}
+      options={languageOptions}
+      onChange={(lang) => void i18n.changeLanguage(lang)}
+      style={{ width: 100 }}
+      suffixIcon={<GlobalOutlined />}
+      variant="borderless"
+    />
+  );
+}
+
 interface TopNavigationProps {
   isMobile: boolean;
   showAuthenticatedChrome: boolean;
 }
 
-const externalItems: MenuItems = [
+const getExternalItems = (
+  t: ReturnType<typeof useTranslation>['t'],
+): MenuItems => [
   {
     key: 'issues',
     icon: <CommentOutlined />,
     label: (
       <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
-        Support
+        {t('nav.support')}
       </ExtLink>
     ),
   },
   {
     key: 'document',
     icon: <ReadOutlined />,
-    label: <ExtLink href={DOCUMENTATION_LINK}>Documentation</ExtLink>,
+    label: (
+      <ExtLink href={DOCUMENTATION_LINK}>{t('nav.documentation')}</ExtLink>
+    ),
   },
 ];
 
@@ -76,6 +114,7 @@ export default function TopNavigation({
   isMobile,
   showAuthenticatedChrome,
 }: TopNavigationProps) {
+  const { t } = useTranslation();
   const { user } = useUserInfo();
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -113,7 +152,11 @@ export default function TopNavigation({
                 {
                   key: 'apps',
                   icon: <AppstoreOutlined />,
-                  label: <Link to={rootRouterPath.apps}>Applications</Link>,
+                  label: (
+                    <Link to={rootRouterPath.apps}>
+                      {t('nav.applications')}
+                    </Link>
+                  ),
                 },
               ]
             : []),
@@ -124,7 +167,7 @@ export default function TopNavigation({
                   icon: <DashboardOutlined />,
                   label: (
                     <Link to={rootRouterPath.adminServiceStatus}>
-                      Service Status
+                      {t('nav.service_status')}
                     </Link>
                   ),
                 },
@@ -133,32 +176,38 @@ export default function TopNavigation({
           {
             key: 'audit-logs',
             icon: <FileTextOutlined />,
-            label: <Link to={rootRouterPath.auditLogs}>Audit Logs</Link>,
+            label: (
+              <Link to={rootRouterPath.auditLogs}>{t('nav.audit_logs')}</Link>
+            ),
           },
           {
             key: 'realtime-metrics',
             icon: <LineChartOutlined />,
             label: (
-              <Link to={rootRouterPath.realtimeMetrics}>Real-time Metrics</Link>
+              <Link to={rootRouterPath.realtimeMetrics}>
+                {t('nav.realtime_metrics')}
+              </Link>
             ),
           },
           {
             key: 'api-tokens',
             icon: <KeyOutlined />,
-            label: <Link to={rootRouterPath.apiTokens}>API Tokens</Link>,
+            label: (
+              <Link to={rootRouterPath.apiTokens}>{t('nav.api_tokens')}</Link>
+            ),
           },
           ...(user.admin
             ? [
                 {
                   key: 'admin',
                   icon: <SettingOutlined />,
-                  label: 'Admin',
+                  label: t('nav.admin'),
                   children: [
                     {
                       key: 'admin-config',
                       label: (
                         <Link to={rootRouterPath.adminConfig}>
-                          Dynamic Config
+                          {t('nav.dynamic_config')}
                         </Link>
                       ),
                     },
@@ -166,7 +215,7 @@ export default function TopNavigation({
                       key: 'admin-users',
                       label: (
                         <Link to={rootRouterPath.adminUsers}>
-                          User Management
+                          {t('nav.user_management')}
                         </Link>
                       ),
                     },
@@ -174,7 +223,7 @@ export default function TopNavigation({
                       key: 'admin-apps',
                       label: (
                         <Link to={rootRouterPath.adminApps}>
-                          App Management
+                          {t('nav.app_management')}
                         </Link>
                       ),
                     },
@@ -182,7 +231,7 @@ export default function TopNavigation({
                       key: 'admin-metrics',
                       label: (
                         <Link to={rootRouterPath.adminMetrics}>
-                          Global Metrics
+                          {t('nav.global_metrics')}
                         </Link>
                       ),
                     },
@@ -196,17 +245,35 @@ export default function TopNavigation({
   const mobileItems: MenuItems = [
     ...authenticatedItems,
     ...(authenticatedItems.length ? [{ type: 'divider' as const }] : []),
-    ...externalItems,
+    ...getExternalItems(t),
     ...(showAuthenticatedChrome && user
       ? [
           { type: 'divider' as const },
           {
+            key: 'language',
+            icon: <GlobalOutlined />,
+            label: <LanguageSwitcher compact />,
+            disabled: false,
+            className: 'pointer-events-auto',
+          },
+          {
             key: 'user',
             icon: <UserOutlined />,
-            label: <Link to={rootRouterPath.user}>Account Settings</Link>,
+            label: (
+              <Link to={rootRouterPath.user}>{t('nav.account_settings')}</Link>
+            ),
           },
         ]
-      : []),
+      : [
+          { type: 'divider' as const },
+          {
+            key: 'language',
+            icon: <GlobalOutlined />,
+            label: <LanguageSwitcher compact />,
+            disabled: false,
+            className: 'pointer-events-auto',
+          },
+        ]),
   ];
 
   return (
@@ -229,7 +296,7 @@ export default function TopNavigation({
             </Link>
           )}
           <button
-            aria-label="Open menu"
+            aria-label={t('nav.open_menu')}
             className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-0 bg-blue-600 text-white shadow-sm transition-colors hover:bg-blue-500',
               showAuthenticatedChrome && user ? undefined : 'ml-auto',
@@ -252,7 +319,7 @@ export default function TopNavigation({
             className="min-w-0 flex-1 border-b-0!"
             mode="horizontal"
             selectedKeys={selectedKeys}
-            items={[...authenticatedItems, ...externalItems]}
+            items={[...authenticatedItems, ...getExternalItems(t)]}
             style={{ height: 64, lineHeight: '64px' }}
           />
           {showAuthenticatedChrome && user && (
@@ -266,6 +333,7 @@ export default function TopNavigation({
               />
             </Link>
           )}
+          <LanguageSwitcher />
         </>
       )}
     </div>
@@ -283,13 +351,14 @@ function MobileMenuSheet({
   open: boolean;
   selectedKeys: string[];
 }) {
+  const { t } = useTranslation();
   return (
     <Drawer
       height="68vh"
       onClose={onClose}
       open={open}
       placement="bottom"
-      title="Menu"
+      title={t('nav.menu')}
       styles={{ body: { padding: 8 } }}
     >
       <Menu
@@ -304,6 +373,7 @@ function MobileMenuSheet({
 }
 
 function AppSwitcher({ compact }: { compact: boolean }) {
+  const { t } = useTranslation();
   const { apps } = useAppWorkspaceList();
   const { contextHolder, openAppSettings } = useAppSettingsModal();
   const { pathname, search } = useLocation();
@@ -406,7 +476,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
     }
   }, [canOpenAppList, open]);
 
-  const triggerLabel = currentApp?.name ?? 'Select app';
+  const triggerLabel = currentApp?.name ?? t('nav.select_app');
   const content = (
     <AppSwitcherContent
       currentAppId={activeAppId}
@@ -442,7 +512,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
         <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
           <span className="truncate">{triggerLabel}</span>
           {currentApp?.status === 'paused' && (
-            <Tag className="m-0 shrink-0">Paused</Tag>
+            <Tag className="m-0 shrink-0">{t('nav.paused')}</Tag>
           )}
         </span>
         {canOpenAppList && (
@@ -462,7 +532,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
           onClose={() => setOpen(false)}
           open={open}
           placement="bottom"
-          title="Select app"
+          title={t('nav.select_app')}
           styles={{ body: { padding: 0 } }}
         >
           {content}

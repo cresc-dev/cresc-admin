@@ -18,6 +18,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
   type Content,
@@ -117,6 +118,7 @@ const JsonEditorWrapper = ({
 };
 
 export const Component = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
@@ -174,7 +176,7 @@ export const Component = () => {
     mutationFn: ({ id, data }: { id: number; data: Partial<AdminUser> }) =>
       adminApi.updateUser(id, data),
     onSuccess: () => {
-      message.success('User updated');
+      message.success(t('admin_users.user_updated'));
       setIsModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
@@ -221,7 +223,7 @@ export const Component = () => {
         try {
           updateData.quota = JSON.parse(quotaValue);
         } catch {
-          message.error('Invalid quota JSON');
+          message.error(t('admin_users.invalid_quota'));
           return;
         }
       } else {
@@ -253,24 +255,24 @@ export const Component = () => {
 
   const columns: ColumnsType<AdminUser> = [
     {
-      title: 'ID',
+      title: t('admin_users.col_id'),
       dataIndex: 'id',
       key: 'id',
       responsive: ['md'],
       width: 80,
     },
     {
-      title: 'Email',
+      title: t('admin_users.col_email'),
       dataIndex: 'email',
       key: 'email',
     },
     {
-      title: 'Name',
+      title: t('admin_users.col_name'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Status',
+      title: t('admin_users.col_status'),
       dataIndex: 'status',
       key: 'status',
       responsive: ['sm'],
@@ -279,12 +281,14 @@ export const Component = () => {
         <span
           className={status === 'normal' ? 'text-green-600' : 'text-orange-500'}
         >
-          {status === 'normal' ? 'Normal' : 'Unverified'}
+          {status === 'normal'
+            ? t('admin_users.status_normal')
+            : t('admin_users.status_unverified')}
         </span>
       ),
     },
     {
-      title: 'Tier',
+      title: t('admin_users.col_tier'),
       dataIndex: 'tier',
       key: 'tier',
       responsive: ['sm'],
@@ -292,7 +296,7 @@ export const Component = () => {
       render: (tier: string) => tierLabelMap.get(tier) || tier || '-',
     },
     {
-      title: 'Tier Expires',
+      title: t('admin_users.col_tier_expires'),
       dataIndex: 'tierExpiresAt',
       key: 'tierExpiresAt',
       responsive: ['lg'],
@@ -301,7 +305,7 @@ export const Component = () => {
         date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: 'Custom Quota',
+      title: t('admin_users.col_custom_quota'),
       dataIndex: 'quota',
       key: 'quota',
       responsive: ['md'],
@@ -309,7 +313,7 @@ export const Component = () => {
       render: (quota: Quota | null) => (quota ? 'Custom' : '-'),
     },
     {
-      title: 'Actions',
+      title: t('admin_users.col_actions'),
       key: 'action',
       width: 80,
       render: (_value, record) => (
@@ -318,7 +322,7 @@ export const Component = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          Edit
+          {t('admin_users.edit')}
         </Button>
       ),
     },
@@ -330,15 +334,14 @@ export const Component = () => {
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <Title level={4} className="m-0!">
-              User Management
+              {t('admin_users.title')}
             </Title>
             <div className="text-sm text-gray-500">
-              Search and pagination stay in the URL so the same review context
-              is easy to reopen.
+              {t('admin_users.description')}
             </div>
           </div>
           <Input
-            placeholder="Search by name or email"
+            placeholder={t('admin_users.search_placeholder')}
             prefix={<SearchOutlined />}
             value={searchKeyword}
             onChange={(event) => setSearchKeyword(event.target.value)}
@@ -360,7 +363,9 @@ export const Component = () => {
               simple: isMobile,
               showQuickJumper: !isMobile,
               showSizeChanger: !isMobile,
-              showTotal: isMobile ? undefined : (count) => `${count} users`,
+              showTotal: isMobile
+                ? undefined
+                : (count) => t('admin_users.users_count', { count }),
               onChange: (page, nextPageSize) => {
                 patchSearchParams(setSearchParams, {
                   page: String(page),
@@ -374,13 +379,13 @@ export const Component = () => {
       </Card>
 
       <Modal
-        title={`Edit User: ${editingUser?.email}`}
+        title={t('admin_users.edit_title', { email: editingUser?.email ?? '' })}
         open={isModalOpen}
         width={isMobile ? 'calc(100vw - 32px)' : 600}
         onCancel={() => setIsModalOpen(false)}
         footer={[
           <Button key="cancel" onClick={() => setIsModalOpen(false)}>
-            Cancel
+            {t('admin_users.cancel')}
           </Button>,
           <Button
             key="save"
@@ -388,19 +393,31 @@ export const Component = () => {
             loading={updateMutation.isPending}
             onClick={handleSave}
           >
-            Save
+            {t('admin_users.save')}
           </Button>,
         ]}
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Space className="w-full" direction="vertical" size="middle">
-            <Form.Item name="name" label="Name" className="mb-0!">
+            <Form.Item
+              name="name"
+              label={t('admin_users.form_name')}
+              className="mb-0!"
+            >
               <Input />
             </Form.Item>
-            <Form.Item name="email" label="Email" className="mb-0!">
+            <Form.Item
+              name="email"
+              label={t('admin_users.form_email')}
+              className="mb-0!"
+            >
               <Input />
             </Form.Item>
-            <Form.Item name="tier" label="Tier" className="mb-0!">
+            <Form.Item
+              name="tier"
+              label={t('admin_users.form_tier')}
+              className="mb-0!"
+            >
               <Select
                 options={tierOptions}
                 optionFilterProp="label"
@@ -408,15 +425,28 @@ export const Component = () => {
                 onChange={handleTierChange}
               />
             </Form.Item>
-            <Form.Item name="status" label="Status" className="mb-0!">
+            <Form.Item
+              name="status"
+              label={t('admin_users.form_status')}
+              className="mb-0!"
+            >
               <Select
                 options={[
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'unverified', label: 'Unverified' },
+                  {
+                    value: 'normal',
+                    label: t('admin_users.form_status_normal'),
+                  },
+                  {
+                    value: 'unverified',
+                    label: t('admin_users.form_status_unverified'),
+                  },
                 ]}
               />
             </Form.Item>
-            <Form.Item label="Tier Expires" className="mb-0!">
+            <Form.Item
+              label={t('admin_users.form_tier_expires')}
+              className="mb-0!"
+            >
               <Space direction="vertical" size="small" className="w-full">
                 <Form.Item name="tierExpiresAt" noStyle>
                   <DatePicker showTime className="w-full" />
@@ -428,17 +458,17 @@ export const Component = () => {
                       size="small"
                       onClick={() => handleExtendTierExpiry(days)}
                     >
-                      +{days} days
+                      {t('admin_users.expiry_plus_days', { days })}
                     </Button>
                   ))}
                   <Button size="small" onClick={handleResetTierExpiry}>
-                    Reset
+                    {t('admin_users.reset')}
                   </Button>
                 </Space>
               </Space>
             </Form.Item>
             <Form.Item
-              label="Custom Quota (JSON, leave empty to use defaults)"
+              label={t('admin_users.custom_quota_label')}
               className="mb-0!"
             >
               <JsonEditorWrapper

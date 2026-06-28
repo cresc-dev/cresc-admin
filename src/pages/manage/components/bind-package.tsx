@@ -15,6 +15,7 @@ import {
   Table,
 } from 'antd';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { useManageContext } from '../hooks/useManageContext';
 
@@ -67,10 +68,12 @@ function getDepsChangeColumns({
   summary,
   filters,
   onFilterChange,
+  t,
 }: {
   summary: DepChangeSummary;
   filters: DepChangeFilters;
   onFilterChange: (type: DepChangeType, checked: boolean) => void;
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   return [
     {
@@ -84,7 +87,7 @@ function getDepsChangeColumns({
             }}
           />
           <span className="ml-1" style={{ color: '#dc2626', fontWeight: 700 }}>
-            Added {summary.added}
+            {t('bind_package.change_added')} {summary.added}
           </span>
           ,
           <Checkbox
@@ -94,7 +97,7 @@ function getDepsChangeColumns({
             }}
           />
           <span className="ml-1" style={{ color: '#16a34a', fontWeight: 700 }}>
-            Removed {summary.removed}
+            {t('bind_package.change_removed')} {summary.removed}
           </span>
           ,
           <Checkbox
@@ -104,7 +107,7 @@ function getDepsChangeColumns({
             }}
           />
           <span className="ml-1" style={{ color: '#d97706', fontWeight: 700 }}>
-            Changed {summary.changed}
+            {t('bind_package.change_changed')} {summary.changed}
           </span>
           )
         </span>
@@ -114,7 +117,7 @@ function getDepsChangeColumns({
       ellipsis: true,
     },
     {
-      title: 'Version Change',
+      title: t('bind_package.col_version_change'),
       key: 'versionChange',
       ellipsis: true,
       render: (_: unknown, record: DepChangeRow) => {
@@ -135,7 +138,9 @@ function getDepsChangeColumns({
         if (record.changeType === 'Added') {
           return (
             <span className="font-mono">
-              <span style={{ color: '#dc2626', fontWeight: 700 }}>Added</span>
+              <span style={{ color: '#dc2626', fontWeight: 700 }}>
+                {t('bind_package.change_added')}
+              </span>
               <span className="mx-2 text-gray-400">|</span>
               <span style={{ color: '#6b7280' }}>{record.oldVersion}</span>
               <ArrowRightOutlined className="mx-2 text-gray-400" />
@@ -148,7 +153,9 @@ function getDepsChangeColumns({
 
         return (
           <span className="font-mono">
-            <span style={{ color: '#16a34a', fontWeight: 700 }}>Removed</span>
+            <span style={{ color: '#16a34a', fontWeight: 700 }}>
+              {t('bind_package.change_removed')}
+            </span>
             <span className="mx-2 text-gray-400">|</span>
             <span style={{ color: '#16a34a', fontWeight: 600 }}>
               {record.oldVersion}
@@ -222,6 +229,7 @@ const DepsChangeConfirmContent = ({
   versionDisplayName: string | number;
   changes: DepChangeRow[];
 }) => {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<DepChangeFilters>({
     Added: true,
     Removed: true,
@@ -241,27 +249,24 @@ const DepsChangeConfirmContent = ({
         onFilterChange: (type, checked) => {
           setFilters((prev) => ({ ...prev, [type]: checked }));
         },
+        t,
       }),
-    [summary, filters],
+    [summary, filters, t],
   );
 
   return (
     <div>
-      <div>Target Native Package: {packageName}</div>
-      <div>OTA Version: {versionDisplayName}</div>
+      <div>
+        {t('bind_package.target_package')} {packageName}
+      </div>
+      <div>
+        {t('bind_package.ota_version')} {versionDisplayName}
+      </div>
       <Alert
         className="mt-3"
         showIcon
         type="warning"
-        message={
-          <span>
-            Changes in pure JavaScript dependencies are usually safe. If any
-            changed dependency includes <strong>native code</strong>, the OTA
-            update may cause feature issues or even crashes. Please review
-            carefully and run a full QR-code based test before publishing to
-            production.
-          </span>
-        }
+        message={<span>{t('bind_package.native_warning')}</span>}
       />
       <Table<DepChangeRow>
         className="mt-3"
@@ -271,7 +276,7 @@ const DepsChangeConfirmContent = ({
         dataSource={filteredChanges}
         scroll={{ y: 320 }}
         locale={{
-          emptyText: 'No dependency changes match the current filters.',
+          emptyText: t('bind_package.no_dep_changes'),
         }}
       />
     </div>
@@ -287,6 +292,7 @@ const BindPackage = ({
   versionDeps?: Record<string, string>;
   versionName?: string;
 }) => {
+  const { t } = useTranslation();
   const {
     packages: allPackages,
     appId,
@@ -358,11 +364,11 @@ const BindPackage = ({
         </div>
       );
     Modal.confirm({
-      title: 'Dependency changes detected. Continue publishing?',
+      title: t('bind_package.dep_changes_title'),
       maskClosable: true,
       okButtonProps: { danger: true },
-      okText: 'Publish anyway',
-      cancelText: 'Cancel',
+      okText: t('bind_package.publish_anyway'),
+      cancelText: t('bind_package.cancel'),
       width: 820,
       content,
       async onOk() {
@@ -379,17 +385,17 @@ const BindPackage = ({
     publishMenuItems.push(
       {
         key: 'all',
-        label: 'All available packages',
+        label: t('bind_package.all_packages'),
         children: [
           {
             key: 'all-full',
-            label: 'Full Release',
+            label: t('bind_package.full_release'),
             icon: <CloudDownloadOutlined />,
             onClick: () => publishToPackages(availablePackages),
           },
           {
             key: 'all-staged',
-            label: 'Staged Release',
+            label: t('bind_package.staged_release'),
             icon: <ExperimentOutlined />,
             children: [1, 2, 5, 10, 20, 50].map((percentage) => ({
               key: `all-staged-${percentage}`,
@@ -409,13 +415,13 @@ const BindPackage = ({
       children: [
         {
           key: `pkg-${p.id}-full`,
-          label: 'Full Release',
+          label: t('bind_package.full_release'),
           icon: <CloudDownloadOutlined />,
           onClick: () => publishToPackage(p),
         },
         {
           key: `pkg-${p.id}-staged`,
-          label: 'Staged Release',
+          label: t('bind_package.staged_release'),
           icon: <ExperimentOutlined />,
           children: [1, 2, 5, 10, 20, 50].map((percentage) => ({
             key: `pkg-${p.id}-staged-${percentage}`,
@@ -447,7 +453,7 @@ const BindPackage = ({
         : [
             {
               key: 'full',
-              label: 'Full Release',
+              label: t('bind_package.full_release'),
               icon: <CloudDownloadOutlined />,
               onClick: () => publishToPackage(p),
             },
@@ -456,7 +462,7 @@ const BindPackage = ({
       if (rolloutConfigNumber < 50 && !isFull) {
         items.push({
           key: 'staged',
-          label: 'Staged Release',
+          label: t('bind_package.staged_release'),
           icon: <ExperimentOutlined />,
           children: [1, 2, 5, 10, 20, 50].reduce<
             NonNullable<MenuProps['items']>
@@ -477,7 +483,7 @@ const BindPackage = ({
       }
       items.push({
         key: 'unpublish',
-        label: 'Unpublish',
+        label: t('bind_package.unpublish'),
         icon: <RestOutlined />,
         onClick: () => {
           const bindingId = binding.id;

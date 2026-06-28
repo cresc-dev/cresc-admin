@@ -5,6 +5,7 @@ import {
 } from '@ant-design/icons';
 import { Breadcrumb, Button, Tag } from 'antd';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/helper';
 import PlatformIcon from './platform-icon';
 
@@ -37,6 +38,7 @@ export function AppDetailHeader({
   sectionLabel: string;
   settingsDisabled?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-4 grid grid-cols-1 items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
       <div className="flex min-w-0 items-center justify-between gap-3 md:contents">
@@ -54,7 +56,7 @@ export function AppDetailHeader({
                     {app?.name || appNameFallback}
                   </span>
                   {app?.status === 'paused' && (
-                    <Tag className="ml-2">Paused</Tag>
+                    <Tag className="ml-2">{t('app_detail_header.paused')}</Tag>
                   )}
                 </span>
               ),
@@ -70,7 +72,7 @@ export function AppDetailHeader({
               disabled={settingsDisabled}
               onClick={onSettingsClick}
             >
-              App Settings
+              {t('app_detail_header.app_settings')}
             </Button>
           )}
         </div>
@@ -84,14 +86,14 @@ export function AppDetailHeader({
           active={activeView === 'management'}
           disabled={managementDisabled}
           icon={<AppstoreOutlined />}
-          label="App Releases"
+          label={t('app_detail_header.tab_releases')}
           onClick={onManagementClick}
         />
         <AppDetailTab
           active={activeView === 'metrics'}
           disabled={metricsDisabled}
           icon={<LineChartOutlined />}
-          label="Real-time Metrics"
+          label={t('app_detail_header.tab_metrics')}
           onClick={onMetricsClick}
         />
       </div>

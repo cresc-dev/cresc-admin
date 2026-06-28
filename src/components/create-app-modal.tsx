@@ -1,4 +1,5 @@
 import { Form, Input, Modal, message, Select } from 'antd';
+import i18n from '@/i18n';
 import { api } from '@/services/api';
 import PlatformIcon from './platform-icon';
 
@@ -17,15 +18,18 @@ export const showCreateAppModal = ({
     content: (
       <Form initialValues={{ platform }}>
         <br />
-        <Form.Item label="App Name" name="name">
+        <Form.Item label={i18n.t('create_app_modal.app_name')} name="name">
           <Input
-            placeholder="Enter an app name"
+            placeholder={i18n.t('create_app_modal.app_name_placeholder')}
             onChange={({ target }) => {
               name = target.value;
             }}
           />
         </Form.Item>
-        <Form.Item label="Select Platform" name="platform">
+        <Form.Item
+          label={i18n.t('create_app_modal.select_platform')}
+          name="platform"
+        >
           <Select
             onSelect={(value: string) => {
               platform = value;
@@ -55,7 +59,7 @@ export const showCreateAppModal = ({
     async onOk() {
       const trimmedName = name.trim();
       if (!trimmedName) {
-        message.warning('Please enter an app name');
+        message.warning(i18n.t('create_app_modal.app_name_required'));
         return false;
       }
 

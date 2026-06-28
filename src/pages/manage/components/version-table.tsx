@@ -13,6 +13,7 @@ import {
 import type { ColumnType } from 'antd/lib/table';
 // import { useDrag, useDrop } from "react-dnd";
 import { type ReactNode, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
 import { api } from '@/services/api';
@@ -24,6 +25,7 @@ import { DepsTable } from './deps-table';
 import JsonEditor from './json-editor';
 
 const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
+  const { t } = useTranslation();
   const { appId, deepLink, setDeepLink } = useManageContext();
   const [enableDeepLink, setEnableDeepLink] = useState(!!deepLink);
 
@@ -48,14 +50,14 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
       content={
         <div>
           <div className="text-center my-1 mx-auto">
-            Test QR Code <br />
+            {t('version_table.qr_title')} <br />
             <a
               target="_blank"
               className="ml-1 text-xs"
               href={TEST_QR_CODE_DOC}
               rel="noreferrer"
             >
-              How to use
+              {t('version_table.how_to_use')}
             </a>
           </div>
           <QRCode value={codeValue} bordered={false} className="my-0 mx-auto" />
@@ -76,10 +78,10 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
                   setEnableDeepLink(target.checked);
                 }}
               >
-                Use Deep Link
+                {t('version_table.use_deep_link')}
               </Checkbox>
               <Input
-                placeholder="e.g. cresc://"
+                placeholder={t('version_table.deep_link_placeholder')}
                 className="flex-1"
                 value={deepLink}
                 onChange={({ target }) => {
@@ -100,10 +102,12 @@ function removeSelectedVersions({
   selected,
   versions,
   appId,
+  t,
 }: {
   selected: number[];
   versions: Version[];
   appId: number;
+  t: (key: string) => string;
 }) {
   const versionNames: string[] = [];
   for (const v of versions) {
@@ -112,7 +116,7 @@ function removeSelectedVersions({
     }
   }
   Modal.confirm({
-    title: 'Delete selected OTA versions:',
+    title: t('version_table.delete_title'),
     content: versionNames.join(', '),
     maskClosable: true,
     okButtonProps: { danger: true },
@@ -122,9 +126,11 @@ function removeSelectedVersions({
   });
 }
 
-const columns: ColumnType<Version>[] = [
+const getColumns = (
+  t: ReturnType<typeof useTranslation>['t'],
+): ColumnType<Version>[] => [
   {
-    title: 'Version',
+    title: t('version_table.col_version'),
     dataIndex: 'name',
     render: (_, record) => (
       <TextColumn
@@ -141,7 +147,7 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: 'Description',
+    title: t('version_table.col_description'),
     dataIndex: 'description',
     responsive: ['md'],
     render: (_, record) => (
@@ -149,13 +155,13 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: 'Metadata',
+    title: t('version_table.col_metadata'),
     dataIndex: 'metaInfo',
     responsive: ['lg'],
     render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
   },
   {
-    title: 'Publish',
+    title: t('version_table.col_publish'),
     dataIndex: 'packages',
     width: '100%',
     render: (_, { id, deps, name }) => (
@@ -163,7 +169,7 @@ const columns: ColumnType<Version>[] = [
     ),
   },
   {
-    title: 'Uploaded At',
+    title: t('version_table.col_uploaded'),
     dataIndex: 'createdAt',
     responsive: ['md'],
     render: (_, record) => (
@@ -183,6 +189,7 @@ const TextColumn = ({
   isEditable?: boolean;
   extra?: ReactNode;
 }) => {
+  const { t } = useTranslation();
   const key = recordKey;
   const { appId } = useManageContext();
   const screens = Grid.useBreakpoint();
@@ -211,7 +218,16 @@ const TextColumn = ({
             : key === 'metaInfo'
               ? 640
               : undefined,
-          title: columns.find((i) => i.dataIndex === key)?.title as string,
+          title:
+            key === 'name'
+              ? t('version_table.col_version')
+              : key === 'description'
+                ? t('version_table.col_description')
+                : key === 'metaInfo'
+                  ? t('version_table.col_metadata')
+                  : key === 'createdAt'
+                    ? t('version_table.col_uploaded')
+                    : key,
           closable: true,
           maskClosable: true,
           content:
@@ -263,6 +279,8 @@ const TextColumn = ({
   );
 };
 export default function VersionTable() {
+  const { t } = useTranslation();
+  const columns = getColumns(t);
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const { appId } = useManageContext();
@@ -279,7 +297,7 @@ export default function VersionTable() {
     <Table
       className="versions"
       rowKey="id"
-      title={() => 'OTA Versions'}
+      title={() => t('version_table.title')}
       columns={columns}
       dataSource={versions}
       size={isMobile ? 'small' : 'middle'}
@@ -289,7 +307,9 @@ export default function VersionTable() {
         total: count,
         current: offset / pageSize + 1,
         pageSize,
-        showTotal: isMobile ? undefined : (total) => `Total ${total} versions`,
+        showTotal: isMobile
+          ? undefined
+          : (total) => t('version_table.total_versions', { total }),
         onChange(page, size) {
           if (size) {
             setOffset((page - 1) * size);
@@ -311,11 +331,11 @@ export default function VersionTable() {
               <Button
                 className={isMobile ? 'w-full' : undefined}
                 onClick={() =>
-                  removeSelectedVersions({ selected, versions, appId })
+                  removeSelectedVersions({ selected, versions, appId, t })
                 }
                 danger
               >
-                Delete
+                {t('version_table.delete_button')}
               </Button>
             )
           : undefined

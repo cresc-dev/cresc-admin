@@ -589,7 +589,8 @@
     "tab_versions": "OTA 版本",
     "tab_packages": "原生包",
     "loading_app": "加载应用",
-    "breadcrumb_apps": "应用"
+    "breadcrumb_apps": "应用",
+    "search": "搜索"
   },
   "version_table": {
     "qr_title": "测试二维码",

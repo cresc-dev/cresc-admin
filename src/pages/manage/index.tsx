@@ -1,7 +1,7 @@
-import { DownOutlined } from '@ant-design/icons';
-import { Checkbox, Dropdown, Grid, Layout, type MenuProps, Tabs } from 'antd';
+import { DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { Checkbox, Dropdown, Grid, Input, Layout, type MenuProps, Tabs } from 'antd';
 
-import { type Dispatch, type SetStateAction, useState } from 'react';
+import { type Dispatch, type SetStateAction, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './manage.css';
@@ -102,6 +102,7 @@ const ManageDashBoard = () => {
   const { packages, unusedPackages, packagesLoading, bindingsLoading } =
     useManageContext();
   const [packageFilter, setPackageFilter] = useState<PackageFilter>('all');
+  const [packageSearch, setPackageSearch] = useState('');
   const [selectedAllPackageIds, setSelectedAllPackageIds] = useState<number[]>(
     [],
   );
@@ -117,13 +118,37 @@ const ManageDashBoard = () => {
     }
   };
   const isUnusedPackageFilter = packageFilter === 'unused';
-  const packageDataSource = isUnusedPackageFilter ? unusedPackages : packages;
+  const allPackageDataSource = isUnusedPackageFilter ? unusedPackages : packages;
+  const normalizedPackageSearch = packageSearch.trim().toLowerCase();
+  const packageDataSource = useMemo(
+    () =>
+      normalizedPackageSearch
+        ? allPackageDataSource.filter(
+            (item) =>
+              item.name.toLowerCase().includes(normalizedPackageSearch) ||
+              item.note?.toLowerCase().includes(normalizedPackageSearch),
+          )
+        : allPackageDataSource,
+    [allPackageDataSource, normalizedPackageSearch],
+  );
   const selectedPackageIds = isUnusedPackageFilter
     ? selectedUnusedPackageIds
     : selectedAllPackageIds;
   const setSelectedPackageIds = isUnusedPackageFilter
     ? setSelectedUnusedPackageIds
     : setSelectedAllPackageIds;
+  const packageSearchInput = (
+    <Input
+      allowClear
+      bordered={false}
+      prefix={<SearchOutlined className="text-gray-400" />}
+      placeholder={t('manage.search')}
+      value={packageSearch}
+      onChange={({ target }) => setPackageSearch(target.value)}
+      className="rounded bg-gray-100 px-2 text-sm leading-8"
+      style={{ width: 100 }}
+    />
+  );
   const packageList = (
     <>
       <div className="mb-2 flex items-center">
@@ -160,7 +185,12 @@ const ManageDashBoard = () => {
             key: 'packages',
             label: t('manage.tab_packages'),
             children: (
-              <div className="rounded-lg bg-white p-4">{packageList}</div>
+              <div className="rounded-lg bg-white p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  {packageSearchInput}
+                </div>
+                {packageList}
+              </div>
             ),
           },
         ]}
@@ -176,7 +206,10 @@ const ManageDashBoard = () => {
         width={280}
         style={{ marginRight: 16, maxWidth: '100%' }}
       >
-        <div className="py-4">{t('manage.tab_packages')}</div>
+        <div className="flex shrink-0 items-center gap-2 py-4">
+          {t('manage.tab_packages')}
+          {packageSearchInput}
+        </div>
         {packageList}
       </Layout.Sider>
       <Layout.Content className="!p-0" style={{ minWidth: 0 }}>

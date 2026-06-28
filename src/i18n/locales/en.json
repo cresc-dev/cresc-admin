@@ -589,7 +589,8 @@
     "tab_versions": "OTA Versions",
     "tab_packages": "Native Packages",
     "loading_app": "Loading app",
-    "breadcrumb_apps": "Apps"
+    "breadcrumb_apps": "Apps",
+    "search": "Search"
   },
   "version_table": {
     "qr_title": "Test QR Code",

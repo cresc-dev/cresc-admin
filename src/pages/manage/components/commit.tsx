@@ -1,8 +1,15 @@
 import { PullRequestOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
+import type { CSSProperties } from 'react';
 import dayjs from 'dayjs';
 import gitUrlParse from 'git-url-parse';
 import { useTranslation } from 'react-i18next';
+
+const popoverOverlayStyle: CSSProperties = {
+  maxWidth: 288,
+  maxHeight: 240,
+  overflowY: 'auto',
+};
 
 export const Commit = ({ commit }: { commit?: Commit }) => {
   const { t } = useTranslation();
@@ -10,6 +17,7 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
     return (
       <Popover
         className="ant-typography-edit"
+        overlayInnerStyle={popoverOverlayStyle}
         content={
           <div>
             <div className="text-center my-1 mx-auto">
@@ -40,6 +48,7 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
   return (
     <Popover
       className="ant-typography-edit"
+      overlayInnerStyle={popoverOverlayStyle}
       content={
         <div>
           <div className="my-1 mx-auto">
@@ -51,7 +60,7 @@ export const Commit = ({ commit }: { commit?: Commit }) => {
               {t('commit.time')} {time.fromNow()} (
               {time.format('YYYY-MM-DD HH:mm:ss')})
             </div>
-            <div>
+            <div className="break-all">
               {t('commit.summary')} {message}
             </div>
             <hr />

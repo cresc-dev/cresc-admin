@@ -1,4 +1,4 @@
-import { QrcodeOutlined } from '@ant-design/icons';
+import { QrcodeOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Checkbox,
@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import type { ColumnType } from 'antd/lib/table';
 // import { useDrag, useDrop } from "react-dnd";
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
@@ -287,19 +287,46 @@ export default function VersionTable() {
   const [selected, setSelected] = useState<number[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState('');
   const { versions, count, isLoading } = useVersions({
     appId,
     offset,
     limit: pageSize,
   });
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredVersions = useMemo(
+    () =>
+      normalizedSearch
+        ? versions.filter(
+            (item) =>
+              item.name.toLowerCase().includes(normalizedSearch) ||
+              item.description?.toLowerCase().includes(normalizedSearch),
+          )
+        : versions,
+    [versions, normalizedSearch],
+  );
 
   return (
     <Table
       className="versions"
       rowKey="id"
-      title={() => t('version_table.title')}
+      title={() => (
+        <div className="flex items-center gap-2">
+          {!isMobile && <span>{t('version_table.title')}</span>}
+          <Input
+            allowClear
+            bordered={false}
+            prefix={<SearchOutlined className="text-gray-400" />}
+            placeholder={t('manage.search')}
+            value={search}
+            onChange={({ target }) => setSearch(target.value)}
+            className="shrink-0 rounded bg-gray-100 px-2 text-sm leading-8"
+            style={{ width: 100 }}
+          />
+        </div>
+      )}
       columns={columns}
-      dataSource={versions}
+      dataSource={filteredVersions}
       size={isMobile ? 'small' : 'middle'}
       pagination={{
         showSizeChanger: !isMobile,

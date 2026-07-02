@@ -325,7 +325,7 @@ export default function TopNavigation({
           {showAuthenticatedChrome && user && (
             <Link
               to={rootRouterPath.user}
-              className="flex h-14 w-60 items-center rounded-xl px-2 text-slate-700 no-underline transition-colors hover:bg-slate-50"
+              className="flex h-14 w-40 items-center rounded-xl px-2 text-slate-700 no-underline transition-colors hover:bg-slate-50"
             >
               <DailyCheckQuotaUserTrigger
                 showPlanDetails

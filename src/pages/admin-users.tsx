@@ -1,9 +1,13 @@
-import { EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  Badge,
   Button,
   Card,
+  Collapse,
   DatePicker,
+  Descriptions,
+  Drawer,
   Form,
   Grid,
   Input,
@@ -117,6 +121,131 @@ const JsonEditorWrapper = ({
   return <div ref={containerRef} style={{ height }} />;
 };
 
+const UserDetailDrawer = ({
+  userId,
+  open,
+  onClose,
+  isMobile,
+  t,
+}: {
+  userId: number | null;
+  open: boolean;
+  onClose: () => void;
+  isMobile: boolean;
+  t?: (key: string) => string;
+}) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['adminUserDetail', userId],
+    queryFn: () => (userId ? adminApi.getUserDetail(userId) : null),
+    enabled: !!userId && open,
+  });
+
+  const translate = (key: string, fallback: string) => {
+    if (t) {
+      // Return translation if key is known, otherwise fallback
+      const val = t(key);
+      if (val && val !== key) return val;
+    }
+    return fallback;
+  };
+
+  const detail = data;
+
+  return (
+    <Drawer
+      title={translate('admin_users.detail_title', 'User Detail')}
+      width={isMobile ? '100%' : 720}
+      onClose={onClose}
+      open={open}
+      destroyOnClose
+    >
+      <Spin spinning={isLoading}>
+        {detail && (
+          <Space direction="vertical" size="large" className="w-full">
+            <Descriptions title={translate('admin_users.basic_info', 'Basic Info')} bordered column={2}>
+              <Descriptions.Item label="ID">{detail.user.id}</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.col_name', 'Username')}>{detail.user.name}</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.col_email', 'Email')} span={2}>{detail.user.email}</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.col_status', 'Status')}>
+                <Badge
+                  status={detail.user.status === 'normal' ? 'success' : 'warning'}
+                  text={detail.user.status === 'normal' ? translate('admin_users.status_normal', 'Normal') : translate('admin_users.status_unverified', 'Unverified')}
+                />
+              </Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.col_tier', 'Tier')}>
+                {detail.user.tier}
+              </Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.col_tier_expires', 'Expiry')} span={2}>
+                {detail.user.tierExpiresAt ? dayjs(detail.user.tierExpiresAt).format('YYYY-MM-DD HH:mm') : '-'}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <Descriptions title={translate('admin_users.quota_usage', 'Quota & PV Usage')} bordered column={2}>
+              <Descriptions.Item label={translate('admin_users.pv_limit', 'Daily Limit')}>{detail.quotaDetail.limit.pv} pv</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.today_used', 'Today Used')}>{detail.quotaDetail.todayUsed} pv</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.today_remaining', 'Remaining')}>{detail.quotaDetail.todayRemaining} pv</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.avg_7_days', '7d Avg')}>{detail.quotaDetail.last7Days.avg} pv</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.last_7_days_details', 'Last 7 Days Details')} span={2}>
+                {detail.quotaDetail.last7Days.counts.slice().reverse().map((c, i) => (
+                  <span key={i} className="mr-3 inline-block">
+                    Day {i + 1}: <strong>{c}</strong>
+                  </span>
+                ))}
+              </Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.app_limit', 'App Limit')}>{detail.apps.length} / {detail.quotaDetail.limit.app}</Descriptions.Item>
+              <Descriptions.Item label={translate('admin_users.package_limit', 'Package Limit')}>{detail.quotaDetail.limit.package} pkg</Descriptions.Item>
+            </Descriptions>
+
+            <div>
+              <div className="ant-descriptions-title" style={{ marginBottom: 12 }}>
+                {translate('admin_users.apps_and_packages', 'Apps & Native Packages')}
+              </div>
+              <Collapse>
+                {detail.apps.map((app) => (
+                  <Collapse.Panel
+                    key={app.id}
+                    header={
+                      <div className="flex w-full justify-between pr-4 items-center">
+                        <span>
+                          <strong>{app.name}</strong> ({app.platform})
+                        </span>
+                        <Space size="middle">
+                          <span>PV: <strong>{app.checkCount}</strong></span>
+                          <span>{translate('admin_users.packages_count', 'Packages')}: <strong>{app.packagesCount}</strong></span>
+                        </Space>
+                      </div>
+                    }
+                  >
+                    <Space direction="vertical" className="w-full">
+                      <div className="text-xs text-gray-500 mb-2">
+                        App Key: <code>{app.appKey}</code>
+                      </div>
+                      <Table
+                        dataSource={app.packages}
+                        rowKey="id"
+                        pagination={{ pageSize: 5, size: 'small' }}
+                        size="small"
+                        columns={[
+                          { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
+                          { title: translate('admin_users.pkg_name', 'Package/Version'), dataIndex: 'name', key: 'name' },
+                          { title: 'Hash', dataIndex: 'hash', key: 'hash', width: 100, render: (h: string) => <code className="text-xs">{h.slice(0, 8)}</code> },
+                          { title: 'Build', key: 'build', render: (_, r) => `${r.buildNumber || '-'}(${r.buildTime || '-'})` },
+                          { title: translate('admin_users.col_status', 'Status'), dataIndex: 'status', key: 'status', width: 80 },
+                          { title: translate('admin_users.col_note', 'Note'), dataIndex: 'note', key: 'note' },
+                        ]}
+                      />
+                    </Space>
+                  </Collapse.Panel>
+                ))}
+              </Collapse>
+            </div>
+          </Space>
+        )}
+      </Spin>
+    </Drawer>
+  );
+};
+
 export const Component = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -124,6 +253,8 @@ export const Component = () => {
   const isMobile = !screens.md;
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form] = Form.useForm();
   const [quotaValue, setQuotaValue] = useState('');
@@ -315,15 +446,27 @@ export const Component = () => {
     {
       title: t('admin_users.col_actions'),
       key: 'action',
-      width: 80,
+      width: 150,
       render: (_value, record) => (
-        <Button
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          {t('admin_users.edit')}
-        </Button>
+        <Space size="middle">
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setViewingUserId(record.id);
+              setIsDetailOpen(true);
+            }}
+          >
+            {t('admin_users.view') || 'View'}
+          </Button>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            {t('admin_users.edit')}
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -480,6 +623,13 @@ export const Component = () => {
           </Space>
         </Form>
       </Modal>
+      <UserDetailDrawer
+        userId={viewingUserId}
+        open={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        isMobile={isMobile}
+        t={t}
+      />
     </div>
   );
 };

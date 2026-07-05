@@ -27,6 +27,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
+import { downloadCsv } from '@/utils/csv';
 import { patchSearchParams } from '@/utils/helper';
 import { useAuditLogs } from '@/utils/hooks';
 
@@ -383,15 +384,13 @@ export const AuditLogs = () => {
     });
   };
 
-  const handleExportToExcel = async () => {
+  const handleExportCsv = () => {
     if (filteredAuditLogs.length === 0) {
       return;
     }
 
     try {
-      const XLSX = await import('xlsx');
-
-      const excelData = filteredAuditLogs.map((log) => {
+      const rows = filteredAuditLogs.map((log) => {
         const date = dayjs(log.createdAt);
         const previewData = getPreviewData(log.data);
         let browserInfo = '-';
@@ -409,39 +408,37 @@ export const AuditLogs = () => {
           }
         }
 
-        return {
-          Time: date.format('YYYY-MM-DD HH:mm:ss'),
-          Action: getActionLabel(log.method, log.path),
-          Method: log.method.toUpperCase(),
-          Path: log.path,
-          Status: log.statusCode,
-          Payload: previewData ? JSON.stringify(previewData) : '-',
-          Browser: browserInfo,
-          OS: osInfo,
-          IP: log.ip || '-',
-          'API Key': getApiTokenLabel(log.apiTokens) || '-',
-        };
+        return [
+          date.format('YYYY-MM-DD HH:mm:ss'),
+          getActionLabel(log.method, log.path),
+          log.method.toUpperCase(),
+          log.path,
+          log.statusCode,
+          previewData ? JSON.stringify(previewData) : '-',
+          browserInfo,
+          osInfo,
+          log.ip || '-',
+          getApiTokenLabel(log.apiTokens) || '-',
+        ];
       });
 
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 10 },
-        { wch: 36 },
-        { wch: 10 },
-        { wch: 40 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 18 },
-        { wch: 18 },
+      const header = [
+        'Time',
+        'Action',
+        'Method',
+        'Path',
+        'Status',
+        'Payload',
+        'Browser',
+        'OS',
+        'IP',
+        'API Key',
       ];
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Audit Logs');
-      XLSX.writeFile(
-        workbook,
-        `audit-logs_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`,
-      );
+
+      downloadCsv(`audit-logs_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.csv`, [
+        header,
+        ...rows,
+      ]);
     } catch (error) {
       message.error(
         `${t('audit_logs.export_failed')} ${(error as Error).message}`,
@@ -586,7 +583,7 @@ export const AuditLogs = () => {
   ];
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+    <div className="rounded-lg border border-slate-200 bg-container p-4 shadow-sm md:p-5">
       <div className="mb-4">
         <div className="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -646,11 +643,11 @@ export const AuditLogs = () => {
             <Button
               type="primary"
               icon={<DownloadOutlined />}
-              onClick={handleExportToExcel}
+              onClick={handleExportCsv}
               disabled={filteredAuditLogs.length === 0}
               className="w-full md:w-auto"
             >
-              {t('audit_logs.export_excel')}
+              {t('audit_logs.export_csv')}
             </Button>
           </div>
         </div>

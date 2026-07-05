@@ -7,6 +7,7 @@
     "build": "NODE_ENV=production rsbuild build",
     "preview": "rsbuild preview",
     "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "bun test",
     "lint": "tsgo --noEmit -p tsconfig.json && biome check --write ."
   },
   "dependencies": {
@@ -29,8 +30,7 @@
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.18.1",
     "ua-parser-js": "^2.0.10",
-    "vanilla-jsoneditor": "^3.12.0",
-    "xlsx": "^0.18.5"
+    "vanilla-jsoneditor": "^3.12.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",

@@ -4,6 +4,7 @@ import { md5 } from 'hash-wasm';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { RequestError, setToken } from '@/services/request';
+import { resolveLoginRedirect } from '@/utils/safe-redirect';
 
 export type OAuthProvider = 'google' | 'github';
 
@@ -18,23 +19,10 @@ function getSearchParam(name: string) {
   return new URLSearchParams(router.state.location.search).get(name);
 }
 
-function resolveLoginFrom(loginFrom?: string | null) {
-  if (!loginFrom?.startsWith('/') || loginFrom.startsWith('//')) {
-    return rootRouterPath.home;
-  }
-  if (
-    loginFrom === rootRouterPath.login ||
-    loginFrom.startsWith(`${rootRouterPath.login}?`)
-  ) {
-    return rootRouterPath.home;
-  }
-  return loginFrom;
-}
-
 export function completeLogin(token: string, loginFrom?: string | null) {
   setToken(token);
   message.success('Successfully logged in');
-  router.navigate(resolveLoginFrom(loginFrom));
+  router.navigate(resolveLoginRedirect(loginFrom));
 }
 
 export async function login(email: string, password: string) {

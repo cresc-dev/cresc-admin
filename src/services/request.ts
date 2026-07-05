@@ -1,6 +1,10 @@
 import { message } from 'antd';
 import { testUrls } from '@/utils/helper';
-import { logout } from './auth';
+import { buildRequest, type HttpMethod } from './build-request';
+import { handleResponse, RequestError, type RequestOptions } from './response';
+
+export type { RequestOptions };
+export { RequestError };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let _token = localStorage.getItem('token');
@@ -32,89 +36,33 @@ const getBaseUrl = (async () => {
   });
 })();
 
-interface PushyResponse {
-  message?: string;
-}
-
-export class RequestError extends Error {
-  status?: number;
-
-  constructor(message: string, status?: number) {
-    super(message);
-    this.name = 'RequestError';
-    this.status = status;
-  }
-}
-
-export interface RequestOptions {
-  baseUrl?: string;
-  suppressErrorToast?: boolean;
-}
-
 export default async function request<T extends Record<any, any>>(
-  method: 'get' | 'post' | 'put' | 'delete',
+  method: HttpMethod,
   path: string,
   params?: Record<any, any>,
   requestOptions: RequestOptions = {},
 ) {
-  const headers: HeadersInit = {};
-  const options: RequestInit = { method, headers };
   const baseUrl = requestOptions.baseUrl ?? (await getBaseUrl);
-  let url = `${baseUrl.replace(/\/$/, '')}${path}`;
-  if (_token) {
-    headers['x-accesstoken'] = _token;
-  }
-  if (params) {
-    if (method === 'get') {
-      url += `?${new URLSearchParams(params).toString()}`;
-    } else {
-      headers['content-type'] = 'application/json';
-      options.body = JSON.stringify(params);
-    }
-  }
+  const { url, options } = buildRequest({
+    method,
+    path,
+    baseUrl,
+    params,
+    token: _token,
+  });
   try {
     const response = await fetch(url, options);
-    if (response.status === 401) {
-      logout();
-      return;
-    }
-
-    const text = await response.text();
-    let json: PushyResponse = {};
-    if (text) {
-      try {
-        json = JSON.parse(text) as PushyResponse;
-      } catch {
-        json = {
-          message: text,
-        };
-      }
-    }
-
-    if (response.ok) {
-      return json as T & PushyResponse;
-    }
-
-    const error = new RequestError(
-      json.message || `Request failed with status ${response.status}`,
-      response.status,
-    );
-    if (!requestOptions.suppressErrorToast && error.message) {
-      message.error(error.message);
-    }
-    throw error;
+    return await handleResponse<T>(response, requestOptions);
   } catch (err) {
     if (err instanceof RequestError) {
       throw err;
     }
 
-    if ((err as Error).message.includes('Unauthorized')) {
-      logout();
-    } else {
-      if (!requestOptions.suppressErrorToast) {
-        message.error(`Error: ${(err as Error).message}`);
-      }
-      throw err;
+    // Network-level failure (DNS, TLS, CORS, offline); parsed business errors
+    // are already toasted and rethrown by handleResponse above.
+    if (!requestOptions.suppressErrorToast) {
+      message.error(`Error: ${(err as Error).message}`);
     }
+    throw err;
   }
 }

@@ -204,5 +204,8 @@ export function getSelectedKeys(pathname: string) {
   if (pathname === rootRouterPath.adminServiceStatus) {
     return ['admin-service-status'];
   }
+  if (pathname === rootRouterPath.adminDeploy) {
+    return ['admin-deploy'];
+  }
   return [];
 }

@@ -4,7 +4,7 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/services/api';
-import { getToken } from '@/services/request';
+import { hasSession } from '@/services/request';
 import { versionKeys } from '@/utils/query-keys';
 
 dayjs.extend(LocalizedFormat);
@@ -152,7 +152,7 @@ export const useUserInfo = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['userInfo'],
     queryFn: api.me,
-    enabled: () => !!getToken(),
+    enabled: () => hasSession(),
   });
   const expireDay = dayjs(data?.tierExpiresAt);
   const displayExpireDay = data?.tierExpiresAt ? expireDay.format('LL') : 'N/A';
@@ -161,7 +161,7 @@ export const useUserInfo = () => {
     : undefined;
 
   return {
-    user: getToken() ? data : null,
+    user: hasSession() ? data : null,
     displayExpireDay,
     displayRemainingDays,
     isLoading,

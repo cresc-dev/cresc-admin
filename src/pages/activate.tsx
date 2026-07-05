@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
-import { setToken } from '@/services/request';
+import { clearSession } from '@/services/request';
 
 export const Activate = () => {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ export const Activate = () => {
       return;
     }
 
-    setToken('');
+    clearSession();
     router.navigate(rootRouterPath.user, { replace: true });
   }, [isSuccess]);
 

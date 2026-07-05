@@ -103,9 +103,11 @@ export type InternalApi5xxEventsResponse = {
 
 export const api = {
   login: (params: { email: string; pwd: string }) =>
-    request<{ token: string }>('post', '/user/login', params, {
+    request<{ token?: string }>('post', '/user/login', params, {
       suppressErrorToast: true,
     }),
+  logout: () =>
+    request('post', '/user/logout', undefined, { suppressErrorToast: true }),
   getOAuthLoginUrl: (provider: 'google' | 'github', loginFrom?: string) =>
     request<{ url: string }>(
       'get',

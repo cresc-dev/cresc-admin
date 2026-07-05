@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '@/services/api';
 import { patchSearchParams } from '@/utils/helper';
+import { useThemeMode } from '@/utils/theme-mode';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -128,6 +129,7 @@ const parseDateRange = (
 
 export const Component = () => {
   const { t } = useTranslation();
+  const { isDark } = useThemeMode();
   const [searchParams, setSearchParams] = useSearchParams();
   const modeLabels = getModeLabels(t);
   const metricKeyOptions = getMetricKeyOptions(t);
@@ -304,6 +306,7 @@ export const Component = () => {
   }, [displayTotals.categories]);
 
   const lineConfig = {
+    theme: isDark ? 'classicDark' : 'classic',
     interaction: {
       legendFilter: true,
       tooltip: { shared: true },

@@ -1,5 +1,5 @@
 import '@ant-design/v5-patch-for-react-19';
-import { ConfigProvider } from 'antd';
+import { theme as antdTheme, ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
 import { createRoot } from 'react-dom/client';
@@ -9,9 +9,12 @@ import './i18n';
 // import { HTML5Backend } from "react-dnd-html5-backend";
 import './index.css';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { router } from './router';
+import { themeConfig } from './theme';
 import { queryClient } from './utils/queryClient';
+import { ThemeModeProvider, useThemeMode } from './utils/theme-mode';
 
 const antdLocales: Record<string, typeof enUS> = {
   en: enUS,
@@ -72,15 +75,31 @@ if (root) {
   createRoot(root).render(<App />);
 }
 
-function App() {
+function ThemedApp() {
   const { i18n } = useTranslation();
+  const { isDark } = useThemeMode();
   const antdLocale = antdLocales[i18n.language] ?? enUS;
+  const theme = useMemo(
+    () => ({
+      ...themeConfig,
+      algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+    }),
+    [isDark],
+  );
 
   return (
-    <ConfigProvider locale={antdLocale}>
+    <ConfigProvider locale={antdLocale} theme={theme}>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>
     </ConfigProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeModeProvider>
+      <ThemedApp />
+    </ThemeModeProvider>
   );
 }

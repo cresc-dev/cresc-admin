@@ -118,7 +118,7 @@ function AppDetailTab({
     <button
       aria-selected={active}
       className={cn(
-        'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-6 py-3 font-medium text-base text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:text-blue-600 md:min-w-36 md:flex-none',
+        'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-container px-6 py-3 font-medium text-base text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:text-blue-600 md:min-w-36 md:flex-none',
         active
           ? 'border-blue-600! bg-blue-600! text-white! shadow-none hover:border-blue-600! hover:bg-blue-600! hover:text-white!'
           : undefined,

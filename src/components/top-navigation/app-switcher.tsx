@@ -1,108 +1,33 @@
 import {
   AppstoreOutlined,
-  CommentOutlined,
-  DashboardOutlined,
   DownOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  FileTextOutlined,
-  GlobalOutlined,
-  KeyOutlined,
-  LineChartOutlined,
-  MenuOutlined,
   PlusOutlined,
-  ReadOutlined,
   SearchOutlined,
   SettingOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Button, Drawer, Empty, Input, Menu, Popover, Select, Tag } from 'antd';
-import type { ReactNode } from 'react';
+import { Button, Drawer, Empty, Input, Popover, Tag } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   type AppDrawerItem,
   useAppWorkspaceList,
 } from '@/components/app-drawer';
-import { DOCUMENTATION_LINK } from '@/constants/links';
 import { rootRouterPath, router } from '@/router';
 import {
   cn,
-  getManageAppDrawerPlacement,
   getRecentAppIds,
-  manageAppDrawerPlacementChangeEvent,
   rememberRecentApp,
   setManageAppDrawerPlacement,
 } from '@/utils/helper';
-import { useUserInfo } from '@/utils/hooks';
-import { ReactComponent as LogoH } from '../assets/logo-h.svg';
-import { useAppSettingsModal } from './app-settings-modal';
-import { showCreateAppModal } from './create-app-modal';
-import { DailyCheckQuotaUserTrigger } from './daily-check-quota';
-import PlatformIcon from './platform-icon';
+import { useAppSettingsModal } from '../app-settings-modal';
+import { showCreateAppModal } from '../create-app-modal';
+import PlatformIcon from '../platform-icon';
+import { useManageAppDrawerPlacement } from './use-app-drawer-placement';
 
 type AppItem = AppDrawerItem;
-type MenuItems = NonNullable<MenuProps['items']>;
-
-const languageOptions = [
-  { label: 'English', value: 'en' },
-  { label: '中文', value: 'zh-CN' },
-];
-
-function LanguageSwitcher({ compact }: { compact?: boolean }) {
-  const { i18n } = useTranslation();
-  if (compact) {
-    return (
-      <Select
-        size="small"
-        value={i18n.language}
-        options={languageOptions}
-        onChange={(lang) => void i18n.changeLanguage(lang)}
-        style={{ width: '100%' }}
-        suffixIcon={<GlobalOutlined />}
-      />
-    );
-  }
-  return (
-    <Select
-      size="small"
-      value={i18n.language}
-      options={languageOptions}
-      onChange={(lang) => void i18n.changeLanguage(lang)}
-      style={{ width: 100 }}
-      suffixIcon={<GlobalOutlined />}
-      variant="borderless"
-    />
-  );
-}
-
-interface TopNavigationProps {
-  isMobile: boolean;
-  showAuthenticatedChrome: boolean;
-}
-
-const getExternalItems = (
-  t: ReturnType<typeof useTranslation>['t'],
-): MenuItems => [
-  {
-    key: 'issues',
-    icon: <CommentOutlined />,
-    label: (
-      <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
-        {t('nav.support')}
-      </ExtLink>
-    ),
-  },
-  {
-    key: 'document',
-    icon: <ReadOutlined />,
-    label: (
-      <ExtLink href={DOCUMENTATION_LINK}>{t('nav.documentation')}</ExtLink>
-    ),
-  },
-];
 
 const platformLabels: Record<AppItem['platform'], string> = {
   android: 'Android',
@@ -110,269 +35,7 @@ const platformLabels: Record<AppItem['platform'], string> = {
   harmony: 'HarmonyOS',
 };
 
-export default function TopNavigation({
-  isMobile,
-  showAuthenticatedChrome,
-}: TopNavigationProps) {
-  const { t } = useTranslation();
-  const { user } = useUserInfo();
-  const { pathname } = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [appDrawerPlacement, setAppDrawerPlacementState] = useState(
-    getManageAppDrawerPlacement,
-  );
-  const selectedKeys = useMemo(() => getSelectedKeys(pathname), [pathname]);
-  const shouldShowAppsTopTab =
-    showAuthenticatedChrome &&
-    user &&
-    !isMobile &&
-    appDrawerPlacement !== 'hidden';
-
-  useEffect(() => {
-    const syncPlacement = () => {
-      setAppDrawerPlacementState(getManageAppDrawerPlacement());
-    };
-
-    window.addEventListener(manageAppDrawerPlacementChangeEvent, syncPlacement);
-    window.addEventListener('storage', syncPlacement);
-    return () => {
-      window.removeEventListener(
-        manageAppDrawerPlacementChangeEvent,
-        syncPlacement,
-      );
-      window.removeEventListener('storage', syncPlacement);
-    };
-  }, []);
-
-  const authenticatedItems: MenuItems =
-    showAuthenticatedChrome && user
-      ? [
-          ...(shouldShowAppsTopTab
-            ? [
-                {
-                  key: 'apps',
-                  icon: <AppstoreOutlined />,
-                  label: (
-                    <Link to={rootRouterPath.apps}>
-                      {t('nav.applications')}
-                    </Link>
-                  ),
-                },
-              ]
-            : []),
-          ...(user.admin
-            ? [
-                {
-                  key: 'admin-service-status',
-                  icon: <DashboardOutlined />,
-                  label: (
-                    <Link to={rootRouterPath.adminServiceStatus}>
-                      {t('nav.service_status')}
-                    </Link>
-                  ),
-                },
-              ]
-            : []),
-          {
-            key: 'audit-logs',
-            icon: <FileTextOutlined />,
-            label: (
-              <Link to={rootRouterPath.auditLogs}>{t('nav.audit_logs')}</Link>
-            ),
-          },
-          {
-            key: 'realtime-metrics',
-            icon: <LineChartOutlined />,
-            label: (
-              <Link to={rootRouterPath.realtimeMetrics}>
-                {t('nav.realtime_metrics')}
-              </Link>
-            ),
-          },
-          {
-            key: 'api-tokens',
-            icon: <KeyOutlined />,
-            label: (
-              <Link to={rootRouterPath.apiTokens}>{t('nav.api_tokens')}</Link>
-            ),
-          },
-          ...(user.admin
-            ? [
-                {
-                  key: 'admin',
-                  icon: <SettingOutlined />,
-                  label: t('nav.admin'),
-                  children: [
-                    {
-                      key: 'admin-config',
-                      label: (
-                        <Link to={rootRouterPath.adminConfig}>
-                          {t('nav.dynamic_config')}
-                        </Link>
-                      ),
-                    },
-                    {
-                      key: 'admin-users',
-                      label: (
-                        <Link to={rootRouterPath.adminUsers}>
-                          {t('nav.user_management')}
-                        </Link>
-                      ),
-                    },
-                    {
-                      key: 'admin-apps',
-                      label: (
-                        <Link to={rootRouterPath.adminApps}>
-                          {t('nav.app_management')}
-                        </Link>
-                      ),
-                    },
-                    {
-                      key: 'admin-metrics',
-                      label: (
-                        <Link to={rootRouterPath.adminMetrics}>
-                          {t('nav.global_metrics')}
-                        </Link>
-                      ),
-                    },
-                  ],
-                },
-              ]
-            : []),
-        ]
-      : [];
-
-  const mobileItems: MenuItems = [
-    ...authenticatedItems,
-    ...(authenticatedItems.length ? [{ type: 'divider' as const }] : []),
-    ...getExternalItems(t),
-    ...(showAuthenticatedChrome && user
-      ? [
-          { type: 'divider' as const },
-          {
-            key: 'language',
-            icon: <GlobalOutlined />,
-            label: <LanguageSwitcher compact />,
-            disabled: false,
-            className: 'pointer-events-auto',
-          },
-          {
-            key: 'user',
-            icon: <UserOutlined />,
-            label: (
-              <Link to={rootRouterPath.user}>{t('nav.account_settings')}</Link>
-            ),
-          },
-        ]
-      : [
-          { type: 'divider' as const },
-          {
-            key: 'language',
-            icon: <GlobalOutlined />,
-            label: <LanguageSwitcher compact />,
-            disabled: false,
-            className: 'pointer-events-auto',
-          },
-        ]),
-  ];
-
-  return (
-    <div className="flex min-h-16 w-full min-w-0 items-center gap-1.5 md:gap-3">
-      <Link
-        to={rootRouterPath.home}
-        className="flex shrink-0 items-center no-underline"
-      >
-        <LogoH className="h-7 w-auto max-w-[88px] sm:max-w-[130px] md:max-w-[150px]" />
-      </Link>
-      {showAuthenticatedChrome && user && <AppSwitcher compact={isMobile} />}
-      {isMobile ? (
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
-          {showAuthenticatedChrome && user && (
-            <Link
-              to={rootRouterPath.user}
-              className="shrink-0 rounded-lg px-0.5 no-underline"
-            >
-              <DailyCheckQuotaUserTrigger compact userName={user.name} />
-            </Link>
-          )}
-          <button
-            aria-label={t('nav.open_menu')}
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-0 bg-blue-600 text-white shadow-sm transition-colors hover:bg-blue-500',
-              showAuthenticatedChrome && user ? undefined : 'ml-auto',
-            )}
-            onClick={() => setMobileMenuOpen(true)}
-            type="button"
-          >
-            <MenuOutlined className="text-base" />
-          </button>
-          <MobileMenuSheet
-            items={mobileItems}
-            onClose={() => setMobileMenuOpen(false)}
-            open={mobileMenuOpen}
-            selectedKeys={selectedKeys}
-          />
-        </div>
-      ) : (
-        <>
-          <Menu
-            className="min-w-0 flex-1 border-b-0!"
-            mode="horizontal"
-            selectedKeys={selectedKeys}
-            items={[...authenticatedItems, ...getExternalItems(t)]}
-            style={{ height: 64, lineHeight: '64px' }}
-          />
-          {showAuthenticatedChrome && user && (
-            <Link
-              to={rootRouterPath.user}
-              className="flex h-14 w-40 items-center rounded-xl px-2 text-slate-700 no-underline transition-colors hover:bg-slate-50"
-            >
-              <DailyCheckQuotaUserTrigger
-                showPlanDetails
-                userName={user.name}
-              />
-            </Link>
-          )}
-          <LanguageSwitcher />
-        </>
-      )}
-    </div>
-  );
-}
-
-function MobileMenuSheet({
-  items,
-  onClose,
-  open,
-  selectedKeys,
-}: {
-  items: MenuItems;
-  onClose: () => void;
-  open: boolean;
-  selectedKeys: string[];
-}) {
-  const { t } = useTranslation();
-  return (
-    <Drawer
-      height="68vh"
-      onClose={onClose}
-      open={open}
-      placement="bottom"
-      title={t('nav.menu')}
-      styles={{ body: { padding: 8 } }}
-    >
-      <Menu
-        className="border-e-0!"
-        items={items}
-        mode="inline"
-        onClick={onClose}
-        selectedKeys={selectedKeys}
-      />
-    </Drawer>
-  );
-}
-
-function AppSwitcher({ compact }: { compact: boolean }) {
+export function AppSwitcher({ compact }: { compact: boolean }) {
   const { t } = useTranslation();
   const { apps } = useAppWorkspaceList();
   const { contextHolder, openAppSettings } = useAppSettingsModal();
@@ -380,9 +43,8 @@ function AppSwitcher({ compact }: { compact: boolean }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [recentAppIds, setRecentAppIds] = useState(() => getRecentAppIds());
-  const [appDrawerPlacement, setAppDrawerPlacementState] = useState(
-    getManageAppDrawerPlacement,
-  );
+  const [appDrawerPlacement, setAppDrawerPlacementState] =
+    useManageAppDrawerPlacement();
   const currentAppId = getCurrentAppId(pathname);
   const currentAppKey = getCurrentAppKey(pathname, search);
   const currentApp = apps.find((app) => {
@@ -424,22 +86,6 @@ function AppSwitcher({ compact }: { compact: boolean }) {
       setQuery('');
     }
   }, [open]);
-
-  useEffect(() => {
-    const syncPlacement = () => {
-      setAppDrawerPlacementState(getManageAppDrawerPlacement());
-    };
-
-    window.addEventListener(manageAppDrawerPlacementChangeEvent, syncPlacement);
-    window.addEventListener('storage', syncPlacement);
-    return () => {
-      window.removeEventListener(
-        manageAppDrawerPlacementChangeEvent,
-        syncPlacement,
-      );
-      window.removeEventListener('storage', syncPlacement);
-    };
-  }, []);
 
   const navigateToApp = (appId: number) => {
     setRecentAppIds(rememberRecentApp(appId));
@@ -496,7 +142,7 @@ function AppSwitcher({ compact }: { compact: boolean }) {
   const trigger = (
     <button
       className={cn(
-        'flex h-16 min-w-0 cursor-pointer items-center border-0 border-slate-200 border-x bg-slate-50 px-4 text-left transition-colors hover:bg-white',
+        'flex h-16 min-w-0 cursor-pointer items-center border-0 border-slate-200 border-x bg-slate-50 px-4 text-left transition-colors hover:bg-container',
         compact ? 'max-w-[150px] flex-1 px-2' : 'w-72 lg:w-80',
       )}
       onClick={compact ? () => setOpen(true) : undefined}
@@ -750,7 +396,7 @@ function AppRow({
       </button>
       <button
         aria-label={`Open ${app.name} app settings`}
-        className="mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 transition-colors hover:bg-white hover:text-blue-600"
+        className="mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 transition-colors hover:bg-container hover:text-blue-600"
         onClick={() => onSettings(app)}
         title="App Settings"
         type="button"
@@ -771,40 +417,6 @@ function formatAppKey(appKey?: string | null) {
   return `${appKey.slice(0, 6)}...${appKey.slice(-4)}`;
 }
 
-function getSelectedKeys(pathname: string) {
-  if (pathname === rootRouterPath.home || pathname === rootRouterPath.apps) {
-    return ['apps'];
-  }
-  if (pathname === rootRouterPath.user) {
-    return ['user'];
-  }
-  if (pathname === rootRouterPath.apiTokens) {
-    return ['api-tokens'];
-  }
-  if (pathname === rootRouterPath.auditLogs) {
-    return ['audit-logs'];
-  }
-  if (pathname === rootRouterPath.realtimeMetrics) {
-    return ['realtime-metrics'];
-  }
-  if (pathname === rootRouterPath.adminConfig) {
-    return ['admin-config'];
-  }
-  if (pathname === rootRouterPath.adminUsers) {
-    return ['admin-users'];
-  }
-  if (pathname === rootRouterPath.adminApps) {
-    return ['admin-apps'];
-  }
-  if (pathname === rootRouterPath.adminMetrics) {
-    return ['admin-metrics'];
-  }
-  if (pathname === rootRouterPath.adminServiceStatus) {
-    return ['admin-service-status'];
-  }
-  return [];
-}
-
 function getCurrentAppId(pathname: string) {
   const match = pathname.match(/^\/apps\/(\d+)/);
   return match ? Number(match[1]) : null;
@@ -815,17 +427,4 @@ function getCurrentAppKey(pathname: string, search: string) {
     return null;
   }
   return new URLSearchParams(search).get('appKey');
-}
-
-interface ExtLinkProps {
-  children: ReactNode;
-  href: string;
-}
-
-function ExtLink({ children, href }: ExtLinkProps) {
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="no-underline">
-      {children}
-    </a>
-  );
 }

@@ -1,0 +1,208 @@
+import {
+  CommentOutlined,
+  DesktopOutlined,
+  GlobalOutlined,
+  MoonOutlined,
+  ReadOutlined,
+  SunOutlined,
+} from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { Button, Dropdown } from 'antd';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { DOCUMENTATION_LINK } from '@/constants/links';
+import { rootRouterPath } from '@/router';
+import { type ThemeMode, useThemeMode } from '@/utils/theme-mode';
+
+export type MenuItems = NonNullable<MenuProps['items']>;
+
+function ExtLink({ children, href }: { children: ReactNode; href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="no-underline">
+      {children}
+    </a>
+  );
+}
+
+export function getExternalItems(t: (key: string) => string): MenuItems {
+  return [
+    {
+      key: 'issues',
+      icon: <CommentOutlined />,
+      label: (
+        <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
+          {t('nav.support')}
+        </ExtLink>
+      ),
+    },
+    {
+      key: 'document',
+      icon: <ReadOutlined />,
+      label: (
+        <ExtLink href={DOCUMENTATION_LINK}>{t('nav.documentation')}</ExtLink>
+      ),
+    },
+  ];
+}
+
+// Language names are shown in their own language on purpose, so plain labels
+// (no i18n keys) are used here.
+const languageOptions = [
+  { key: 'en', label: 'English' },
+  { key: 'zh-CN', label: '中文' },
+] as const;
+
+export function getCurrentLanguage(language?: string) {
+  return language?.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en';
+}
+
+function LanguageSwitcher() {
+  const { t, i18n } = useTranslation();
+  const currentLanguage = getCurrentLanguage(
+    i18n.resolvedLanguage ?? i18n.language,
+  );
+  const items: MenuItems = languageOptions.map(({ key, label }) => ({
+    key,
+    label,
+  }));
+
+  return (
+    <Dropdown
+      menu={{
+        items,
+        selectable: true,
+        selectedKeys: [currentLanguage],
+        onClick: ({ key }) => {
+          void i18n.changeLanguage(key);
+        },
+      }}
+      placement="bottomRight"
+      trigger={['hover', 'click']}
+    >
+      <Button
+        aria-label={t('nav.language')}
+        icon={<GlobalOutlined />}
+        shape="circle"
+        type="text"
+      />
+    </Dropdown>
+  );
+}
+
+const themeModeIcons: Record<ThemeMode, ReactNode> = {
+  auto: <DesktopOutlined />,
+  light: <SunOutlined />,
+  dark: <MoonOutlined />,
+};
+
+const THEME_MODES: ThemeMode[] = ['auto', 'light', 'dark'];
+
+function ThemeSwitcher() {
+  const { t } = useTranslation();
+  const { mode, setMode } = useThemeMode();
+  const items: MenuItems = THEME_MODES.map((value) => ({
+    key: value,
+    icon: themeModeIcons[value],
+    label: t(`nav.theme_${value}`),
+  }));
+
+  return (
+    <Dropdown
+      menu={{
+        items,
+        selectable: true,
+        selectedKeys: [mode],
+        onClick: ({ key }) => {
+          setMode(key as ThemeMode);
+        },
+      }}
+      placement="bottomRight"
+      trigger={['hover', 'click']}
+    >
+      <Button
+        aria-label={t('nav.theme')}
+        icon={themeModeIcons[mode]}
+        shape="circle"
+        type="text"
+      />
+    </Dropdown>
+  );
+}
+
+/** Theme + language switchers: the pill control group on the right side of the nav. */
+export function NavControls() {
+  return (
+    <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-border-secondary p-0.5">
+      <ThemeSwitcher />
+      <LanguageSwitcher />
+    </div>
+  );
+}
+
+export function getLanguageMenuItem(
+  t: (key: string) => string,
+  currentLanguage: string,
+): MenuItems[number] {
+  return {
+    key: 'language',
+    icon: <GlobalOutlined />,
+    label: t('nav.language'),
+    children: languageOptions.map(({ key, label }) => ({
+      key: `language:${key}`,
+      label: currentLanguage === key ? `${label} ✓` : label,
+    })),
+  };
+}
+
+export function getThemeMenuItem(
+  t: (key: string) => string,
+  currentMode: ThemeMode,
+): MenuItems[number] {
+  return {
+    key: 'theme',
+    icon: themeModeIcons[currentMode],
+    label: t('nav.theme'),
+    children: THEME_MODES.map((value) => ({
+      key: `theme:${value}`,
+      icon: themeModeIcons[value],
+      label:
+        currentMode === value
+          ? `${t(`nav.theme_${value}`)} ✓`
+          : t(`nav.theme_${value}`),
+    })),
+  };
+}
+
+export function getSelectedKeys(pathname: string) {
+  if (pathname === rootRouterPath.home || pathname === rootRouterPath.apps) {
+    return ['apps'];
+  }
+  if (pathname === rootRouterPath.user) {
+    return ['user'];
+  }
+  if (pathname === rootRouterPath.apiTokens) {
+    return ['api-tokens'];
+  }
+  if (pathname === rootRouterPath.auditLogs) {
+    return ['audit-logs'];
+  }
+  if (pathname === rootRouterPath.realtimeMetrics) {
+    return ['realtime-metrics'];
+  }
+  if (pathname === rootRouterPath.adminConfig) {
+    return ['admin-config'];
+  }
+  if (pathname === rootRouterPath.adminUsers) {
+    return ['admin-users'];
+  }
+  if (pathname === rootRouterPath.adminApps) {
+    return ['admin-apps'];
+  }
+  if (pathname === rootRouterPath.adminMetrics) {
+    return ['admin-metrics'];
+  }
+  if (pathname === rootRouterPath.adminServiceStatus) {
+    return ['admin-service-status'];
+  }
+  return [];
+}

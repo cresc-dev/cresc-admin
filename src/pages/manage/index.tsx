@@ -1,5 +1,13 @@
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Checkbox, Dropdown, Grid, Input, Layout, type MenuProps, Tabs } from 'antd';
+import {
+  Checkbox,
+  Dropdown,
+  Grid,
+  Input,
+  Layout,
+  type MenuProps,
+  Tabs,
+} from 'antd';
 
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -118,7 +126,9 @@ const ManageDashBoard = () => {
     }
   };
   const isUnusedPackageFilter = packageFilter === 'unused';
-  const allPackageDataSource = isUnusedPackageFilter ? unusedPackages : packages;
+  const allPackageDataSource = isUnusedPackageFilter
+    ? unusedPackages
+    : packages;
   const normalizedPackageSearch = packageSearch.trim().toLowerCase();
   const packageDataSource = useMemo(
     () =>
@@ -140,7 +150,7 @@ const ManageDashBoard = () => {
   const packageSearchInput = (
     <Input
       allowClear
-      bordered={false}
+      variant="borderless"
       prefix={<SearchOutlined className="text-gray-400" />}
       placeholder={t('manage.search')}
       value={packageSearch}
@@ -185,7 +195,7 @@ const ManageDashBoard = () => {
             key: 'packages',
             label: t('manage.tab_packages'),
             children: (
-              <div className="rounded-lg bg-white p-4">
+              <div className="rounded-lg bg-container p-4">
                 <div className="flex items-center gap-2 mb-2">
                   {packageSearchInput}
                 </div>

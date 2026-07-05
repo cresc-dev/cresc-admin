@@ -1,8 +1,8 @@
 import { PullRequestOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
-import type { CSSProperties } from 'react';
 import dayjs from 'dayjs';
 import gitUrlParse from 'git-url-parse';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const popoverOverlayStyle: CSSProperties = {

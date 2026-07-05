@@ -16,7 +16,12 @@ import {
 } from 'antd';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/services/api';
+import {
+  useDeleteBinding,
+  useUpdatePackage,
+  useUpsertBinding,
+  useUpsertBindings,
+} from '@/services/mutations';
 import { useManageContext } from '../hooks/useManageContext';
 
 type DepChangeType = 'Added' | 'Removed' | 'Changed';
@@ -299,6 +304,10 @@ const BindPackage = ({
     bindings,
     packageMap,
   } = useManageContext();
+  const upsertBinding = useUpsertBinding();
+  const upsertBindings = useUpsertBindings();
+  const deleteBinding = useDeleteBinding();
+  const updatePackage = useUpdatePackage();
   const matchedBindings: {
     id?: number;
     packageId: number;
@@ -318,7 +327,7 @@ const BindPackage = ({
 
     const publish = () => {
       if (pkgs.length === 1) {
-        return api.upsertBinding({
+        return upsertBinding.mutateAsync({
           appId,
           packageId: pkgs[0].id,
           versionId,
@@ -326,7 +335,7 @@ const BindPackage = ({
         });
       }
 
-      return api.upsertBindings({
+      return upsertBindings.mutateAsync({
         appId,
         packageIds: pkgs.map((pkg) => pkg.id),
         versionId,
@@ -488,9 +497,9 @@ const BindPackage = ({
         onClick: () => {
           const bindingId = binding.id;
           if (bindingId) {
-            api.deleteBinding({ appId, bindingId });
+            deleteBinding.mutate({ appId, bindingId });
           } else {
-            api.updatePackage({
+            updatePackage.mutate({
               appId,
               packageId: p.id,
               params: { versionId: null },

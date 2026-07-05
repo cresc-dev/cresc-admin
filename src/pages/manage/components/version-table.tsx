@@ -7,22 +7,33 @@ import {
   Modal,
   Popover,
   QRCode,
+  Spin,
   Table,
   Typography,
 } from 'antd';
 import type { ColumnType } from 'antd/lib/table';
+import dayjs from 'dayjs';
 // import { useDrag, useDrop } from "react-dnd";
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  lazy,
+  type ReactNode,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
-import { api } from '@/services/api';
+import { useDeleteVersions, useUpdateVersion } from '@/services/mutations';
 import { useVersions } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import BindPackage from './bind-package';
 import { Commit } from './commit';
 import { DepsTable } from './deps-table';
-import JsonEditor from './json-editor';
+
+const JsonEditor = lazy(() => import('./json-editor'));
 
 const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const { t } = useTranslation();
@@ -102,11 +113,16 @@ function removeSelectedVersions({
   selected,
   versions,
   appId,
+  deleteVersions,
   t,
 }: {
   selected: number[];
   versions: Version[];
   appId: number;
+  deleteVersions: (variables: {
+    appId: number;
+    versionIds: number[];
+  }) => Promise<unknown>;
   t: (key: string) => string;
 }) {
   const versionNames: string[] = [];
@@ -121,7 +137,7 @@ function removeSelectedVersions({
     maskClosable: true,
     okButtonProps: { danger: true },
     async onOk() {
-      await api.deleteVersions({ appId, versionIds: selected });
+      await deleteVersions({ appId, versionIds: selected });
     },
   });
 }
@@ -136,6 +152,7 @@ const getColumns = (
       <TextColumn
         record={record}
         recordKey="name"
+        title={t('version_table.col_version')}
         extra={
           <>
             <DepsTable deps={record.deps} name={`OTA Version ${record.name}`} />
@@ -151,14 +168,24 @@ const getColumns = (
     dataIndex: 'description',
     responsive: ['md'],
     render: (_, record) => (
-      <TextColumn record={record} recordKey="description" />
+      <TextColumn
+        record={record}
+        recordKey="description"
+        title={t('version_table.col_description')}
+      />
     ),
   },
   {
     title: t('version_table.col_metadata'),
     dataIndex: 'metaInfo',
     responsive: ['lg'],
-    render: (_, record) => <TextColumn record={record} recordKey="metaInfo" />,
+    render: (_, record) => (
+      <TextColumn
+        record={record}
+        recordKey="metaInfo"
+        title={t('version_table.col_metadata')}
+      />
+    ),
   },
   {
     title: t('version_table.col_publish'),
@@ -178,109 +205,135 @@ const getColumns = (
   },
 ];
 
+type EditableVersionKey = 'name' | 'description' | 'metaInfo' | 'createdAt';
+
+const EditFieldModal = ({
+  title,
+  isJson,
+  initialValue,
+  saving,
+  onSubmit,
+  onClose,
+}: {
+  title: ReactNode;
+  isJson: boolean;
+  initialValue: string;
+  saving: boolean;
+  onSubmit: (value: string) => Promise<unknown>;
+  onClose: () => void;
+}) => {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
+  const [textValue, setTextValue] = useState(initialValue);
+  // vanilla-jsoneditor replays the `content` prop on every re-render, so the
+  // JSON draft lives in a ref to keep the editor uncontrolled while typing.
+  const jsonDraftRef = useRef(initialValue);
+  const [initialContent] = useState(() => ({ text: initialValue }));
+
+  return (
+    <Modal
+      open
+      title={title}
+      width={isMobile ? 'calc(100vw - 32px)' : isJson ? 640 : undefined}
+      maskClosable
+      confirmLoading={saving}
+      onCancel={onClose}
+      onOk={async () => {
+        try {
+          await onSubmit(isJson ? jsonDraftRef.current : textValue);
+        } catch {
+          // request layer already toasts the error; keep the modal open
+          return;
+        }
+        onClose();
+      }}
+    >
+      {isJson ? (
+        <Suspense
+          fallback={
+            <div className="flex h-96 items-center justify-center">
+              <Spin />
+            </div>
+          }
+        >
+          <JsonEditor
+            className="h-96"
+            content={initialContent}
+            onChange={(content) => {
+              jsonDraftRef.current = (content as TextContent).text;
+            }}
+          />
+        </Suspense>
+      ) : (
+        <Input.TextArea
+          value={textValue}
+          onChange={({ target }) => setTextValue(target.value)}
+        />
+      )}
+    </Modal>
+  );
+};
+
 const TextColumn = ({
   record,
   recordKey,
+  title,
   isEditable = true,
   extra,
 }: {
   record: Version;
-  recordKey: string;
+  recordKey: EditableVersionKey;
+  title?: ReactNode;
   isEditable?: boolean;
   extra?: ReactNode;
 }) => {
-  const { t } = useTranslation();
   const key = recordKey;
   const { appId } = useManageContext();
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const updateVersion = useUpdateVersion();
+  const [editing, setEditing] = useState(false);
   let value = (record[key as keyof Version] as string) ?? '';
   if (key === 'createdAt') {
-    const t = new Date(value);
-    const y = t.getFullYear();
-    const month = t.getMonth() + 1;
-    const M = month < 10 ? `0${month}` : month;
-    const d = t.getDate() < 10 ? `0${t.getDate()}` : t.getDate();
-    const h = t.getHours() < 10 ? `0${t.getHours()}` : t.getHours();
-    const m = t.getMinutes() < 10 ? `0${t.getMinutes()}` : t.getMinutes();
-    value = `${y}-${M}-${d} ${h}:${m}`;
-  }
-  let editable: any = null;
-  if (isEditable) {
-    editable = {
-      editing: false,
-      onStart() {
-        let originValue = value;
-        Modal.confirm({
-          icon: null,
-          width: isMobile
-            ? 'calc(100vw - 32px)'
-            : key === 'metaInfo'
-              ? 640
-              : undefined,
-          title:
-            key === 'name'
-              ? t('version_table.col_version')
-              : key === 'description'
-                ? t('version_table.col_description')
-                : key === 'metaInfo'
-                  ? t('version_table.col_metadata')
-                  : key === 'createdAt'
-                    ? t('version_table.col_uploaded')
-                    : key,
-          closable: true,
-          maskClosable: true,
-          content:
-            key === 'metaInfo' ? (
-              <JsonEditor
-                className="h-96"
-                content={{ text: value }}
-                onChange={(content) => {
-                  value = (content as TextContent).text;
-                }}
-              />
-            ) : (
-              <Input.TextArea
-                defaultValue={value}
-                onChange={({ target }) => {
-                  value = target.value;
-                }}
-              />
-            ),
-          async onOk() {
-            originValue = value;
-            await api.updateVersion({
-              appId,
-              versionId: record.id,
-              params: { [key]: value } as unknown as Omit<
-                Version,
-                'id' | 'packages'
-              >,
-            });
-          },
-          async onCancel() {
-            value = originValue;
-          },
-        });
-      },
-    };
+    value = dayjs(value).format('YYYY-MM-DD HH:mm');
   }
   return (
     <div>
       <Typography.Text
         className="block max-w-[9rem] md:w-40"
-        editable={editable}
+        editable={
+          isEditable
+            ? { editing: false, onStart: () => setEditing(true) }
+            : undefined
+        }
         ellipsis
       >
         {value}
       </Typography.Text>
       {extra}
+      {editing && (
+        <EditFieldModal
+          title={title}
+          isJson={key === 'metaInfo'}
+          initialValue={value}
+          saving={updateVersion.isPending}
+          onClose={() => setEditing(false)}
+          onSubmit={(newValue) =>
+            updateVersion.mutateAsync({
+              appId,
+              versionId: record.id,
+              params: { [key]: newValue } as Partial<
+                Omit<Version, 'id' | 'packages'>
+              >,
+            })
+          }
+        />
+      )}
     </div>
   );
 };
 export default function VersionTable() {
   const { t } = useTranslation();
-  const columns = getColumns(t);
+  const columns = useMemo(() => getColumns(t), [t]);
+  const deleteVersions = useDeleteVersions();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const { appId } = useManageContext();
@@ -315,7 +368,7 @@ export default function VersionTable() {
           {!isMobile && <span>{t('version_table.title')}</span>}
           <Input
             allowClear
-            bordered={false}
+            variant="borderless"
             prefix={<SearchOutlined className="text-gray-400" />}
             placeholder={t('manage.search')}
             value={search}
@@ -358,7 +411,13 @@ export default function VersionTable() {
               <Button
                 className={isMobile ? 'w-full' : undefined}
                 onClick={() =>
-                  removeSelectedVersions({ selected, versions, appId, t })
+                  removeSelectedVersions({
+                    selected,
+                    versions,
+                    appId,
+                    deleteVersions: deleteVersions.mutateAsync,
+                    t,
+                  })
                 }
                 danger
               >

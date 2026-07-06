@@ -257,6 +257,46 @@ export const useBinding = (appId: number) => {
   return { bindings, isLoading };
 };
 
+const DIFF_STATUS_POLL_MS = 4000;
+
+export const useDiffStatus = ({
+  appId,
+  enabled,
+}: {
+  appId: number;
+  enabled: boolean;
+}) => {
+  const { data } = useQuery({
+    queryKey: ['bindingDiffStatus', appId],
+    queryFn: () => api.getDiffStatus(appId),
+    enabled,
+    // Poll only while some patch is still generating; stops automatically on
+    // terminal states (or a 404 from an older server)
+    refetchInterval: (query) =>
+      query.state.data?.data?.some((item) => item.status === 'pending')
+        ? DIFF_STATUS_POLL_MS
+        : false,
+  });
+
+  const diffStatusByVersion = useMemo(() => {
+    const map = new Map<number, VersionDiffSummary>();
+    for (const item of data?.data ?? []) {
+      const summary = map.get(item.versionId) ?? {
+        pending: 0,
+        done: 0,
+        failed: 0,
+        total: 0,
+      };
+      summary[item.status] += 1;
+      summary.total += 1;
+      map.set(item.versionId, summary);
+    }
+    return map;
+  }, [data?.data]);
+
+  return { diffStatusByVersion };
+};
+
 export const usePackageTimestampWarnings = ({
   appId,
   app,

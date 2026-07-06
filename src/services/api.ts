@@ -232,6 +232,15 @@ export const api = {
     request('post', `/app/${appId}/binding/`, params),
   deleteBinding: ({ appId, bindingId }: { appId: number; bindingId: number }) =>
     request('delete', `/app/${appId}/binding/${bindingId}`),
+  // Patch generation status; older servers without this endpoint degrade
+  // silently (404 -> no tag)
+  getDiffStatus: (appId: number) =>
+    request<{ data: BindingDiffStatus[] }>(
+      'get',
+      `/app/${appId}/binding/diffStatus`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
   // audit logs
   getAuditLogs: ({
     offset = 0,

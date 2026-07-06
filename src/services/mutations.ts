@@ -62,6 +62,7 @@ const applyPackageUpdate = (
   );
   if (params.versionId !== undefined) {
     queryClient.invalidateQueries({ queryKey: versionKeys.byApp(appId) });
+    queryClient.invalidateQueries({ queryKey: ['bindingDiffStatus', appId] });
   }
 };
 
@@ -112,8 +113,13 @@ const removeVersionsFromList = (
   );
 };
 
+const invalidateDiffStatus = (appId: number) => {
+  queryClient.invalidateQueries({ queryKey: ['bindingDiffStatus', appId] });
+};
+
 const invalidateBindings = (appId: number) => {
   queryClient.invalidateQueries({ queryKey: ['bindings', appId] });
+  invalidateDiffStatus(appId);
 };
 
 const removeBindingFromList = (appId: number, bindingId: number) => {
@@ -124,6 +130,7 @@ const removeBindingFromList = (appId: number, bindingId: number) => {
         ? { ...old, data: old.data?.filter((i) => i.id !== bindingId) }
         : undefined,
   );
+  invalidateDiffStatus(appId);
 };
 
 // --- imperative helpers (for non-component call sites like Modal.confirm factories) ---

@@ -12,6 +12,7 @@ import {
   Dropdown,
   type MenuProps,
   Modal,
+  message,
   Table,
 } from 'antd';
 import { useMemo, useState } from 'react';
@@ -23,6 +24,7 @@ import {
   useUpsertBindings,
 } from '@/services/mutations';
 import { useManageContext } from '../hooks/useManageContext';
+import DiffStatusTag from './diff-status-tag';
 
 type DepChangeType = 'Added' | 'Removed' | 'Changed';
 
@@ -325,22 +327,25 @@ const BindPackage = ({
       return;
     }
 
-    const publish = () => {
+    const publish = async () => {
       if (pkgs.length === 1) {
-        return upsertBinding.mutateAsync({
+        await upsertBinding.mutateAsync({
           appId,
           packageId: pkgs[0].id,
           versionId,
           rollout,
         });
+      } else {
+        await upsertBindings.mutateAsync({
+          appId,
+          packageIds: pkgs.map((pkg) => pkg.id),
+          versionId,
+          rollout,
+        });
       }
-
-      return upsertBindings.mutateAsync({
-        appId,
-        packageIds: pkgs.map((pkg) => pkg.id),
-        versionId,
-        rollout,
-      });
+      // Binding success only means patch generation has started; set the
+      // "publish != patch ready" expectation right here
+      message.success(t('bind_package.publish_success'));
     };
     const depsChangedPackages = pkgs.reduce<DepsChangePackage[]>((acc, pkg) => {
       const changes = getDepsChanges(pkg.deps, versionDeps);
@@ -527,8 +532,9 @@ const BindPackage = ({
   })();
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       {bindedPackages}
+      <DiffStatusTag versionId={versionId} />
       {availablePackages.length !== 0 && (
         <Dropdown
           menu={{

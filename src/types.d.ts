@@ -190,6 +190,21 @@ interface Binding {
   rollout: number;
 }
 
+type DiffPairStatus = 'pending' | 'done' | 'failed';
+
+interface BindingDiffStatus {
+  packageId: number;
+  versionId: number;
+  status: DiffPairStatus;
+}
+
+interface VersionDiffSummary {
+  pending: number;
+  done: number;
+  failed: number;
+  total: number;
+}
+
 interface AuditLog {
   id: number;
   method: string;

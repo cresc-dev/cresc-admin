@@ -7,6 +7,7 @@ import {
 } from 'react';
 import {
   useBinding,
+  useDiffStatus,
   usePackages,
   usePackageTimestampWarnings,
 } from '@/utils/hooks';
@@ -24,6 +25,7 @@ export const defaultManageContext = {
   bindings: [],
   packageMap: new Map(),
   packageTimestampWarnings: new Map(),
+  diffStatusByVersion: new Map(),
 };
 
 export const ManageContext = createContext<{
@@ -39,6 +41,7 @@ export const ManageContext = createContext<{
   bindingsLoading?: boolean;
   packageTimestampWarnings: Map<number, string[]>;
   packageTimestampWarningsLoading?: boolean;
+  diffStatusByVersion: Map<number, VersionDiffSummary>;
 }>(defaultManageContext);
 
 export const useManageContext = () => useContext(ManageContext);
@@ -89,6 +92,14 @@ export const ManageProvider = ({
     packages,
   });
 
+  const { diffStatusByVersion } = useDiffStatus({
+    appId,
+    enabled:
+      !bindingsLoading &&
+      !packagesLoading &&
+      (bindings.length > 0 || packages.some(hasLegacyVersionBinding)),
+  });
+
   const value = useMemo(
     () => ({
       appId,
@@ -103,6 +114,7 @@ export const ManageProvider = ({
       bindingsLoading,
       packageTimestampWarnings,
       packageTimestampWarningsLoading,
+      diffStatusByVersion,
     }),
     [
       app,
@@ -110,6 +122,7 @@ export const ManageProvider = ({
       bindings,
       bindingsLoading,
       deepLink,
+      diffStatusByVersion,
       packageMap,
       packages,
       packagesLoading,

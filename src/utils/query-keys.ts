@@ -4,3 +4,9 @@ export const versionKeys = {
     ['versions', appId, 'page', offset, limit] as const,
   all: (appId: number) => ['versions', appId, 'all'] as const,
 };
+
+export const adminKeys = {
+  systemInstances: (target: string) =>
+    ['adminSystemInstances', target] as const,
+  systemNpm: (target: string) => ['adminSystemNpm', target] as const,
+};

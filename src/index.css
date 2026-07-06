@@ -1,6 +1,12 @@
 /* @import "tailwindcss"; */
 
-@layer theme, base, components, utilities;
+/*
+ * Layer order: antd (cssinjs injects into @layer antd via StyleProvider layer)
+ * sits after Tailwind base (antd component styles aren't reset by preflight)
+ * and before components/utilities (so utilities like mb-4 can override antd's
+ * margin resets on component roots).
+ */
+@layer theme, base, antd, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 /* @import "tailwindcss/preflight.css" layer(base); */
 @import "tailwindcss/utilities.css" layer(utilities);

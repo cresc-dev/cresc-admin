@@ -27,7 +27,6 @@ export const rootRouterPath = {
   adminApps: '/admin-apps',
   adminMetrics: '/admin-metrics',
   adminServiceStatus: '/admin-service-status',
-  adminDeploy: '/admin-deploy',
   apiTokens: '/api-tokens',
 };
 
@@ -143,9 +142,9 @@ export const router = createHashRouter([
         ),
       },
       {
+        // Deploy panel merged into the service-status page; keep old bookmarks working
         path: 'admin-deploy',
-        loader: needAuthLoader,
-        element: <AdminRoute load={() => import('./pages/admin-deploy')} />,
+        loader: () => redirect(rootRouterPath.adminServiceStatus),
       },
       {
         path: 'api-tokens',

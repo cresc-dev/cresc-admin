@@ -101,21 +101,26 @@ export const adminApi = {
       baseUrl,
       suppressErrorToast: true,
     }),
-  sendInstanceCommand: ({
+  restartInstance: ({
     instanceId,
-    action,
-    version,
     baseUrl,
   }: {
     instanceId: string;
-    action: 'restart' | 'update';
-    version?: string;
     baseUrl?: string;
   }) =>
     request<{ queued: boolean }>(
       'post',
       `/admin/system/instances/${encodeURIComponent(instanceId)}/command`,
-      { action, version },
+      { action: 'restart' },
+      { baseUrl },
+    ),
+  // Update/rollback is node-level: one global install, then all local
+  // processes restart in turn
+  updateNode: ({ version, baseUrl }: { version: string; baseUrl?: string }) =>
+    request<{ queued: boolean }>(
+      'post',
+      '/admin/system/update',
+      { version },
       { baseUrl },
     ),
 };

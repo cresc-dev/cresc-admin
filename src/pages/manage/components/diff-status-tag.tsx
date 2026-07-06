@@ -11,10 +11,12 @@ import { useManageContext } from '../hooks/useManageContext';
 const DONE_TAG_VISIBLE_MS = 5000;
 
 // Inline patch-generation status for a version row: a spinning progress tag
-// while generating; a persistent warning on failure (affected users fall back
-// to full downloads, no retry offered); a success tag shown briefly only when
-// the transition from generating happens within this session, so historical
-// rows don't carry a permanent success badge.
+// while generating; a persistent warning on failure (it affects users on that
+// native package who have not applied any OTA update yet — checkUpdate answers
+// them upToDate, so they never receive this release; no retry offered); a
+// success tag shown briefly only when the transition from generating happens
+// within this session, so historical rows don't carry a permanent success
+// badge.
 const DiffStatusTag = ({ versionId }: { versionId: number }) => {
   const { t } = useTranslation();
   const { diffStatusByVersion } = useManageContext();

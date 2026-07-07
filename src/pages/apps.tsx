@@ -9,6 +9,7 @@ import { showCreateAppModal } from '@/components/create-app-modal';
 import PlatformIcon from '@/components/platform-icon';
 import { rootRouterPath, router } from '@/router';
 import { cn, rememberRecentApp } from '@/utils/helper';
+import { useWorkspacePermissions } from '@/utils/hooks';
 
 const { Title } = Typography;
 
@@ -34,6 +35,7 @@ export const Component = () => {
   const { t } = useTranslation();
   const { apps, isLoading } = useAppWorkspaceList();
   const { contextHolder, openAppSettings } = useAppSettingsModal();
+  const { canManageApp } = useWorkspacePermissions();
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -88,9 +90,11 @@ export const Component = () => {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={createApp}>
-            {t('apps.create_app')}
-          </Button>
+          {canManageApp && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={createApp}>
+              {t('apps.create_app')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -124,7 +128,7 @@ export const Component = () => {
                 query ? t('apps.no_search_results') : t('apps.no_apps')
               }
             >
-              {!query && (
+              {!query && canManageApp && (
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
@@ -148,7 +152,7 @@ export const Component = () => {
         rememberRecentApp(app.id);
         router.navigate(rootRouterPath.versions(String(app.id)));
       }}
-      onSettings={openAppSettings}
+      onSettings={canManageApp ? openAppSettings : undefined}
     >
       {content}
     </AppDrawerLayout>

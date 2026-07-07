@@ -22,6 +22,7 @@ import {
   rememberRecentApp,
   setManageAppDrawerPlacement,
 } from '@/utils/helper';
+import { useWorkspacePermissions } from '@/utils/hooks';
 import { useAppSettingsModal } from '../app-settings-modal';
 import { showCreateAppModal } from '../create-app-modal';
 import PlatformIcon from '../platform-icon';
@@ -39,6 +40,7 @@ export function AppSwitcher({ compact }: { compact: boolean }) {
   const { t } = useTranslation();
   const { apps } = useAppWorkspaceList();
   const { contextHolder, openAppSettings } = useAppSettingsModal();
+  const { canManageApp } = useWorkspacePermissions();
   const { pathname, search } = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -129,9 +131,9 @@ export function AppSwitcher({ compact }: { compact: boolean }) {
       filteredApps={filteredApps}
       isAppDrawerVisible={isAppDrawerVisible}
       isSheet={compact}
-      onCreateApp={createApp}
+      onCreateApp={canManageApp ? createApp : undefined}
       onNavigateToApp={navigateToApp}
-      onSettings={openSettings}
+      onSettings={canManageApp ? openSettings : undefined}
       onToggleAppDrawer={toggleAppDrawer}
       query={query}
       recentApps={recentApps}
@@ -215,9 +217,9 @@ interface AppSwitcherContentProps {
   filteredApps: AppItem[];
   isAppDrawerVisible: boolean;
   isSheet?: boolean;
-  onCreateApp: () => void;
+  onCreateApp?: () => void;
   onNavigateToApp: (appId: number) => void;
-  onSettings: (app: AppItem) => void;
+  onSettings?: (app: AppItem) => void;
   onToggleAppDrawer: () => void;
   query: string;
   recentApps: AppItem[];
@@ -342,7 +344,7 @@ function AppRow({
   app: AppItem;
   isActive: boolean;
   onSelect: (appId: number) => void;
-  onSettings: (app: AppItem) => void;
+  onSettings?: (app: AppItem) => void;
 }) {
   const appKeyLabel = formatAppKey(app.appKey);
 
@@ -394,15 +396,17 @@ function AppRow({
           )}
         </span>
       </button>
-      <button
-        aria-label={`Open ${app.name} app settings`}
-        className="mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 transition-colors hover:bg-container hover:text-blue-600"
-        onClick={() => onSettings(app)}
-        title="App Settings"
-        type="button"
-      >
-        <SettingOutlined className="text-base" />
-      </button>
+      {onSettings && (
+        <button
+          aria-label={`Open ${app.name} app settings`}
+          className="mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 transition-colors hover:bg-container hover:text-blue-600"
+          onClick={() => onSettings(app)}
+          title="App Settings"
+          type="button"
+        >
+          <SettingOutlined className="text-base" />
+        </button>
+      )}
     </div>
   );
 }

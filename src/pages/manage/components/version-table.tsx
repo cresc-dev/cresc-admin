@@ -31,7 +31,7 @@ import { useTranslation } from 'react-i18next';
 import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
 import { useDeleteVersions, useUpdateVersion } from '@/services/mutations';
-import { useVersions } from '@/utils/hooks';
+import { useVersions, useWorkspacePermissions } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import BindPackage from './bind-package';
 import { Commit } from './commit';
@@ -148,6 +148,7 @@ function removeSelectedVersions({
 
 const getColumns = (
   t: ReturnType<typeof useTranslation>['t'],
+  canPublish: boolean,
 ): ColumnType<Version>[] => [
   {
     title: t('version_table.col_version'),
@@ -201,9 +202,19 @@ const getColumns = (
     title: t('version_table.col_publish'),
     dataIndex: 'packages',
     width: '100%',
-    render: (_, { id, deps, name }) => (
-      <BindPackage versionId={id} versionDeps={deps} versionName={name} />
-    ),
+    render: (_, record) =>
+      canPublish ? (
+        <BindPackage
+          versionId={record.id}
+          versionDeps={record.deps}
+          versionName={record.name}
+        />
+      ) : (
+        // 只读角色:仅展示已绑定的原生包名,不提供绑定/发布交互
+        <span className="text-gray-500 text-sm">
+          {record.packages?.map((item) => item.name).join(', ') || '-'}
+        </span>
+      ),
   },
   {
     title: t('version_table.col_uploaded'),
@@ -425,7 +436,8 @@ const TextColumn = ({
 };
 export default function VersionTable() {
   const { t } = useTranslation();
-  const columns = useMemo(() => getColumns(t), [t]);
+  const { canPublish } = useWorkspacePermissions();
+  const columns = useMemo(() => getColumns(t, canPublish), [t, canPublish]);
   const deleteVersions = useDeleteVersions();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
@@ -491,15 +503,23 @@ export default function VersionTable() {
         },
       }}
       scroll={{ x: 960 }}
-      rowSelection={{
-        selections: isMobile
-          ? undefined
-          : [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
-        onChange: (keys) => setSelected(keys as number[]),
-      }}
+      rowSelection={
+        canPublish
+          ? {
+              selections: isMobile
+                ? undefined
+                : [
+                    Table.SELECTION_ALL,
+                    Table.SELECTION_INVERT,
+                    Table.SELECTION_NONE,
+                  ],
+              onChange: (keys) => setSelected(keys as number[]),
+            }
+          : undefined
+      }
       loading={isLoading}
       footer={
-        selected.length
+        selected.length && canPublish
           ? () => (
               <Button
                 className={isMobile ? 'w-full' : undefined}

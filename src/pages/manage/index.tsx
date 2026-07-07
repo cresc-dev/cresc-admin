@@ -242,6 +242,11 @@ export const Manage = () => {
         appKey: app.appKey,
       }).toString()}`
     : undefined;
+  const versionHealthPath = app?.appKey
+    ? `${rootRouterPath.versionHealth}?${new URLSearchParams({
+        appKey: app.appKey,
+      }).toString()}`
+    : undefined;
 
   const content = (
     <ManageProvider appId={id} app={app}>
@@ -254,6 +259,12 @@ export const Manage = () => {
         onMetricsClick={() => {
           if (realtimeMetricsPath) {
             router.navigate(realtimeMetricsPath);
+          }
+        }}
+        healthDisabled={!versionHealthPath}
+        onHealthClick={() => {
+          if (versionHealthPath) {
+            router.navigate(versionHealthPath);
           }
         }}
         onSettingsClick={

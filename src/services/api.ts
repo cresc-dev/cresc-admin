@@ -289,6 +289,32 @@ export const api = {
       'get',
       `/metrics/app?appKey=${encodeURIComponent(params.appKey)}&start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}`,
     ),
+  // Client hot-update lifecycle events (version health); dict entries look like `${type}${versionName}`
+  getAppEventsMetrics: (params: {
+    appKey: string;
+    start: string;
+    end: string;
+  }) =>
+    request<{
+      dict: string[];
+      data: Array<{ time: string; data: Array<[number, number]> }>;
+    }>(
+      'get',
+      `/metrics/app/events?appKey=${encodeURIComponent(params.appKey)}&start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}`,
+    ),
+  getAppEventsDaily: (params: { appKey: string; start: string; end: string }) =>
+    request<{
+      rows: Array<{
+        date: string;
+        hash: string;
+        name: string | null;
+        type: string;
+        count: number;
+      }>;
+    }>(
+      'get',
+      `/metrics/app/events/daily?appKey=${encodeURIComponent(params.appKey)}&start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}`,
+    ),
   getInternalMetrics: (params?: {
     baseUrl?: string;
     suppressErrorToast?: boolean;

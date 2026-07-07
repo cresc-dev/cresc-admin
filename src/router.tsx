@@ -3,6 +3,7 @@ import { AdminRoute } from './components/admin-route';
 import { ErrorBoundary } from './components/error-boundary';
 import MainLayout from './components/main-layout';
 import { hasSession } from './services/request';
+import { FEATURES } from './utils/features';
 import {
   getUnauthenticatedRedirect,
   resolveLoginRedirect,
@@ -22,6 +23,7 @@ export const rootRouterPath = {
   register: '/register',
   auditLogs: '/audit-logs',
   realtimeMetrics: '/realtime-metrics',
+  versionHealth: '/version-health',
   adminConfig: '/admin-config',
   adminUsers: '/admin-users',
   adminApps: '/admin-apps',
@@ -119,6 +121,17 @@ export const router = createHashRouter([
         path: 'realtime-metrics',
         loader: needAuthLoader,
         lazy: () => import('./pages/realtime-metrics'),
+      },
+      {
+        path: 'version-health',
+        // Unreachable while the feature flag is off
+        loader: (args) => {
+          if (!FEATURES.versionHealth) {
+            return redirect(rootRouterPath.apps);
+          }
+          return needAuthLoader(args);
+        },
+        lazy: () => import('./pages/version-health'),
       },
       {
         path: 'admin-config',

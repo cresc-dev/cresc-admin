@@ -171,12 +171,18 @@ function UserPanel() {
             )}
           </div>
         </Descriptions.Item>
-        <Descriptions.Item label={t('user.next_billing')}>
+        <Descriptions.Item
+          label={
+            cancelAtPeriodEnd
+              ? t('user.expiration_date')
+              : t('user.next_billing')
+          }
+        >
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {displayExpireDay ? (
               <div className="flex min-w-0 flex-col">
                 {displayExpireDay}
-                {displayRemainingDays && (
+                {cancelAtPeriodEnd && displayRemainingDays && (
                   <>
                     <br />
                     <div>{displayRemainingDays}</div>

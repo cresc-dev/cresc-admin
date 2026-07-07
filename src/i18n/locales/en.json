@@ -128,6 +128,7 @@
     "cancelling": "(cancelling)",
     "upgrade_note": "You can upgrade to a higher plan without losing unused value: the remaining value of your current plan is converted into extra days on the new plan. Direct downgrades are not available; cancel the current subscription first, then subscribe to another plan after it expires.",
     "next_billing": "Next billing date",
+    "expiration_date": "Expiration date",
     "not_available": "Not available",
     "quota_details": "Quota details",
     "apps": "Apps",
@@ -577,7 +578,8 @@
     "paused": "Paused",
     "app_settings": "App Settings",
     "tab_releases": "App Releases",
-    "tab_metrics": "Real-time Metrics"
+    "tab_metrics": "Real-time Metrics",
+    "tab_health": "Version Health"
   },
   "create_app_modal": {
     "app_name": "App Name",
@@ -611,11 +613,13 @@
   "daily_check_quota": {
     "tier": "Tier:",
     "expires": "Expires:",
+    "renews": "Renews:",
     "remaining_today": "Remaining today:",
     "checks": "checks",
     "over_quota": "Over quota:",
     "avg_remaining": "7-day average remaining:",
     "expires_date": "Expires {{date}}",
+    "renews_date": "Renews {{date}}",
     "quota_not_available": "Today's check quota is not available yet. It is shared by all apps under this account.",
     "quota_exhausted": "Today's check quota is exhausted. Upgrade your plan or wait for the daily reset.",
     "quota_low": "Today's check quota is running low. Keep an eye on releases and high client traffic.",
@@ -784,5 +788,25 @@
     "role_developer_desc": "Upload and publish updates",
     "role_viewer": "Viewer",
     "role_viewer_desc": "Read-only access to apps and versions"
+  },
+  "version_health": {
+    "title": "Version Health",
+    "select_app": "Select an app",
+    "please_select_app": "Please select an app first",
+    "table_title": "Health by version",
+    "trend_title": "Event trend",
+    "column_version": "Update version",
+    "column_rollback_rate": "Rollback rate",
+    "column_download_fail_rate": "Download failure rate",
+    "download_success": "Download success",
+    "download_fail": "Download failed",
+    "patch_fail": "Patch failed",
+    "rollback": "Rollback",
+    "mark_success": "Started OK",
+    "range_24h": "Last 24h",
+    "range_3d": "Last 3 days",
+    "range_7d": "Last 7 days",
+    "window_hint": "Realtime data is kept for 7 days; only devices on SDK v10.47.0+ report events",
+    "no_data": "No data"
   }
 }

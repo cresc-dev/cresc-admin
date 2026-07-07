@@ -128,6 +128,7 @@
     "cancelling": "（取消中）",
     "upgrade_note": "您可以升级到更高的方案而不损失未使用的余额：当前方案的剩余价值将转换为新方案的额外天数。不支持直接降级；请先取消当前订阅，待过期后再订阅其他方案。",
     "next_billing": "下次计费日期",
+    "expiration_date": "服务到期时间",
     "not_available": "不可用",
     "quota_details": "配额详情",
     "apps": "应用",
@@ -577,7 +578,8 @@
     "paused": "已暂停",
     "app_settings": "应用设置",
     "tab_releases": "应用发布",
-    "tab_metrics": "实时指标"
+    "tab_metrics": "实时指标",
+    "tab_health": "健康度"
   },
   "create_app_modal": {
     "app_name": "应用名称",
@@ -611,11 +613,13 @@
   "daily_check_quota": {
     "tier": "方案：",
     "expires": "到期：",
+    "renews": "续费：",
     "remaining_today": "今日剩余：",
     "checks": "次检查",
     "over_quota": "超出配额：",
     "avg_remaining": "7 天平均剩余：",
     "expires_date": "到期 {{date}}",
+    "renews_date": "续费 {{date}}",
     "quota_not_available": "今日检查配额尚不可用，该配额由该账号下所有应用共享。",
     "quota_exhausted": "今日检查配额已用尽。请升级方案或等待每日重置。",
     "quota_low": "今日检查配额偏低，请关注发布和高客户端流量。",
@@ -784,5 +788,25 @@
     "role_developer_desc": "上传与发布热更新",
     "role_viewer": "只读",
     "role_viewer_desc": "仅查看应用与版本"
+  },
+  "version_health": {
+    "title": "版本健康度",
+    "select_app": "请选择应用",
+    "please_select_app": "请先选择应用",
+    "table_title": "各版本健康指标",
+    "trend_title": "事件趋势",
+    "column_version": "热更版本",
+    "column_rollback_rate": "回滚率",
+    "column_download_fail_rate": "下载失败率",
+    "download_success": "下载成功",
+    "download_fail": "下载失败",
+    "patch_fail": "Patch 失败",
+    "rollback": "回滚",
+    "mark_success": "启动成功",
+    "range_24h": "近24小时",
+    "range_3d": "近3天",
+    "range_7d": "近7天",
+    "window_hint": "实时数据保留 7 天;仅统计 SDK v10.47.0+ 的设备",
+    "no_data": "暂无数据"
   }
 }

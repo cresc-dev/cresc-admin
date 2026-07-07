@@ -37,9 +37,11 @@ const useDailyCheckQuotaState = () => {
               quotas[user.tier as keyof typeof quotas]?.title ??
               user.tier}
           </div>
-          {user.cancelAtPeriodEnd && user.tierExpiresAt && (
+          {user.tierExpiresAt && user.tier !== 'free' && (
             <div>
-              {t('daily_check_quota.expires')}{' '}
+              {user.cancelAtPeriodEnd
+                ? t('daily_check_quota.expires')
+                : t('daily_check_quota.renews')}{' '}
               {dayjs(user.tierExpiresAt).format('YYYY-MM-DD')}
             </div>
           )}
@@ -104,10 +106,14 @@ export function DailyCheckQuotaUserTrigger({
       user.tier)
     : '';
   const expireLabel =
-    user?.cancelAtPeriodEnd && user.tierExpiresAt
-      ? t('daily_check_quota.expires_date', {
-          date: dayjs(user.tierExpiresAt).format('YYYY-MM-DD'),
-        })
+    user?.tierExpiresAt && user.tier !== 'free'
+      ? user.cancelAtPeriodEnd
+        ? t('daily_check_quota.expires_date', {
+            date: dayjs(user.tierExpiresAt).format('YYYY-MM-DD'),
+          })
+        : t('daily_check_quota.renews_date', {
+            date: dayjs(user.tierExpiresAt).format('YYYY-MM-DD'),
+          })
       : null;
   const planDetails = [tierTitle, expireLabel].filter(Boolean).join(' · ');
   const warningIcon = (quotaState.isExceeded || quotaState.isLow) && (

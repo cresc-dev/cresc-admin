@@ -284,3 +284,24 @@ interface SystemNpmInfo {
   fetchedAt: string;
   currentVersion: string;
 }
+
+type MemberRole = 'admin' | 'developer' | 'viewer';
+type MemberStatus = 'pending' | 'active';
+
+interface AccountMember {
+  id: number;
+  role: MemberRole;
+  appIds: number[] | null;
+  status: MemberStatus;
+  createdAt: string;
+  member: { id: number; email: string; name: string };
+}
+
+interface Workspace {
+  id: number;
+  role: MemberRole;
+  status: MemberStatus;
+  appIds: number[] | null;
+  createdAt: string;
+  account: { id: number; email: string; name: string };
+}

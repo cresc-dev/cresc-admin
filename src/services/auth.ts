@@ -11,6 +11,7 @@ import {
   usesCookieSession,
 } from '@/services/request';
 import { resolveLoginRedirect } from '@/utils/safe-redirect';
+import { clearWorkspace } from './workspace';
 
 export type OAuthProvider = 'google' | 'github';
 
@@ -41,6 +42,8 @@ export function completeLogin(
 
 export async function login(email: string, password: string) {
   _email = email;
+  // A fresh identity must not inherit the previous user's workspace selection
+  clearWorkspace();
   const params = { email, pwd: await md5(password) };
   try {
     const res = await api.login(params);
@@ -84,6 +87,7 @@ export function logout() {
     api.logout().catch(() => {});
   }
   clearSession();
+  clearWorkspace();
   if (currentPath !== rootRouterPath.login) {
     router.navigate(rootRouterPath.login);
   }

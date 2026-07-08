@@ -108,6 +108,13 @@ a:hover {
   text-decoration: none;
 }
 
+.ant-menu a,
+.ant-menu a:hover,
+.ant-menu a:active,
+.ant-menu a:focus {
+  color: inherit;
+}
+
 .ant-layout-content {
   padding: 24px;
 }

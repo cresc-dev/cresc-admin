@@ -244,6 +244,7 @@ const UserDetailDrawer = ({
                   .slice()
                   .reverse()
                   .map((c, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: list order is static
                     <span key={i} className="mr-3 inline-block">
                       Day {i + 1}: <strong>{c}</strong>
                     </span>

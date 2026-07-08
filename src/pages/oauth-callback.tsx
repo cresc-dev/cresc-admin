@@ -6,7 +6,7 @@ import { rootRouterPath, router } from '@/router';
 import { completeLogin } from '@/services/auth';
 
 function buildLoginUrl(loginFrom?: string | null) {
-  if (!loginFrom || !loginFrom.startsWith('/') || loginFrom.startsWith('//')) {
+  if (!loginFrom?.startsWith('/') || loginFrom.startsWith('//')) {
     return rootRouterPath.login;
   }
   return `${rootRouterPath.login}?loginFrom=${encodeURIComponent(loginFrom)}`;

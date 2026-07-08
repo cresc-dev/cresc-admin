@@ -6,9 +6,9 @@
     "dev:local": "PUBLIC_API=http://localhost:9000 rsbuild dev",
     "build": "NODE_ENV=production rsbuild build",
     "preview": "rsbuild preview",
-    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "bun test",
-    "lint": "tsgo --noEmit -p tsconfig.json && biome check --write ."
+    "lint": "tsc --noEmit -p tsconfig.json && biome check --write ."
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",
@@ -40,9 +40,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript/native-preview": "^7.0.0-dev.20260702.3",
     "tailwindcss": "^4.3.2",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.1-rc"
   },
   "trustedDependencies": [
     "@tailwindcss/oxide",

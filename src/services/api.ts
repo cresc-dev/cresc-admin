@@ -308,6 +308,7 @@ export const api = {
         date: string;
         hash: string;
         name: string | null;
+        packageVersion: string;
         type: string;
         count: number;
       }>;

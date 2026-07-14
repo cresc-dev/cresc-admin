@@ -216,26 +216,22 @@ export const Component = () => {
     const selectedPoints = chartData.filter(
       (point) => point.isTotal || point.attribute === selectedAttribute,
     );
-    const denominators = new Map<string, number>();
-    const fallbackDenominators = new Map<string, number>();
+    const timeTotals = new Map<
+      string,
+      { total: number; fallback: number; hasTotal: boolean }
+    >();
 
     for (const point of selectedPoints) {
-      if (point.isTotal) {
-        denominators.set(
-          point.time,
-          (denominators.get(point.time) || 0) + point.value,
-        );
-      } else {
-        fallbackDenominators.set(
-          point.time,
-          (fallbackDenominators.get(point.time) || 0) + point.value,
-        );
+      let entry = timeTotals.get(point.time);
+      if (!entry) {
+        entry = { total: 0, fallback: 0, hasTotal: false };
+        timeTotals.set(point.time, entry);
       }
-    }
-
-    for (const [time, value] of fallbackDenominators) {
-      if (!denominators.has(time)) {
-        denominators.set(time, value);
+      if (point.isTotal) {
+        entry.total += point.value;
+        entry.hasTotal = true;
+      } else {
+        entry.fallback += point.value;
       }
     }
 
@@ -243,7 +239,12 @@ export const Component = () => {
       if (point.isTotal) {
         return point;
       }
-      const denominator = denominators.get(point.time) || 0;
+      const entry = timeTotals.get(point.time);
+      const denominator = entry
+        ? entry.hasTotal
+          ? entry.total
+          : entry.fallback
+        : 0;
       if (denominator <= 0) {
         return point;
       }
@@ -274,21 +275,24 @@ export const Component = () => {
       .map(([category]) => category);
   }, [categoryTotals]);
 
-  const hasTotal = useMemo(
-    () => filteredChartData.some((point) => point.isTotal),
-    [filteredChartData],
-  );
-
-  const totalRequests = useMemo(() => {
-    if (!filteredChartData.length) return 0;
-    if (hasTotal) {
-      return filteredChartData.reduce(
-        (sum, point) => (point.isTotal ? sum + point.value : sum),
-        0,
-      );
+  const { hasTotal, totalRequests } = useMemo(() => {
+    let has = false;
+    let totalSum = 0;
+    let nonTotalSum = 0;
+    for (let i = 0; i < filteredChartData.length; i++) {
+      const point = filteredChartData[i];
+      if (point.isTotal) {
+        has = true;
+        totalSum += point.value;
+      } else {
+        nonTotalSum += point.value;
+      }
     }
-    return filteredChartData.reduce((sum, point) => sum + point.value, 0);
-  }, [filteredChartData, hasTotal]);
+    return {
+      hasTotal: has,
+      totalRequests: has ? totalSum : nonTotalSum,
+    };
+  }, [filteredChartData]);
 
   const topCategories = useMemo(() => {
     return sortedCategories

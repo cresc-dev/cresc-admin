@@ -12,11 +12,13 @@ const MainLayout = () => {
   const isLoginPage = location.pathname === '/login';
   const usesPublicChrome = [
     '/activate',
+    '/change-email',
     '/inactivated',
     '/login',
     '/oauth-callback',
     '/register',
     '/reset-password',
+    '/revert-email',
     '/welcome',
   ].some(
     (path) =>

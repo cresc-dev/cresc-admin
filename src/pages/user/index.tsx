@@ -7,6 +7,7 @@ import { logout } from '@/services/auth';
 import { useAppList, useUserInfo } from '@/utils/hooks';
 import { PRICING_LINK } from '../../constants/links';
 import { quotas } from '../../constants/quotas';
+import { EmailChangeButton, PasswordChangeButton } from './account-security';
 import { CancelResumeButton, UpgradeDropdown } from './purchase-controls';
 import { QuotaDetailsPanel, type QuotaUsageRow } from './quota-details';
 
@@ -140,7 +141,13 @@ function UserPanel() {
       >
         <Descriptions.Item label={t('user.username')}>{name}</Descriptions.Item>
         <Descriptions.Item label={t('user.email')}>
-          <span className="break-all">{email}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="break-all">{email}</span>
+            <EmailChangeButton currentEmail={email} />
+          </div>
+        </Descriptions.Item>
+        <Descriptions.Item label={t('user.password')}>
+          <PasswordChangeButton />
         </Descriptions.Item>
         <Descriptions.Item label={t('user.subscription')}>
           <div className="flex min-w-0 flex-col gap-2">

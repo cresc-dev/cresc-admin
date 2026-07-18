@@ -141,13 +141,13 @@ function UserPanel() {
       >
         <Descriptions.Item label={t('user.username')}>{name}</Descriptions.Item>
         <Descriptions.Item label={t('user.email')}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="break-all">{email}</span>
-            <EmailChangeButton currentEmail={email} />
-          </div>
+          <span className="break-all">{email}</span>
         </Descriptions.Item>
-        <Descriptions.Item label={t('user.password')}>
-          <PasswordChangeButton />
+        <Descriptions.Item label={t('user.security_settings')}>
+          <div className="flex flex-wrap items-center gap-3">
+            <EmailChangeButton currentEmail={email} />
+            <PasswordChangeButton />
+          </div>
         </Descriptions.Item>
         <Descriptions.Item label={t('user.subscription')}>
           <div className="flex min-w-0 flex-col gap-2">

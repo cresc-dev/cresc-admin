@@ -63,7 +63,7 @@ interface AdminUser {
   id: number;
   email: string;
   name: string;
-  status: 'normal' | 'unverified' | null;
+  status: 'normal' | 'unverified' | 'dormant' | null;
   tier: string;
   tierExpiresAt?: string | null;
   quota?: Quota | null;

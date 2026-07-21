@@ -507,7 +507,17 @@
     "form_status_unverified": "Unverified",
     "expiry_plus_days": "+{{days}} days",
     "reset": "Reset",
-    "custom_quota_label": "Custom Quota (JSON, leave empty to use defaults)"
+    "custom_quota_label": "Custom Quota (JSON, leave empty to use defaults)",
+    "status_dormant": "Dormant",
+    "form_status_dormant": "Dormant",
+    "col_created": "Registered At",
+    "last_operation": "Last Operation",
+    "dormant_marked_at": "Dormant Marked At",
+    "view": "View",
+    "delete": "Delete",
+    "user_deleted": "Deleted {{email}}",
+    "delete_confirm_title": "Delete user {{email}}?",
+    "delete_confirm_desc": "This permanently removes the account with all its apps, packages and versions. Storage files are reclaimed by the next cleanup run. This cannot be undone."
   },
   "admin_apps": {
     "app_updated": "App updated",

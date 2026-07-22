@@ -193,4 +193,24 @@ export const adminApi = {
       { tag },
       { baseUrl },
     ),
+  // 批量清理休眠用户(默认 dry-run 预览;dryRun:false 才真删)
+  bulkDeleteDormant: (params: {
+    minDormantDays: number;
+    limit?: number;
+    dryRun: boolean;
+  }) =>
+    request<{
+      dryRun: boolean;
+      minDormantDays: number;
+      limit?: number;
+      matched?: number;
+      sample?: Array<{
+        id: number;
+        email: string;
+        dormantMarkedAt: string | null;
+      }>;
+      deleted?: number;
+      failed?: number;
+      deletedEmails?: string[];
+    }>('post', '/admin/users/dormant/bulk-delete', params),
 };

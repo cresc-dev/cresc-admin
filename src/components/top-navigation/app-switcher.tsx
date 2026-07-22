@@ -8,7 +8,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { Button, Drawer, Empty, Input, Popover, Tag } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import {
@@ -59,14 +59,10 @@ export function AppSwitcher({ compact }: { compact: boolean }) {
     return false;
   });
   const activeAppId = currentApp?.id ?? currentAppId;
-  const appMap = useMemo(() => {
-    return new Map(apps.map((app) => [app.id, app]));
-  }, [apps]);
-  const recentApps = useMemo(() => {
-    return recentAppIds
-      .map((appId) => appMap.get(appId))
-      .filter((app): app is AppItem => !!app);
-  }, [appMap, recentAppIds]);
+  const appMap = new Map(apps.map((app) => [app.id, app]));
+  const recentApps = recentAppIds
+    .map((appId) => appMap.get(appId))
+    .filter((app): app is AppItem => !!app);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredApps = apps.filter((app) => {
     if (!normalizedQuery) {

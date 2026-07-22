@@ -15,7 +15,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   type Content,
@@ -44,13 +44,8 @@ const JsonEditorWrapper = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<ReturnType<typeof createJSONEditor> | null>(null);
-  const initialValueRef = useRef(value);
-  const onChangeRef = useRef(onChange);
 
-  useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: create the editor only once
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
       const handleChange: OnChange = (
@@ -60,9 +55,9 @@ const JsonEditorWrapper = ({
       ) => {
         if (!contentErrors) {
           if ('json' in content && content.json !== undefined) {
-            onChangeRef.current(JSON.stringify(content.json, null, 2));
+            onChange(JSON.stringify(content.json, null, 2));
           } else if ('text' in content) {
-            onChangeRef.current(content.text);
+            onChange(content.text);
           }
         }
       };
@@ -70,7 +65,7 @@ const JsonEditorWrapper = ({
       editorRef.current = createJSONEditor({
         target: containerRef.current,
         props: {
-          content: { text: initialValueRef.current },
+          content: { text: value },
           onChange: handleChange,
           mode: Mode.text,
         },
@@ -79,7 +74,7 @@ const JsonEditorWrapper = ({
 
     return () => {
       if (editorRef.current) {
-        void editorRef.current.destroy();
+        editorRef.current.destroy();
         editorRef.current = null;
       }
     };
@@ -87,7 +82,7 @@ const JsonEditorWrapper = ({
 
   useEffect(() => {
     if (editorRef.current) {
-      editorRef.current.update({ text: value });
+      editorRef.current.updateProps({ content: { text: value } });
     }
   }, [value]);
 
@@ -137,20 +132,17 @@ export const Component = () => {
       const values = await form.validateFields();
       const key = values.key;
 
-      // Try to parse as JSON; for objects/arrays, compact it; for strings, use directly
-      let valueToSave: string;
+      // Validate JSON and submit a compact string
+      let parsedValue: unknown;
       try {
-        const parsedValue = JSON.parse(jsonValue);
-        valueToSave =
-          typeof parsedValue === 'string'
-            ? parsedValue
-            : JSON.stringify(parsedValue);
+        parsedValue = JSON.parse(jsonValue);
       } catch {
-        // Not valid JSON, use raw string directly
-        valueToSave = jsonValue;
+        message.error(t('admin_config.invalid_json'));
+        return;
       }
 
-      await adminApi.setConfig(key, valueToSave);
+      const compactValue = JSON.stringify(parsedValue);
+      await adminApi.setConfig(key, compactValue);
       message.success(t('admin_config.saved'));
       setIsModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['adminConfig'] });
@@ -159,18 +151,15 @@ export const Component = () => {
     }
   };
 
-  const handleDelete = useCallback(
-    async (key: string) => {
-      try {
-        await adminApi.deleteConfig(key);
-        message.success(t('admin_config.deleted'));
-        refetch();
-      } catch (error) {
-        message.error((error as Error).message);
-      }
-    },
-    [refetch, t],
-  );
+  const handleDelete = async (key: string) => {
+    try {
+      await adminApi.deleteConfig(key);
+      message.success(t('admin_config.deleted'));
+      refetch();
+    } catch (error) {
+      message.error((error as Error).message);
+    }
+  };
 
   const columns: ColumnsType<ConfigItem> = [
     {

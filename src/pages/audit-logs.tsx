@@ -23,7 +23,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
@@ -283,44 +283,42 @@ export const AuditLogs = () => {
     limit: 1000,
   });
 
-  const filteredAuditLogs = useMemo(() => {
-    return allAuditLogs.filter((log) => {
-      if (
-        selectedAction &&
-        getActionLabel(log.method, log.path) !== selectedAction
-      ) {
-        return false;
-      }
+  const filteredAuditLogs = allAuditLogs.filter((log) => {
+    if (
+      selectedAction &&
+      getActionLabel(log.method, log.path) !== selectedAction
+    ) {
+      return false;
+    }
 
-      if (!matchesStatusFilter(log.statusCode, statusFilter)) {
-        return false;
-      }
+    if (!matchesStatusFilter(log.statusCode, statusFilter)) {
+      return false;
+    }
 
-      if (query && !buildSearchText(log).includes(query)) {
-        return false;
-      }
+    if (query && !buildSearchText(log).includes(query)) {
+      return false;
+    }
 
-      if (!dateRange || (!dateRange[0] && !dateRange[1])) {
-        return true;
-      }
-
-      const [startDate, endDate] = dateRange;
-      const logDate = dayjs(log.createdAt);
-      if (startDate && endDate) {
-        return (
-          logDate.isSameOrAfter(startDate.startOf('day')) &&
-          logDate.isSameOrBefore(endDate.endOf('day'))
-        );
-      }
-      if (startDate) {
-        return logDate.isSameOrAfter(startDate.startOf('day'));
-      }
-      if (endDate) {
-        return logDate.isSameOrBefore(endDate.endOf('day'));
-      }
+    if (!dateRange || (!dateRange[0] && !dateRange[1])) {
       return true;
-    });
-  }, [allAuditLogs, dateRange, query, selectedAction, statusFilter]);
+    }
+
+    const [startDate, endDate] = dateRange;
+    const logDate = dayjs(log.createdAt);
+    if (startDate && endDate) {
+      return (
+        logDate.isSameOrAfter(startDate.startOf('day')) &&
+        logDate.isSameOrBefore(endDate.endOf('day'))
+      );
+    }
+    if (startDate) {
+      return logDate.isSameOrAfter(startDate.startOf('day'));
+    }
+    if (endDate) {
+      return logDate.isSameOrBefore(endDate.endOf('day'));
+    }
+    return true;
+  });
 
   const maxPage = Math.max(1, Math.ceil(filteredAuditLogs.length / pageSize));
 
@@ -330,13 +328,9 @@ export const AuditLogs = () => {
     }
   }, [currentPage, maxPage, setSearchParams]);
 
-  const selectedLog = useMemo(() => {
-    if (!selectedLogId) {
-      return null;
-    }
-
-    return allAuditLogs.find((log) => String(log.id) === selectedLogId) ?? null;
-  }, [allAuditLogs, selectedLogId]);
+  const selectedLog = selectedLogId
+    ? (allAuditLogs.find((log) => String(log.id) === selectedLogId) ?? null)
+    : null;
 
   const disabledDate = (current: Dayjs | null) => {
     if (!current) return false;

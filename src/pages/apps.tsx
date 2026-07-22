@@ -1,6 +1,6 @@
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Empty, Input, Spin, Tag, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { AppDrawerLayout, useAppWorkspaceList } from '@/components/app-drawer';
@@ -39,28 +39,18 @@ export const Component = () => {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
-  const filteredApps = useMemo(() => {
-    if (!normalizedQuery) {
-      return apps;
-    }
-    return apps.filter((app) =>
-      [app.name, app.appKey, app.platform]
-        .filter(Boolean)
-        .some((value) => value?.toLowerCase().includes(normalizedQuery)),
-    );
-  }, [apps, normalizedQuery]);
+  const filteredApps = normalizedQuery
+    ? apps.filter((app) =>
+        [app.name, app.appKey, app.platform]
+          .filter(Boolean)
+          .some((value) => value?.toLowerCase().includes(normalizedQuery)),
+      )
+    : apps;
 
-  const pausedCount = useMemo(
-    () => apps.filter((app) => app.status === 'paused').length,
-    [apps],
-  );
-  const totalChecks = useMemo(
-    () =>
-      apps.reduce((sum, app) => {
-        return sum + (app.checkCount ?? 0);
-      }, 0),
-    [apps],
-  );
+  const pausedCount = apps.filter((app) => app.status === 'paused').length;
+  const totalChecks = apps.reduce((sum, app) => {
+    return sum + (app.checkCount ?? 0);
+  }, 0);
 
   const createApp = () => {
     showCreateAppModal({

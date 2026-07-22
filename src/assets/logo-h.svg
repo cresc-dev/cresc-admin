@@ -9,5 +9,5 @@
     <path d="M 88 26 A 40 40 0 1 0 88 84" stroke="url(#cresc_h_grad)" stroke-width="18" stroke-linecap="round" />
     <circle cx="88" cy="55" r="10" fill="url(#cresc_h_grad)" />
   </g>
-  <text x="130" y="77" font-family="inherit" font-weight="800" font-size="64" fill="#1d2329" letter-spacing="-2.0">cresc</text>
+  <text x="130" y="77" font-family="inherit" font-weight="800" font-size="64" fill="currentColor" letter-spacing="-2.0">cresc</text>
 </svg>

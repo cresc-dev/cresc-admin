@@ -216,7 +216,7 @@ export default function TopNavigation({
     <div className="flex min-h-16 w-full min-w-0 items-center gap-1.5 md:gap-3">
       <Link
         to={rootRouterPath.home}
-        className="flex shrink-0 items-center no-underline"
+        className="flex shrink-0 items-center text-text no-underline"
       >
         <LogoH className="h-7 w-auto max-w-[88px] sm:max-w-[130px] md:max-w-[150px]" />
       </Link>

@@ -149,4 +149,48 @@ export const adminApi = {
       { version },
       { baseUrl },
     ),
+  // Cloud Run 运维(仅 GCP 部署形态;非 GCP 后端返回 503,前端据此隐藏面板)
+  getCloudRunStatus: (baseUrl?: string) =>
+    request<{ data: CloudRunServiceStatus[] }>(
+      'get',
+      '/admin/system/cloudrun/status',
+      undefined,
+      { baseUrl, suppressErrorToast: true },
+    ),
+  getCloudRunRevisions: (service: string, baseUrl?: string) =>
+    request<{ data: CloudRunRevision[] }>(
+      'get',
+      `/admin/system/cloudrun/revisions/${encodeURIComponent(service)}`,
+      undefined,
+      { baseUrl, suppressErrorToast: true },
+    ),
+  getCloudRunImages: (baseUrl?: string) =>
+    request<{ data: CloudRunImageTag[] }>(
+      'get',
+      '/admin/system/cloudrun/images',
+      undefined,
+      { baseUrl, suppressErrorToast: true },
+    ),
+  cloudRunRollback: ({
+    service,
+    revision,
+    baseUrl,
+  }: {
+    service: string;
+    revision: string;
+    baseUrl?: string;
+  }) =>
+    request<{ ok: boolean; service: string; revision: string }>(
+      'post',
+      '/admin/system/cloudrun/rollback',
+      { service, revision },
+      { baseUrl },
+    ),
+  cloudRunDeploy: ({ tag, baseUrl }: { tag: string; baseUrl?: string }) =>
+    request<{ ok: boolean; tag: string }>(
+      'post',
+      '/admin/system/cloudrun/deploy',
+      { tag },
+      { baseUrl },
+    ),
 };

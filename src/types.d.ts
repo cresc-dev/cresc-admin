@@ -308,3 +308,33 @@ interface Workspace {
   createdAt: string;
   account: { id: number; email: string; name: string };
 }
+
+interface CloudRunServiceStatus {
+  name: string;
+  kind: 'service' | 'job';
+  url: string | null;
+  image: string | null;
+  servingRevision: string | null;
+  updateTime: string | null;
+  lastModifier: string | null;
+  ready: boolean;
+  reconciling: boolean;
+  cpu: string | null;
+  memory: string | null;
+  minInstances: number | null;
+  maxInstances: number | null;
+  traffic: Array<{ revision: string | null; percent: number; latest: boolean }>;
+}
+
+interface CloudRunRevision {
+  name: string;
+  image: string | null;
+  createTime: string | null;
+  serving: boolean;
+  trafficPercent: number;
+}
+
+interface CloudRunImageTag {
+  tag: string;
+  updateTime: string | null;
+}

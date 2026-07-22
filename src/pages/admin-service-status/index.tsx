@@ -3,6 +3,7 @@ import { Typography } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
+import { CloudRunPanel } from './cloudrun-panel';
 import {
   buildServiceStatusSummary,
   SERVICE_STATUS_TARGETS,
@@ -72,6 +73,7 @@ export const Component = () => {
           />
         </div>
       </div>
+      <CloudRunPanel />
     </div>
   );
 };

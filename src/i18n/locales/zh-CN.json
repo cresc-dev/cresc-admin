@@ -873,5 +873,31 @@
     "test_failed": "端点 status 测试失败，无法连接或响应异常",
     "reset_success": "已清空自定义端点，恢复使用默认配置",
     "invalid_url": "请输入有效的 URL（须以 http:// 或 https:// 开头）"
+  },
+  "cloudrun": {
+    "title": "Cloud Run(GCP)",
+    "ready": "就绪",
+    "not_ready": "未就绪",
+    "reconciling": "部署中",
+    "image": "镜像",
+    "revision": "修订版本",
+    "resources": "资源",
+    "scaling": "实例数(最小~最大)",
+    "traffic": "流量",
+    "updated": "更新时间",
+    "rollback": "回滚",
+    "rollback_title": "回滚 {{service}}",
+    "rollback_done": "流量已切换",
+    "serving": "服务中",
+    "idle": "空闲",
+    "switch_here": "切 100% 到此",
+    "created": "创建时间",
+    "status": "状态",
+    "deploy_version": "部署版本",
+    "deploy_title": "部署已构建的版本",
+    "deploy": "部署",
+    "deploy_done": "部署已发起",
+    "deploy_desc": "将所选镜像 tag 部署到全部服务与每日任务。镜像在 push main 时构建。",
+    "select_version": "选择版本 tag"
   }
 }

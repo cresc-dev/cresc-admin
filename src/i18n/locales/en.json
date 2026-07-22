@@ -873,5 +873,31 @@
     "test_failed": "Endpoint status test failed, unable to connect or unexpected response",
     "reset_success": "Cleared custom endpoint, reverted to default configuration",
     "invalid_url": "Please enter a valid URL (must start with http:// or https://)"
+  },
+  "cloudrun": {
+    "title": "Cloud Run (GCP)",
+    "ready": "Ready",
+    "not_ready": "Not Ready",
+    "reconciling": "Deploying",
+    "image": "Image",
+    "revision": "Revision",
+    "resources": "Resources",
+    "scaling": "Instances (min~max)",
+    "traffic": "Traffic",
+    "updated": "Updated",
+    "rollback": "Rollback",
+    "rollback_title": "Rollback {{service}}",
+    "rollback_done": "Traffic switched",
+    "serving": "Serving",
+    "idle": "Idle",
+    "switch_here": "Route 100% here",
+    "created": "Created",
+    "status": "Status",
+    "deploy_version": "Deploy version",
+    "deploy_title": "Deploy a built version",
+    "deploy": "Deploy",
+    "deploy_done": "Deployment started",
+    "deploy_desc": "Deploys the selected image tag to all services and the daily job. Builds happen on push to main.",
+    "select_version": "Select a version tag"
   }
 }

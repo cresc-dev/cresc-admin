@@ -35,11 +35,13 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.3",
     "@tailwindcss/postcss": "^4.3.2",
+    "@testing-library/react": "^16.3.2",
     "@types/git-url-parse": "^16.0.2",
     "@types/node": "^26.1.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",
+    "happy-dom": "^20.11.1",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2"
   },

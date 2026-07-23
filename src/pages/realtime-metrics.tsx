@@ -1,4 +1,3 @@
-import { Line } from '@ant-design/charts';
 import { useQuery } from '@tanstack/react-query';
 import { Card, DatePicker, Input, Radio, Spin } from 'antd';
 import type { Dayjs } from 'dayjs';
@@ -9,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { AppDetailHeader } from '@/components/app-detail-header';
 import { AppDrawerLayout, useAppWorkspaceList } from '@/components/app-drawer';
 import { useAppSettingsModal } from '@/components/app-settings-modal';
+import { AsyncLine } from '@/components/lazy-chart';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { patchSearchParams, rememberRecentApp } from '@/utils/helper';
@@ -36,15 +36,21 @@ interface FormattedCategory {
 
 const CATEGORY_SEPARATOR = '\u001f';
 
+type ChartController = {
+  emit: (...args: unknown[]) => unknown;
+  on: (...args: unknown[]) => unknown;
+};
+
 const formatCategory = (
   rawCategory: string,
-  t: ReturnType<typeof useTranslation>['t'],
+  t: (key: string, opts?: Record<string, unknown>) => string,
 ): FormattedCategory => {
+  const totalLabel = t('realtime_metrics.update_checks');
   if (!rawCategory) {
     return { label: t('realtime_metrics.unknown'), isTotal: false };
   }
   if (rawCategory === '_total' || rawCategory === 'total') {
-    return { label: t('realtime_metrics.update_checks'), isTotal: true };
+    return { label: totalLabel, isTotal: true };
   }
   const parts = rawCategory.split(CATEGORY_SEPARATOR);
   if (parts.length >= 2) {
@@ -86,39 +92,46 @@ const formatCategory = (
   };
 };
 
+const getAttributeOptions = (t: (key: string) => string) => [
+  { label: t('realtime_metrics.bundle'), value: 'hash' as const },
+  {
+    label: t('realtime_metrics.package'),
+    value: 'packageVersion_buildTime' as const,
+  },
+];
+
 const formatTooltipItem = (
   point: ChartDataPoint,
   t: (key: string, opts?: Record<string, unknown>) => string,
 ) => {
-  const countLabel = t('realtime_metrics.checks_tooltip', {
-    count: point.value,
-  });
+  const count = point.value.toLocaleString();
   if (point.isTotal || point.sharePercent === undefined) {
-    return countLabel;
+    return t('realtime_metrics.tooltip_count', { count });
   }
-  return `${countLabel} (${point.sharePercent.toFixed(1)}%)`;
-};
-
-type ChartInstance = {
-  on: (event: string, callback: () => void) => void;
-  emit: (event: string, payload: unknown) => void;
+  return t('realtime_metrics.tooltip_count_percent', {
+    count,
+    percent: point.sharePercent.toFixed(1),
+  });
 };
 
 export const Component = () => {
   const { t } = useTranslation();
   const { isDark } = useThemeMode();
-  const totalLabel = t('realtime_metrics.update_checks');
-  const attributeOptions = [
-    { label: t('realtime_metrics.bundle'), value: 'hash' },
-    { label: t('realtime_metrics.package'), value: 'packageVersion_buildTime' },
-  ];
   const [searchParams, setSearchParams] = useSearchParams({
     attribute: 'hash',
   });
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
-    dayjs().subtract(24, 'hour'),
-    dayjs(),
-  ]);
+  // 时间窗可由入口链接指定（如原生包时间戳告警按 7 天窗口计算，
+  // 跳转过来必须用同样的窗口才能查到对应数据），默认过去 24 小时
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => {
+    const rangeHours: Record<string, number> = {
+      '1h': 1,
+      '6h': 6,
+      '24h': 24,
+      '7d': 24 * 7,
+    };
+    const hours = rangeHours[searchParams.get('range') ?? ''] ?? 24;
+    return [dayjs().subtract(hours, 'hour'), dayjs()];
+  });
   const [manualAppKey, setManualAppKey] = useState('');
   const legendValuesRef = useRef<string[]>([]);
   const { contextHolder, openAppSettings } = useAppSettingsModal();
@@ -134,6 +147,9 @@ export const Component = () => {
     searchParams.get('attribute') === 'packageVersion_buildTime'
       ? 'packageVersion_buildTime'
       : 'hash';
+
+  const attributeOptions = getAttributeOptions(t);
+  const totalLabel = t('realtime_metrics.update_checks');
 
   const selectableAppKeys = useMemo(
     () =>
@@ -315,13 +331,28 @@ export const Component = () => {
       attributeOptions.find((option) => option.value === selectedAttribute)
         ?.label || selectedAttribute
     );
-  }, [selectedAttribute, attributeOptions.find]);
+  }, [selectedAttribute, attributeOptions]);
+
+  // 入口链接标记的类别（原生包时间戳告警的跳转）强制加入默认图例，
+  // 不受 Top 10 截断影响——它们通常量很小,否则点进来什么都看不到
+  const focusLabels = useMemo(() => {
+    const focusParam = searchParams.get('focus') ?? '';
+    return focusParam
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .map((value) => `${t('realtime_metrics.package_prefix')} ${value}`);
+  }, [searchParams, t]);
 
   const defaultLegendValues = useMemo(() => {
     const topTen = sortedCategories.slice(0, 10);
-    if (!hasTotal) return topTen;
-    return [totalLabel, ...topTen];
-  }, [sortedCategories, hasTotal, totalLabel]);
+    const focusExtras = focusLabels.filter(
+      (label) => categoryTotals.has(label) && !topTen.includes(label),
+    );
+    const selection = [...topTen, ...focusExtras];
+    if (!hasTotal) return selection;
+    return [totalLabel, ...selection];
+  }, [sortedCategories, categoryTotals, focusLabels, hasTotal, totalLabel]);
 
   const colorDomain = useMemo(() => {
     if (hasTotal) {
@@ -371,7 +402,7 @@ export const Component = () => {
           color: { domain: colorDomain },
         }
       : undefined,
-    onReady: ({ chart }: { chart: ChartInstance }) => {
+    onReady: ({ chart }: { chart: ChartController }) => {
       try {
         chart.on('afterrender', () => {
           const values = legendValuesRef.current;
@@ -524,8 +555,9 @@ export const Component = () => {
                       {categoryTotals.size}
                     </div>
                     <div className="mt-1 text-[11px] text-gray-500">
-                      {t('realtime_metrics.current_dimension')}{' '}
-                      {selectedAttributeLabel}
+                      {t('realtime_metrics.current_dimension_label', {
+                        dimension: selectedAttributeLabel,
+                      })}
                     </div>
                   </div>
                 </div>
@@ -574,7 +606,7 @@ export const Component = () => {
 
                             <div className="mt-2 h-1.5 overflow-hidden rounded bg-gray-100">
                               <div
-                                className="h-full rounded bg-blue-500"
+                                className="h-full rounded bg-primary"
                                 style={{ width: `${barWidth}%` }}
                               />
                             </div>
@@ -604,10 +636,10 @@ export const Component = () => {
                 {t('realtime_metrics.please_select_app')}
               </div>
             ) : filteredChartData.length > 0 ? (
-              <Line {...lineConfig} />
+              <AsyncLine {...lineConfig} />
             ) : (
               <div className="h-80 flex items-center justify-center text-gray-400">
-                {t('realtime_metrics.no_data_available')}
+                {t('realtime_metrics.no_data')}
               </div>
             )}
           </Card>

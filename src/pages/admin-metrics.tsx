@@ -1,4 +1,3 @@
-import { Line } from '@ant-design/charts';
 import { useQuery } from '@tanstack/react-query';
 import {
   Card,
@@ -14,8 +13,10 @@ import dayjs from 'dayjs';
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import { AsyncLine } from '@/components/lazy-chart';
 import { api } from '@/services/api';
 import { patchSearchParams } from '@/utils/helper';
+import { metricsKeys } from '@/utils/query-keys';
 import { useThemeMode } from '@/utils/theme-mode';
 
 const { Title } = Typography;
@@ -38,6 +39,7 @@ interface MetricsResponse {
 
 const TOTAL_SERIES_LABEL = 'total';
 const DEFAULT_RANGE_HOURS = 24;
+
 const getModeLabels = (
   t: (key: string) => string,
 ): Record<MetricMode, string> => ({
@@ -45,11 +47,11 @@ const getModeLabels = (
   uv: t('admin_metrics.mode_users'),
 });
 
-const getMetricKeyOptions = (t: (key: string) => string) => [
-  { label: t('admin_metrics.prefix_rn'), value: 'rn' as const },
-  { label: t('admin_metrics.prefix_os'), value: 'os' as const },
-  { label: t('admin_metrics.prefix_rnu'), value: 'rnu' as const },
-];
+const metricKeyOptions = [
+  { label: 'rn', value: 'rn' },
+  { label: 'os', value: 'os' },
+  { label: 'rnu', value: 'rnu' },
+] satisfies Array<{ label: string; value: MetricKeyPrefix }>;
 
 const getCategoryPrefix = (category: string) => {
   const separatorIndex = category.indexOf(':');
@@ -96,9 +98,8 @@ type ChartController = {
 const parseMode = (value: string | null): MetricMode =>
   value === 'uv' ? 'uv' : 'pv';
 
-const VALID_KEY_PREFIXES = ['rn', 'os', 'rnu'] as const;
 const parseKeyPrefix = (value: string | null): MetricKeyPrefix =>
-  VALID_KEY_PREFIXES.some((prefix) => prefix === value)
+  metricKeyOptions.some((option) => option.value === value)
     ? (value as MetricKeyPrefix)
     : 'rn';
 
@@ -131,8 +132,6 @@ export const Component = () => {
   const { t } = useTranslation();
   const { isDark } = useThemeMode();
   const [searchParams, setSearchParams] = useSearchParams();
-  const modeLabels = getModeLabels(t);
-  const metricKeyOptions = getMetricKeyOptions(t);
   const legendValuesRef = useRef<string[]>([]);
   const defaultRangeRef = useRef<[Dayjs, Dayjs] | null>(null);
   defaultRangeRef.current ??= createDefaultDateRange();
@@ -146,8 +145,10 @@ export const Component = () => {
   const startDate = rangeStart.toISOString();
   const endDate = rangeEnd.toISOString();
 
+  const modeLabels = getModeLabels(t);
+
   const { data: pvMetrics, isLoading: isLoadingPv } = useQuery({
-    queryKey: ['globalMetrics', startDate, endDate, 'pv'],
+    queryKey: metricsKeys.global(startDate, endDate, 'pv'),
     queryFn: () =>
       api.getGlobalMetrics({
         start: startDate,
@@ -157,7 +158,7 @@ export const Component = () => {
   });
 
   const { data: uvMetrics, isLoading: isLoadingUv } = useQuery({
-    queryKey: ['globalMetrics', startDate, endDate, 'uv'],
+    queryKey: metricsKeys.global(startDate, endDate, 'uv'),
     queryFn: () =>
       api.getGlobalMetrics({
         start: startDate,
@@ -458,7 +459,7 @@ export const Component = () => {
 
           <Card size="small" style={{ marginBottom: 20 }}>
             {lineData.length > 0 ? (
-              <Line {...lineConfig} />
+              <AsyncLine {...lineConfig} />
             ) : (
               <div className="flex h-80 items-center justify-center text-gray-400">
                 {t('admin_metrics.no_data')}

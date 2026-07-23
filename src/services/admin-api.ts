@@ -113,42 +113,6 @@ export const adminApi = {
         }
       >;
     }>('get', `/admin/users/${id}`),
-  // admin system deploy
-  getSystemInstances: (baseUrl?: string) =>
-    request<{
-      data: SystemInstance[];
-      deployStatuses: Record<string, SystemDeployStatus>;
-    }>('get', '/admin/system/instances', undefined, {
-      baseUrl,
-      suppressErrorToast: true,
-    }),
-  getSystemNpmInfo: (baseUrl?: string) =>
-    request<SystemNpmInfo>('get', '/admin/system/npm', undefined, {
-      baseUrl,
-      suppressErrorToast: true,
-    }),
-  restartInstance: ({
-    instanceId,
-    baseUrl,
-  }: {
-    instanceId: string;
-    baseUrl?: string;
-  }) =>
-    request<{ queued: boolean }>(
-      'post',
-      `/admin/system/instances/${encodeURIComponent(instanceId)}/command`,
-      { action: 'restart' },
-      { baseUrl },
-    ),
-  // Update/rollback is node-level: one global install, then all local
-  // processes restart in turn
-  updateNode: ({ version, baseUrl }: { version: string; baseUrl?: string }) =>
-    request<{ queued: boolean }>(
-      'post',
-      '/admin/system/update',
-      { version },
-      { baseUrl },
-    ),
   // Cloud Run 运维(仅 GCP 部署形态;非 GCP 后端返回 503,前端据此隐藏面板)
   getCloudRunStatus: (baseUrl?: string) =>
     request<{ data: CloudRunServiceStatus[] }>(

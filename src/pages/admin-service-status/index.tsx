@@ -56,6 +56,7 @@ export const Component = () => {
         </Title>
         <Text type="secondary">{t('admin_service_status.description')}</Text>
       </div>
+      <CloudRunPanel />
       <div className="grid min-w-0 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <ServiceTargetSidebar
           activeKey={activeTarget.key}
@@ -73,7 +74,6 @@ export const Component = () => {
           />
         </div>
       </div>
-      <CloudRunPanel />
     </div>
   );
 };

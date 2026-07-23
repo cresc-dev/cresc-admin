@@ -1,6 +1,6 @@
 import { Line } from '@ant-design/charts';
 import { ReloadOutlined } from '@ant-design/icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   Button,
   Card,
@@ -20,9 +20,7 @@ import {
   type InternalApi5xxEvent,
   type InternalMetricsResponse,
 } from '@/services/api';
-import { adminKeys } from '@/utils/query-keys';
 import { useThemeMode } from '@/utils/theme-mode';
-import { InstancesPanel } from './instances-panel';
 import {
   API_5XX_EVENT_PAGE_SIZE,
   aggregateDurations,
@@ -263,7 +261,6 @@ export function ServiceStatusPanel({
   const [api5xxEventPage, setApi5xxEventPage] = useState(1);
   const api5xxEventOffset = (api5xxEventPage - 1) * API_5XX_EVENT_PAGE_SIZE;
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const api5xxEventsQuery = useQuery({
     queryFn: () =>
       api.getInternalApi5xxEvents({
@@ -343,12 +340,6 @@ export function ServiceStatusPanel({
           onClick={() => {
             refetch();
             api5xxEventsQuery.refetch();
-            queryClient.invalidateQueries({
-              queryKey: adminKeys.systemInstances(target.key),
-            });
-            queryClient.invalidateQueries({
-              queryKey: adminKeys.systemNpm(target.key),
-            });
           }}
         >
           {t('admin_service_status.refresh')}
@@ -363,8 +354,6 @@ export function ServiceStatusPanel({
           </Text>
         </Card>
       )}
-
-      <InstancesPanel target={target} />
 
       <Spin spinning={isFetching && !snapshot}>
         <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">

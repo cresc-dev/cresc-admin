@@ -42,6 +42,13 @@ export type ServiceStatusSummary = {
 
 export const SERVICE_STATUS_TARGETS = [
   {
+    key: 'gcp',
+    label: 'gcp (Cloud Run)',
+    host: 'api.cresc.dev',
+    baseUrl: 'https://api.cresc.dev',
+  },
+  // sg/kr 是切流后的阿里云热备节点,T+7(约 2026-07-30)下线后移除
+  {
     key: 'sg',
     label: 'sg',
     host: 'sg.cresc.dev',

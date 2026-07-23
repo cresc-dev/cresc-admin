@@ -877,6 +877,9 @@
     "deploy": "Deploy",
     "deploy_done": "Deployment started",
     "deploy_desc": "Deploys the selected image tag to all services and the daily job. Builds happen on push to main.",
-    "select_version": "Select a version tag"
+    "select_version": "Select a version tag",
+    "metrics_instances": "Instances (active/total)",
+    "metrics_rpm": "req/min",
+    "metrics_5xx": "5xx rate"
   }
 }

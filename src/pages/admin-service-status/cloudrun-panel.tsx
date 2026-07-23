@@ -24,13 +24,60 @@ import { adminApi } from '@/services/admin-api';
 
 const { Text } = Typography;
 
+const formatMetricCount = (value: number | null) =>
+  value === null
+    ? '-'
+    : value >= 100
+      ? Math.round(value).toString()
+      : value.toFixed(1);
+
+// Cloud Monitoring 实时指标行(约 3 分钟采集延迟,10 分钟窗口)
+const MetricsRow = ({
+  metrics,
+  t,
+}: {
+  metrics: CloudRunServiceMetrics;
+  t: (key: string) => string;
+}) => (
+  <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+    <Text type="secondary">
+      {t('cloudrun.metrics_instances')}:{' '}
+      <Text strong>{metrics.activeInstances ?? 0}</Text>
+      {' / '}
+      {(metrics.activeInstances ?? 0) + (metrics.idleInstances ?? 0)}
+    </Text>
+    <Text type="secondary">
+      {t('cloudrun.metrics_rpm')}:{' '}
+      <Text strong>{formatMetricCount(metrics.requestsPerMinute)}</Text>
+    </Text>
+    <Text type="secondary">
+      {t('cloudrun.metrics_5xx')}:{' '}
+      <Text strong type={metrics.errorRate5xx ? 'danger' : undefined}>
+        {metrics.errorRate5xx === null
+          ? '-'
+          : `${(metrics.errorRate5xx * 100).toFixed(1)}%`}
+      </Text>
+    </Text>
+    <Text type="secondary">
+      p95:{' '}
+      <Text strong>
+        {metrics.p95LatencyMs === null
+          ? '-'
+          : `${Math.round(metrics.p95LatencyMs)}ms`}
+      </Text>
+    </Text>
+  </div>
+);
+
 // 服务状态卡片:筛选过的关键参数(版本/资源/扩缩容/流量/就绪)
 const StatusCard = ({
   svc,
+  metrics,
   onRollback,
   t,
 }: {
   svc: CloudRunServiceStatus;
+  metrics?: CloudRunServiceMetrics;
   onRollback: (service: string) => void;
   t: (key: string) => string;
 }) => (
@@ -54,6 +101,9 @@ const StatusCard = ({
         }
       />
     </div>
+    {svc.kind === 'service' && metrics && (
+      <MetricsRow metrics={metrics} t={t} />
+    )}
     <Descriptions column={1} size="small" bordered>
       <Descriptions.Item label={t('cloudrun.image')}>
         <code>{svc.image ?? '-'}</code>
@@ -109,6 +159,13 @@ export const CloudRunPanel = () => {
     queryKey: ['cloudRunStatus'],
     queryFn: () => adminApi.getCloudRunStatus(),
     refetchInterval: 30_000,
+    retry: false,
+  });
+
+  const metricsQuery = useQuery({
+    queryKey: ['cloudRunMetrics'],
+    queryFn: () => adminApi.getCloudRunMetrics(),
+    refetchInterval: 60_000,
     retry: false,
   });
 
@@ -190,6 +247,7 @@ export const CloudRunPanel = () => {
           <StatusCard
             key={svc.name}
             svc={svc}
+            metrics={metricsQuery.data?.data.services[svc.name]}
             onRollback={setRollbackService}
             t={t}
           />

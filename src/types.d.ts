@@ -273,3 +273,17 @@ interface CloudRunImageTag {
   tag: string;
   updateTime: string | null;
 }
+
+interface CloudRunServiceMetrics {
+  activeInstances: number | null;
+  idleInstances: number | null;
+  requestsPerMinute: number | null;
+  errorRate5xx: number | null;
+  p95LatencyMs: number | null;
+}
+
+interface CloudRunMetricsSnapshot {
+  windowMinutes: number;
+  fetchedAt: string;
+  services: Record<string, CloudRunServiceMetrics>;
+}

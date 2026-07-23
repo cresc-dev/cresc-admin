@@ -877,6 +877,9 @@
     "deploy": "部署",
     "deploy_done": "部署已发起",
     "deploy_desc": "将所选镜像 tag 部署到全部服务与每日任务。镜像在 push main 时构建。",
-    "select_version": "选择版本 tag"
+    "select_version": "选择版本 tag",
+    "metrics_instances": "实例(活跃/总)",
+    "metrics_rpm": "请求/分",
+    "metrics_5xx": "5xx 比例"
   }
 }

@@ -121,6 +121,13 @@ export const adminApi = {
       undefined,
       { baseUrl, suppressErrorToast: true },
     ),
+  getCloudRunMetrics: (baseUrl?: string) =>
+    request<{ data: CloudRunMetricsSnapshot }>(
+      'get',
+      '/admin/system/cloudrun/metrics',
+      undefined,
+      { baseUrl, suppressErrorToast: true },
+    ),
   getCloudRunRevisions: (service: string, baseUrl?: string) =>
     request<{ data: CloudRunRevision[] }>(
       'get',

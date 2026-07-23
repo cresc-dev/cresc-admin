@@ -452,7 +452,7 @@ export const AuditLogs = () => {
     {
       title: t('audit_logs.col_time'),
       dataIndex: 'createdAt',
-      width: 180,
+      width: 210,
       render: (createdAt: string) => {
         const date = dayjs(createdAt);
         return (
@@ -467,7 +467,7 @@ export const AuditLogs = () => {
     },
     {
       title: t('audit_logs.col_action'),
-      width: 160,
+      width: 210,
       render: (_value, record) => {
         const actionLabel = getActionLabel(record.method, record.path);
         const isDelete = record.method.toUpperCase() === 'DELETE';
@@ -480,7 +480,7 @@ export const AuditLogs = () => {
     },
     {
       title: t('audit_logs.col_path'),
-      width: 260,
+      width: 240,
       responsive: ['md'],
       render: (_value, record) => (
         <div className="min-w-0">
@@ -496,7 +496,7 @@ export const AuditLogs = () => {
     {
       title: t('audit_logs.col_status'),
       dataIndex: 'statusCode',
-      width: 110,
+      width: 90,
       render: (statusCode: string) => {
         const code = Number(statusCode);
         const color =
@@ -513,7 +513,7 @@ export const AuditLogs = () => {
     {
       title: t('audit_logs.col_payload'),
       responsive: ['lg'],
-      width: 320,
+      width: 200,
       render: (_value, record) => {
         const previewData = getPreviewData(record.data);
         if (!previewData) {

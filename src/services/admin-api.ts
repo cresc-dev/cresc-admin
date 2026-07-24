@@ -121,6 +121,26 @@ export const adminApi = {
       undefined,
       { baseUrl, suppressErrorToast: true },
     ),
+  getQuotaAlerts: () =>
+    request<{
+      data: { alerts: QuotaAlert[]; generatedAt: string | null } | null;
+    }>('get', '/admin/analytics/quota-alerts', undefined, {
+      suppressErrorToast: true,
+    }),
+  getGrowthStats: (days = 30) =>
+    request<{ data: GrowthDay[] }>(
+      'get',
+      `/admin/analytics/growth?days=${days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
+  getVersionHealthOverview: (days = 7) =>
+    request<{ data: VersionHealthOverviewRow[] }>(
+      'get',
+      `/admin/analytics/version-health?days=${days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
   getAnalyticsOverview: (days = 7) =>
     request<{ data: GlobalAnalyticsDay[] }>(
       'get',

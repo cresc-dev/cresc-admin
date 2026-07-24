@@ -3,8 +3,10 @@ import { Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { CloudRunPanel } from './cloudrun-panel';
+import { QuotaAlertsPanel } from './quota-alerts-panel';
 import { ServiceStatusPanel } from './status-panel';
 import { UserAnalyticsPanel } from './user-analytics-panel';
+import { VersionHealthOverviewPanel } from './version-health-overview-panel';
 import { WorkerStatsPanel } from './worker-stats-panel';
 
 const { Text, Title } = Typography;
@@ -32,6 +34,8 @@ export const Component = () => {
           snapshot={metricsQuery.data}
         >
           <UserAnalyticsPanel />
+          <VersionHealthOverviewPanel />
+          <QuotaAlertsPanel />
           <CloudRunPanel />
           <WorkerStatsPanel />
         </ServiceStatusPanel>

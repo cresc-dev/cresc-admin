@@ -15,6 +15,12 @@ const topCountries = (countries: Record<string, number>) =>
     .sort((left, right) => right[1] - left[1])
     .slice(0, TOP_COUNTRY_LIMIT);
 
+const hitRate = (hit: Record<string, number>): number | null => {
+  const incremental = (hit.hdiff ?? 0) + (hit.pdiff ?? 0);
+  const total = incremental + (hit.full ?? 0);
+  return total > 0 ? incremental / total : null;
+};
+
 export const UserAnalyticsPanel = () => {
   const { t } = useTranslation();
   const overviewQuery = useQuery({
@@ -23,9 +29,16 @@ export const UserAnalyticsPanel = () => {
     refetchInterval: 60_000,
     retry: false,
   });
+  const growthQuery = useQuery({
+    queryKey: ['growthStats'],
+    queryFn: () => adminApi.getGrowthStats(7),
+    refetchInterval: 10 * 60_000,
+    retry: false,
+  });
 
   const days = overviewQuery.data?.data ?? [];
   const today = days[0];
+  const latestGrowth = growthQuery.data?.data?.[0];
 
   if (
     overviewQuery.isError ||
@@ -83,12 +96,35 @@ export const UserAnalyticsPanel = () => {
       }
     >
       {today && (
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card size="small">
             <Statistic
               title={t('user_analytics.today_dau')}
               value={today.dau}
             />
+            {latestGrowth && (
+              <Text type="secondary">
+                {t('user_analytics.mau')} {formatCount(latestGrowth.mauGlobal)}
+                {latestGrowth.newDevicesGlobal !== null && (
+                  <>
+                    {' '}
+                    · {t('user_analytics.new_devices')}{' '}
+                    {formatCount(latestGrowth.newDevicesGlobal)}
+                  </>
+                )}
+              </Text>
+            )}
+          </Card>
+          <Card size="small">
+            <Statistic
+              title={t('user_analytics.hit_rate')}
+              value={
+                hitRate(today.hit) === null
+                  ? '-'
+                  : `${((hitRate(today.hit) as number) * 100).toFixed(1)}%`
+              }
+            />
+            <Text type="secondary">{t('user_analytics.hit_rate_hint')}</Text>
           </Card>
           <Card className="md:col-span-2" size="small">
             <Text type="secondary">{t('user_analytics.col_countries')}</Text>

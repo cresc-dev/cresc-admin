@@ -34,37 +34,6 @@ export type EndpointRow = {
   total: number;
 };
 
-export type ServiceStatusSummary = {
-  delayText: string;
-  hitText: string;
-  requestText: string;
-};
-
-export const SERVICE_STATUS_TARGETS = [
-  {
-    key: 'gcp',
-    label: 'gcp (Cloud Run)',
-    host: 'api.cresc.dev',
-    baseUrl: 'https://api.cresc.dev',
-  },
-  // sg/kr 是切流后的阿里云热备节点,T+7(约 2026-07-30)下线后移除
-  {
-    key: 'sg',
-    label: 'sg',
-    host: 'sg.cresc.dev',
-    baseUrl: 'https://sg.cresc.dev',
-  },
-  {
-    key: 'kr',
-    label: 'kr',
-    host: 'kr.cresc.dev',
-    baseUrl: 'https://kr.cresc.dev',
-  },
-] as const;
-
-export type ServiceStatusTarget = (typeof SERVICE_STATUS_TARGETS)[number];
-export type ServiceStatusTargetKey = ServiceStatusTarget['key'];
-
 export const getCounterLabels = (
   t: (key: string) => string,
 ): Record<string, string> => ({
@@ -352,37 +321,4 @@ export function buildEndpointRows(
   }
 
   return [...totals.values()].sort((left, right) => right.total - left.total);
-}
-
-export function buildServiceStatusSummary(
-  snapshot?: InternalMetricsResponse,
-): ServiceStatusSummary {
-  if (!snapshot) {
-    return {
-      delayText: '-',
-      hitText: '-',
-      requestText: '-',
-    };
-  }
-
-  const totalRequests = sumCounters(snapshot.counters, 'api.request.total');
-  const totalErrors = sumCounters(snapshot.counters, 'api.request.error');
-  const apiDuration = aggregateDurations(
-    snapshot.durations,
-    snapshot.config,
-    (entry) => entry.name === 'api.request.duration',
-  );
-  const l1Hits = sumCounters(snapshot.counters, 'cache.l1.hit');
-  const redisHits = sumCounters(snapshot.counters, 'cache.redis.hit');
-  const staleHits = sumCounters(snapshot.counters, 'cache.stale.hit');
-  const handlerMisses = sumCounters(snapshot.counters, 'cache.handler.miss');
-  const cacheServed = l1Hits + redisHits + staleHits;
-  const cacheTotal = cacheServed + handlerMisses;
-  const cacheHitRate = cacheTotal > 0 ? cacheServed / cacheTotal : 0;
-
-  return {
-    delayText: formatMs(getAverageMs(apiDuration)),
-    hitText: formatPercent(cacheHitRate),
-    requestText: `${formatCount(totalRequests)}/${formatCount(totalErrors)}`,
-  };
 }

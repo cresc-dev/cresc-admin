@@ -1,16 +1,6 @@
 import { Line } from '@ant-design/charts';
-import { ReloadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Button,
-  Card,
-  Empty,
-  Spin,
-  Statistic,
-  Table,
-  Tag,
-  Typography,
-} from 'antd';
+import { Card, Empty, Spin, Statistic, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
@@ -37,11 +27,10 @@ import {
   getAverageMs,
   getCounterLabels,
   type SeriesPoint,
-  type ServiceStatusTarget,
   sumCounters,
 } from './metrics';
 
-const { Paragraph, Text, Title } = Typography;
+const { Paragraph, Text } = Typography;
 
 function createLineConfig(
   data: SeriesPoint[],
@@ -248,15 +237,11 @@ function getApi5xxEventColumns(
 export function ServiceStatusPanel({
   error,
   isFetching,
-  refetch,
   snapshot,
-  target,
 }: {
   error: unknown;
   isFetching: boolean;
-  refetch: () => unknown;
   snapshot?: InternalMetricsResponse;
-  target: ServiceStatusTarget;
 }) {
   const [api5xxEventPage, setApi5xxEventPage] = useState(1);
   const api5xxEventOffset = (api5xxEventPage - 1) * API_5XX_EVENT_PAGE_SIZE;
@@ -264,12 +249,11 @@ export function ServiceStatusPanel({
   const api5xxEventsQuery = useQuery({
     queryFn: () =>
       api.getInternalApi5xxEvents({
-        baseUrl: target.baseUrl,
         limit: API_5XX_EVENT_PAGE_SIZE,
         offset: api5xxEventOffset,
         suppressErrorToast: true,
       }),
-    queryKey: ['internalApi5xxEvents', target.key, api5xxEventOffset],
+    queryKey: ['internalApi5xxEvents', api5xxEventOffset],
     refetchInterval: 30_000,
   });
   const apiDuration = useMemo(
@@ -319,33 +303,6 @@ export function ServiceStatusPanel({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <Title level={5} className="m-0!">
-            {target.label}
-          </Title>
-          <div className="mt-1 flex flex-wrap gap-2">
-            <Tag>{target.host}</Tag>
-            {snapshot?.generatedAt && (
-              <Tag>
-                {dayjs(snapshot.generatedAt).format('YYYY-MM-DD HH:mm:ss')}
-              </Tag>
-            )}
-            {snapshot?.process.pid && <Tag>PID {snapshot.process.pid}</Tag>}
-          </div>
-        </div>
-        <Button
-          icon={<ReloadOutlined />}
-          loading={isFetching || api5xxEventsQuery.isFetching}
-          onClick={() => {
-            refetch();
-            api5xxEventsQuery.refetch();
-          }}
-        >
-          {t('admin_service_status.refresh')}
-        </Button>
-      </div>
-
       {error && (
         <Card className="mb-4">
           <Text type="danger">

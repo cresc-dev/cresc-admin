@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test';
 import {
   aggregateDurations,
   buildEndpointRows,
-  buildServiceStatusSummary,
   estimatePercentile,
   formatBytes,
   formatMs,
@@ -151,16 +150,6 @@ describe('buildEndpointRows', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0].path).toBe('/b');
     expect(rows[1].errorRate).toBe(0.5);
-  });
-});
-
-describe('buildServiceStatusSummary', () => {
-  it('returns placeholders without a snapshot', () => {
-    expect(buildServiceStatusSummary(undefined)).toEqual({
-      delayText: '-',
-      hitText: '-',
-      requestText: '-',
-    });
   });
 });
 

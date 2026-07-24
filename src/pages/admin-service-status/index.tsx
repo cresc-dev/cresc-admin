@@ -24,14 +24,15 @@ export const Component = () => {
         </Title>
         <Text type="secondary">{t('admin_service_status.description')}</Text>
       </div>
-      <CloudRunPanel />
-      <WorkerStatsPanel />
-      <div className="mt-4 min-w-0">
+      <div className="min-w-0">
         <ServiceStatusPanel
           error={metricsQuery.error}
           isFetching={metricsQuery.isFetching}
           snapshot={metricsQuery.data}
-        />
+        >
+          <CloudRunPanel />
+          <WorkerStatsPanel />
+        </ServiceStatusPanel>
       </div>
     </div>
   );

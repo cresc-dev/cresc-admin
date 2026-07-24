@@ -235,10 +235,13 @@ function getApi5xxEventColumns(
 }
 
 export function ServiceStatusPanel({
+  children,
   error,
   isFetching,
   snapshot,
 }: {
+  /** 插在曲线图与端点表之间的区块(部署面板、worker 统计等) */
+  children?: React.ReactNode;
   error: unknown;
   isFetching: boolean;
   snapshot?: InternalMetricsResponse;
@@ -377,6 +380,8 @@ export function ServiceStatusPanel({
             yTitle={t('admin_service_status.y_count')}
           />
         </div>
+
+        {children}
 
         <Card className="mb-4" title={t('admin_service_status.top_api_paths')}>
           <Table

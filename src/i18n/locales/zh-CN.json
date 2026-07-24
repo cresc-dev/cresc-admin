@@ -898,5 +898,13 @@
     "col_artifact": "产物大小",
     "today_patch": "今日 Patch",
     "today_artifact": "今日产物"
+  },
+  "user_analytics": {
+    "title": "用户分析",
+    "today_dau": "今日 DAU(全局)",
+    "col_date": "日期",
+    "col_dau": "DAU",
+    "col_countries": "Top 国家",
+    "col_top_apps": "Top 应用(按 DAU)"
   }
 }

@@ -298,6 +298,13 @@ interface WorkerTaskDaySummary {
   artifactBytes: WorkerStatsDistribution | null;
 }
 
+interface GlobalAnalyticsDay {
+  date: string;
+  dau: number;
+  countries: Record<string, number>;
+  topApps: Array<{ appKey: string; dau: number }>;
+}
+
 interface CloudRunMetricsSnapshot {
   windowMinutes: number;
   fetchedAt: string;

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { CloudRunPanel } from './cloudrun-panel';
 import { ServiceStatusPanel } from './status-panel';
+import { UserAnalyticsPanel } from './user-analytics-panel';
 import { WorkerStatsPanel } from './worker-stats-panel';
 
 const { Text, Title } = Typography;
@@ -30,6 +31,7 @@ export const Component = () => {
           isFetching={metricsQuery.isFetching}
           snapshot={metricsQuery.data}
         >
+          <UserAnalyticsPanel />
           <CloudRunPanel />
           <WorkerStatsPanel />
         </ServiceStatusPanel>

@@ -898,5 +898,13 @@
     "col_artifact": "Artifact size",
     "today_patch": "Patch",
     "today_artifact": "Artifact"
+  },
+  "user_analytics": {
+    "title": "User Analytics",
+    "today_dau": "Today's DAU (global)",
+    "col_date": "Date",
+    "col_dau": "DAU",
+    "col_countries": "Top countries",
+    "col_top_apps": "Top apps (by DAU)"
   }
 }

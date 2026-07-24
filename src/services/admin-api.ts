@@ -121,6 +121,13 @@ export const adminApi = {
       undefined,
       { baseUrl, suppressErrorToast: true },
     ),
+  getAnalyticsOverview: (days = 7) =>
+    request<{ data: GlobalAnalyticsDay[] }>(
+      'get',
+      `/admin/analytics/overview?days=${days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
   getWorkerTaskStats: (days = 7) =>
     request<{ data: WorkerTaskDaySummary[] }>(
       'get',

@@ -72,11 +72,19 @@ export const WorkerStatsPanel = () => {
     },
     {
       align: 'right',
-      dataIndex: 'outputBytes',
+      dataIndex: 'patchBytes',
       render: (dist: WorkerStatsDistribution | null) =>
         distText(dist, formatBytes),
-      title: `${t('worker_stats.col_size')} (avg/p50/p95/max)`,
-      width: 300,
+      title: `${t('worker_stats.col_patch')} (avg/p50/p95/max)`,
+      width: 280,
+    },
+    {
+      align: 'right',
+      dataIndex: 'artifactBytes',
+      render: (dist: WorkerStatsDistribution | null) =>
+        distText(dist, formatBytes),
+      title: `${t('worker_stats.col_artifact')} (avg/p50/p95/max)`,
+      width: 280,
     },
   ];
 
@@ -92,7 +100,7 @@ export const WorkerStatsPanel = () => {
       }
     >
       {today && (
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card size="small">
             <Statistic
               title={t('worker_stats.today_count')}
@@ -122,17 +130,32 @@ export const WorkerStatsPanel = () => {
           </Card>
           <Card size="small">
             <Statistic
-              title={`${t('worker_stats.today_size')} p50 / p95`}
+              title={`${t('worker_stats.today_patch')} p50 / p95`}
               value={
-                today.outputBytes
-                  ? `${formatBytes(today.outputBytes.p50)} / ${formatBytes(today.outputBytes.p95)}`
+                today.patchBytes
+                  ? `${formatBytes(today.patchBytes.p50)} / ${formatBytes(today.patchBytes.p95)}`
                   : '-'
               }
             />
             <Text type="secondary">
-              avg {today.outputBytes ? formatBytes(today.outputBytes.avg) : '-'}{' '}
+              avg {today.patchBytes ? formatBytes(today.patchBytes.avg) : '-'} ·
+              max {today.patchBytes ? formatBytes(today.patchBytes.max) : '-'}
+            </Text>
+          </Card>
+          <Card size="small">
+            <Statistic
+              title={`${t('worker_stats.today_artifact')} p50 / p95`}
+              value={
+                today.artifactBytes
+                  ? `${formatBytes(today.artifactBytes.p50)} / ${formatBytes(today.artifactBytes.p95)}`
+                  : '-'
+              }
+            />
+            <Text type="secondary">
+              avg{' '}
+              {today.artifactBytes ? formatBytes(today.artifactBytes.avg) : '-'}{' '}
               · max{' '}
-              {today.outputBytes ? formatBytes(today.outputBytes.max) : '-'}
+              {today.artifactBytes ? formatBytes(today.artifactBytes.max) : '-'}
             </Text>
           </Card>
         </div>

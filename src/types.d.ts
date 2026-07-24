@@ -294,7 +294,8 @@ interface WorkerTaskDaySummary {
   count: number;
   byResult: Record<string, number>;
   durationMs: WorkerStatsDistribution | null;
-  outputBytes: WorkerStatsDistribution | null;
+  patchBytes: WorkerStatsDistribution | null;
+  artifactBytes: WorkerStatsDistribution | null;
 }
 
 interface CloudRunMetricsSnapshot {

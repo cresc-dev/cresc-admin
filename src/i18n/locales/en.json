@@ -892,9 +892,11 @@
     "col_count": "Tasks",
     "col_by_result": "Results",
     "col_duration": "Duration",
-    "col_size": "Patch size",
     "today_count": "Today's tasks",
     "today_duration": "Duration",
-    "today_size": "Patch size"
+    "col_patch": "Patch size",
+    "col_artifact": "Artifact size",
+    "today_patch": "Patch",
+    "today_artifact": "Artifact"
   }
 }

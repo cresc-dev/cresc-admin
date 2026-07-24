@@ -892,9 +892,9 @@
     "col_count": "任务数",
     "col_by_result": "结果分布",
     "col_duration": "处理耗时",
-    "col_size": "产物大小",
+    "col_size": "Patch 大小",
     "today_count": "今日任务",
     "today_duration": "今日耗时",
-    "today_size": "今日产物大小"
+    "today_size": "今日 Patch 大小"
   }
 }

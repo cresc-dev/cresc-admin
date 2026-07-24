@@ -892,9 +892,9 @@
     "col_count": "Tasks",
     "col_by_result": "Results",
     "col_duration": "Duration",
-    "col_size": "Output size",
+    "col_size": "Patch size",
     "today_count": "Today's tasks",
     "today_duration": "Duration",
-    "today_size": "Output size"
+    "today_size": "Patch size"
   }
 }

@@ -885,5 +885,16 @@
     "metrics_instances": "实例(活跃/总)",
     "metrics_rpm": "请求/分",
     "metrics_5xx": "5xx 比例"
+  },
+  "worker_stats": {
+    "title": "Worker 任务统计",
+    "col_date": "日期",
+    "col_count": "任务数",
+    "col_by_result": "结果分布",
+    "col_duration": "处理耗时",
+    "col_size": "产物大小",
+    "today_count": "今日任务",
+    "today_duration": "今日耗时",
+    "today_size": "今日产物大小"
   }
 }

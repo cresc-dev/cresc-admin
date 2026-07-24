@@ -121,6 +121,13 @@ export const adminApi = {
       undefined,
       { baseUrl, suppressErrorToast: true },
     ),
+  getWorkerTaskStats: (days = 7) =>
+    request<{ data: WorkerTaskDaySummary[] }>(
+      'get',
+      `/admin/system/worker/stats?days=${days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
   getCloudRunMetrics: (baseUrl?: string) =>
     request<{ data: CloudRunMetricsSnapshot }>(
       'get',

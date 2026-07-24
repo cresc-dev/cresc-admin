@@ -885,5 +885,16 @@
     "metrics_instances": "Instances (active/total)",
     "metrics_rpm": "req/min",
     "metrics_5xx": "5xx rate"
+  },
+  "worker_stats": {
+    "title": "Worker Task Stats",
+    "col_date": "Date",
+    "col_count": "Tasks",
+    "col_by_result": "Results",
+    "col_duration": "Duration",
+    "col_size": "Output size",
+    "today_count": "Today's tasks",
+    "today_duration": "Duration",
+    "today_size": "Output size"
   }
 }

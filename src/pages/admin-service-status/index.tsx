@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { CloudRunPanel } from './cloudrun-panel';
 import { ServiceStatusPanel } from './status-panel';
+import { WorkerStatsPanel } from './worker-stats-panel';
 
 const { Text, Title } = Typography;
 
@@ -24,6 +25,7 @@ export const Component = () => {
         <Text type="secondary">{t('admin_service_status.description')}</Text>
       </div>
       <CloudRunPanel />
+      <WorkerStatsPanel />
       <div className="mt-4 min-w-0">
         <ServiceStatusPanel
           error={metricsQuery.error}

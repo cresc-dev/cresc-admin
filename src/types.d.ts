@@ -282,6 +282,21 @@ interface CloudRunServiceMetrics {
   p95LatencyMs: number | null;
 }
 
+interface WorkerStatsDistribution {
+  avg: number;
+  p50: number;
+  p95: number;
+  max: number;
+}
+
+interface WorkerTaskDaySummary {
+  date: string;
+  count: number;
+  byResult: Record<string, number>;
+  durationMs: WorkerStatsDistribution | null;
+  outputBytes: WorkerStatsDistribution | null;
+}
+
 interface CloudRunMetricsSnapshot {
   windowMinutes: number;
   fetchedAt: string;

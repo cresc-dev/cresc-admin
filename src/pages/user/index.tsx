@@ -108,10 +108,6 @@ function UserPanel() {
   ];
   const quotaSizeLimits = [
     {
-      label: t('user.native_package_size'),
-      value: currentQuota.packageSize,
-    },
-    {
       label: t('user.ota_bundle_size'),
       value: currentQuota.bundleSize,
     },

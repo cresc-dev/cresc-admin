@@ -30,7 +30,6 @@ export interface AppDrawerItem {
   appKey?: string | null;
   checkCount?: number;
   downloadUrl?: string | null;
-  ignoreBuildTime?: 'enabled' | 'disabled' | null;
 }
 
 export function useAppWorkspaceList(): {

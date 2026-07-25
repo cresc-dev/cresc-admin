@@ -16,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { useDeleteApp, useUpdateApp } from '@/services/mutations';
-import { useUserInfo } from '@/utils/hooks';
 
 export interface AppSettingsTarget {
   id: number;
@@ -24,12 +23,11 @@ export interface AppSettingsTarget {
   appKey?: string | null;
   downloadUrl?: string | null;
   status?: string | null;
-  ignoreBuildTime?: 'enabled' | 'disabled' | null;
 }
 
 type AppSettingsFormValues = Pick<
   App,
-  'appKey' | 'downloadUrl' | 'ignoreBuildTime' | 'name' | 'status'
+  'appKey' | 'downloadUrl' | 'name' | 'status'
 >;
 
 export function useAppSettingsModal() {
@@ -60,7 +58,6 @@ export function useAppSettingsModal() {
               name: values.name,
               downloadUrl: values.downloadUrl,
               status: values.status,
-              ignoreBuildTime: values.ignoreBuildTime,
             },
           });
         } catch (error) {
@@ -85,14 +82,12 @@ function AppSettingsModalContent({
   initialApp: AppSettingsTarget;
 }) {
   const { t } = useTranslation();
-  const { user } = useUserInfo();
   const deleteApp = useDeleteApp();
   const { data: app, isLoading } = useQuery({
     queryKey: ['app', appId],
     queryFn: () => api.getApp(appId),
   });
   const appKey = Form.useWatch('appKey', form) as string;
-  const ignoreBuildTime = Form.useWatch('ignoreBuildTime', form) as string;
 
   useEffect(() => {
     if (app) {
@@ -149,22 +144,6 @@ function AppSettingsModalContent({
             unCheckedChildren={t('app_settings_modal.paused')}
           />
         </Form.Item>
-        <Form.Item
-          layout="vertical"
-          label={t('app_settings_modal.ignore_timestamp')}
-          name="ignoreBuildTime"
-          normalize={(value) => (value ? 'enabled' : 'disabled')}
-          getValueProps={(value) => ({ value: value === 'enabled' })}
-        >
-          <Switch
-            disabled={
-              (user?.tier === 'free' || user?.tier === 'standard') &&
-              ignoreBuildTime !== 'enabled'
-            }
-            checkedChildren={t('app_settings_modal.enabled')}
-            unCheckedChildren={t('app_settings_modal.disabled')}
-          />
-        </Form.Item>
         <Form.Item label={t('app_settings_modal.delete_app')} layout="vertical">
           <Button
             type="primary"
@@ -195,7 +174,6 @@ function normalizeAppSettings(app: AppSettingsTarget): AppSettingsFormValues {
   return {
     appKey: app.appKey ?? undefined,
     downloadUrl: app.downloadUrl ?? undefined,
-    ignoreBuildTime: app.ignoreBuildTime ?? undefined,
     name: app.name ?? '',
     status: app.status === 'paused' ? 'paused' : 'normal',
   };

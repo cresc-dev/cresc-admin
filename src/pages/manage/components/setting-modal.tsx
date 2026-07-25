@@ -5,17 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { DangerousConfirmModal } from '@/components/dangerous-confirm-modal';
 import { rootRouterPath, router } from '@/router';
 import { useDeleteApp } from '@/services/mutations';
-import { useUserInfo } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 
 const SettingModal = () => {
   const { t } = useTranslation();
-  const { user } = useUserInfo();
   const { appId } = useManageContext();
   const deleteApp = useDeleteApp();
   const appKey = Form.useWatch('appKey') as string;
   const appName = Form.useWatch('name') as string;
-  const ignoreBuildTime = Form.useWatch('ignoreBuildTime') as string;
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // 优先使用 appName，如尚未设定或加载中时使用稳定的 appKey 作为二次确认识别串
@@ -63,22 +60,6 @@ const SettingModal = () => {
         <Switch
           checkedChildren={t('setting_modal.enabled')}
           unCheckedChildren={t('setting_modal.paused')}
-        />
-      </Form.Item>
-      <Form.Item
-        layout="vertical"
-        label={t('setting_modal.ignore_timestamp')}
-        name="ignoreBuildTime"
-        normalize={(value) => (value ? 'enabled' : 'disabled')}
-        getValueProps={(value) => ({ value: value === 'enabled' })}
-      >
-        <Switch
-          disabled={
-            (user?.tier === 'free' || user?.tier === 'standard') &&
-            ignoreBuildTime !== 'enabled'
-          }
-          checkedChildren={t('setting_modal.enabled')}
-          unCheckedChildren={t('setting_modal.disabled')}
         />
       </Form.Item>
       <Form.Item label={t('setting_modal.delete_app')} layout="vertical">

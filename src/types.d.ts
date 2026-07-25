@@ -33,7 +33,6 @@ interface Quota {
   title?: string;
   app: number;
   package: number;
-  packageSize: string;
   bundle: number;
   bundleSize: string;
   pv: number;
@@ -80,7 +79,6 @@ interface AdminApp {
   checkCount?: number;
   downloadUrl: string | null;
   status: string | null;
-  ignoreBuildTime: 'enabled' | 'disabled' | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -125,7 +123,6 @@ interface App {
   name: string;
   platform: 'android' | 'ios' | 'harmony';
   status?: 'normal' | 'paused' | null;
-  ignoreBuildTime?: 'enabled' | 'disabled';
   checkCount?: number;
   downloadUrl?: string;
   appKey?: string;

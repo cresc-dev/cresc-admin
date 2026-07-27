@@ -8,7 +8,9 @@
     "preview": "rsbuild preview",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "bun test",
-    "lint": "tsc --noEmit -p tsconfig.json && biome check --write ."
+    "lint": "biome check .",
+    "lint:fix": "tsc --noEmit -p tsconfig.json && biome check --write .",
+    "ci": "bun run typecheck && bun run lint && bun run test"
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",

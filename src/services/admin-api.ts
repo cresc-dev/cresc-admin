@@ -105,7 +105,6 @@ export const adminApi = {
             hash: string;
             status: string;
             buildTime: string | null;
-            buildNumber: string | null;
             note: string | null;
             createdAt: string;
             updatedAt: string;

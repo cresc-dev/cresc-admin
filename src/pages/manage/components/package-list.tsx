@@ -17,6 +17,7 @@ import {
   Row,
   Select,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { type Dispatch, type SetStateAction, useMemo, useState } from 'react';
@@ -361,7 +362,20 @@ const Item = ({
                   {t('package_list.note_prefix')} {item.note}
                 </Typography.Paragraph>
               )}
-              {t('package_list.build_time')} {item.buildTime}
+              {/* content identity (new-CLI uploads only) wins over build time:
+                  it is the precise binary identity; old packages fall back */}
+              {item.bundleHash ? (
+                <>
+                  {t('package_list.bundle_hash')}{' '}
+                  <Tooltip title={item.bundleHash}>
+                    <code>{item.bundleHash.slice(0, 16)}…</code>
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  {t('package_list.build_time')} {item.buildTime}
+                </>
+              )}
             </>
           }
         />

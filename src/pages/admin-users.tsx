@@ -420,7 +420,7 @@ const UserDetailDrawer = ({
                             title: 'Build',
                             key: 'build',
                             render: (_, r) =>
-                              `${r.buildNumber || '-'}(${r.buildTime || '-'})`,
+                              r.buildTime || '-',
                           },
                           {
                             title: translate(

@@ -137,7 +137,8 @@ interface PackageBase {
 
 interface Package extends PackageBase {
   buildTime?: string;
-  buildNumber?: string;
+  /** sha256 of the embedded JS bundle (new-CLI uploads only); shown instead of buildTime when present */
+  bundleHash?: string;
   deps?: Record<string, string>;
   commit?: Commit;
   hash: string;

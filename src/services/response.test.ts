@@ -1,12 +1,18 @@
 import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+// Load the real antd namespace BEFORE overriding the registry: bun's
+// mock.module leaks across test files, and test discovery order differs
+// between macOS and Linux — a partial antd mock ran first on CI and broke
+// every later `import { Alert } from 'antd'` with "Export named ... not
+// found". Spreading the real module keeps the leak harmless.
+import * as antd from 'antd';
 import type { RequestError as RequestErrorInstance } from './response';
 
 const mockMessageError = mock(() => {});
 const mockLogout = mock(() => {});
 
-// Register the mocks before `./response` is loaded (dynamic import below), so
-// the real antd/auth module graphs (DOM, router, localStorage) never load.
+// Register the mocks before `./response` is loaded (dynamic import below).
 mock.module('antd', () => ({
+  ...antd,
   message: { error: mockMessageError },
 }));
 mock.module('./auth', () => ({

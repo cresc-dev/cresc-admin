@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
+        with:
+          # bun 1.3.14 (current stable) deterministically fails to load antd's
+          # CJS entry in tests here (Export named 'Alert' not found in
+          # antd/lib/index.js) while 1.4.0 canary is verified green; the same
+          # canary channel is already used for cresc-server builds.
+          bun-version: canary
 
       - name: Install
         run: bun install --frozen-lockfile

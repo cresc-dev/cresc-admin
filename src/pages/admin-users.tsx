@@ -419,8 +419,7 @@ const UserDetailDrawer = ({
                           {
                             title: 'Build',
                             key: 'build',
-                            render: (_, r) =>
-                              r.buildTime || '-',
+                            render: (_, r) => r.buildTime || '-',
                           },
                           {
                             title: translate(

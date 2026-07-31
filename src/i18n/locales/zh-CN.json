@@ -357,7 +357,10 @@
     "category_count": "分类计数",
     "current_dimension": "当前维度：",
     "no_top_data": "暂无前 10 数据",
-    "no_data_available": "暂无数据"
+    "no_data_available": "暂无数据",
+    "bundle_status": "内容判定",
+    "bundle_status_matched": "内容一致 (matched)",
+    "bundle_status_unknownBundle": "未注册二进制 (unknownBundle)"
   },
   "admin_metrics": {
     "mode_requests": "请求",

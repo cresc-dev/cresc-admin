@@ -357,10 +357,7 @@
     "category_count": "Category Count",
     "current_dimension": "Current Dimension:",
     "no_top_data": "No top 10 data",
-    "no_data_available": "No data available",
-    "bundle_status": "Content verdict",
-    "bundle_status_matched": "Matched",
-    "bundle_status_unknownBundle": "Unknown bundle"
+    "no_data_available": "No data available"
   },
   "admin_metrics": {
     "mode_requests": "Requests",

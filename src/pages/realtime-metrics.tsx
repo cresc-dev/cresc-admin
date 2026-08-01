@@ -26,7 +26,7 @@ interface ChartDataPoint {
   sharePercent?: number;
 }
 
-type MetricAttribute = 'hash' | 'packageVersion_buildTime' | 'bundleStatus';
+type MetricAttribute = 'hash' | 'packageVersion_buildTime';
 
 interface FormattedCategory {
   label: string;
@@ -73,14 +73,16 @@ const formatCategory = (
         isTotal: false,
       };
     }
-    if (key === 'bundleStatus') {
-      // Content-identity verdict (data appears once bundleHashJudge is on);
-      // translate the enum values directly.
+    if (key === 'packageVersion_bundleHash') {
+      // The content-fingerprint composite shares the "native package" panel
+      // with the buildTime composite (new clients report the fingerprint
+      // instead); truncate the 64-hex tail for legend readability.
       return {
-        label: t(`realtime_metrics.bundle_status_${value}`, {
-          defaultValue: value,
-        }),
-        attribute: 'bundleStatus',
+        label: `${t('realtime_metrics.package_prefix')} ${value.replace(
+          /([0-9a-f]{64})$/,
+          (h) => `${h.slice(0, 8)}…`,
+        )}`,
+        attribute: 'packageVersion_buildTime',
         isTotal: false,
       };
     }
@@ -108,10 +110,6 @@ const getAttributeOptions = (t: (key: string) => string) => [
   {
     label: t('realtime_metrics.package'),
     value: 'packageVersion_buildTime' as const,
-  },
-  {
-    label: t('realtime_metrics.bundle_status'),
-    value: 'bundleStatus' as const,
   },
 ];
 
@@ -159,9 +157,8 @@ export const Component = () => {
   } = useAppWorkspaceList();
   const urlAppKey = searchParams.get('appKey') || undefined;
   const selectedAttribute: MetricAttribute =
-    searchParams.get('attribute') === 'packageVersion_buildTime' ||
-    searchParams.get('attribute') === 'bundleStatus'
-      ? (searchParams.get('attribute') as MetricAttribute)
+    searchParams.get('attribute') === 'packageVersion_buildTime'
+      ? 'packageVersion_buildTime'
       : 'hash';
 
   const attributeOptions = getAttributeOptions(t);

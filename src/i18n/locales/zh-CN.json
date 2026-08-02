@@ -707,6 +707,8 @@
     "status_expired": "已过期",
     "mismatch_title": "检测到时间戳不匹配：",
     "mismatch_desc": "更新仍可发布。不匹配意味着同一原生包版本在多个原生构建中运行，客户端可能从不同的嵌入 bundle 启动。这会降低 diff 复用率，可能迫使更大的全 bundle 下载或额外的 diff 生成，增加延迟和带宽。",
+    "hash_mismatch_title": "检测到内容指纹不匹配：",
+    "hash_mismatch_desc": "部分客户端上报的内容指纹与后台记录的不一致，通常意味着重新构建的原生包未上传到后台。这些客户端从不同的嵌入 bundle 启动：diff 复用率会下降，可能回退为更大的全量包下载——请为对应的构建上传新的原生包。",
     "view_realtime": "点击此处查看实时数据",
     "note_prefix": "注意：",
     "build_time": "构建时间：",

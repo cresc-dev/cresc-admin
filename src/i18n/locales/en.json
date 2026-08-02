@@ -707,6 +707,8 @@
     "status_expired": "Expired",
     "mismatch_title": "Detected mismatched timestamps:",
     "mismatch_desc": "Updates can still be delivered. A mismatch means the same native package version is running from multiple native builds, so clients may start from different embedded bundles. That lowers diff reuse and can force larger full-bundle downloads or extra diff generation, increasing latency and bandwidth.",
+    "hash_mismatch_title": "Detected mismatched bundle hashes:",
+    "hash_mismatch_desc": "Some clients report a bundle hash different from the one recorded for this native package, which usually means a rebuilt binary was shipped without uploading a new native package. Those clients start from a different embedded bundle: diff reuse drops and they may fall back to larger full-bundle downloads — upload the native package for those builds.",
     "view_realtime": "Click here to view real-time data",
     "note_prefix": "Note:",
     "build_time": "Build time:",

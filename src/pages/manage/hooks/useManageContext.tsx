@@ -6,10 +6,11 @@ import {
   useState,
 } from 'react';
 import {
+  type PackageMetricWarnings,
   useBinding,
   useDiffStatus,
+  usePackageMetricWarnings,
   usePackages,
-  usePackageTimestampWarnings,
 } from '@/utils/hooks';
 
 const noop = () => {};
@@ -24,7 +25,7 @@ export const defaultManageContext = {
   unusedPackages: [],
   bindings: [],
   packageMap: new Map(),
-  packageTimestampWarnings: new Map(),
+  packageMetricWarnings: new Map(),
   diffStatusByVersion: new Map(),
 };
 
@@ -39,8 +40,8 @@ export const ManageContext = createContext<{
   packageMap: Map<number, Package>;
   bindings: Binding[];
   bindingsLoading?: boolean;
-  packageTimestampWarnings: Map<number, string[]>;
-  packageTimestampWarningsLoading?: boolean;
+  packageMetricWarnings: Map<number, PackageMetricWarnings>;
+  packageMetricWarningsLoading?: boolean;
   diffStatusByVersion: Map<number, VersionDiffSummary>;
 }>(defaultManageContext);
 
@@ -83,14 +84,12 @@ export const ManageProvider = ({
       (pkg) => !hasLegacyVersionBinding(pkg) && !boundPackageIds.has(pkg.id),
     );
   }, [bindings, bindingsLoading, packages]);
-  const {
-    packageTimestampWarnings,
-    isLoading: packageTimestampWarningsLoading,
-  } = usePackageTimestampWarnings({
-    appId,
-    app,
-    packages,
-  });
+  const { packageMetricWarnings, isLoading: packageMetricWarningsLoading } =
+    usePackageMetricWarnings({
+      appId,
+      app,
+      packages,
+    });
 
   const { diffStatusByVersion } = useDiffStatus({
     appId,
@@ -112,8 +111,8 @@ export const ManageProvider = ({
       packagesLoading,
       bindings,
       bindingsLoading,
-      packageTimestampWarnings,
-      packageTimestampWarningsLoading,
+      packageMetricWarnings,
+      packageMetricWarningsLoading,
       diffStatusByVersion,
     }),
     [
@@ -126,8 +125,8 @@ export const ManageProvider = ({
       packageMap,
       packages,
       packagesLoading,
-      packageTimestampWarnings,
-      packageTimestampWarningsLoading,
+      packageMetricWarnings,
+      packageMetricWarningsLoading,
       unusedPackages,
     ],
   );

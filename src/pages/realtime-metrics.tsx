@@ -346,15 +346,24 @@ export const Component = () => {
     );
   }, [selectedAttribute, attributeOptions]);
 
-  // 入口链接标记的类别（原生包时间戳告警的跳转）强制加入默认图例，
-  // 不受 Top 10 截断影响——它们通常量很小,否则点进来什么都看不到
+  // Categories flagged by the entry link (native-package timestamp/hash
+  // warnings) are pinned into the default legend regardless of the Top 10
+  // cutoff — they are usually low-volume and would otherwise be hidden
   const focusLabels = useMemo(() => {
     const focusParam = searchParams.get('focus') ?? '';
     return focusParam
       .split(',')
       .map((value) => value.trim())
       .filter(Boolean)
-      .map((value) => `${t('realtime_metrics.package_prefix')} ${value}`);
+      .map(
+        (value) =>
+          // hash-warning focus values carry the full 64-hex fingerprint;
+          // apply the same truncation as the legend labels so they match
+          `${t('realtime_metrics.package_prefix')} ${value.replace(
+            /([0-9a-f]{64})$/,
+            (h) => `${h.slice(0, 8)}…`,
+          )}`,
+      );
   }, [searchParams, t]);
 
   const defaultLegendValues = useMemo(() => {

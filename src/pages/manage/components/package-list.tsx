@@ -30,7 +30,10 @@ import {
   useDeletePackages,
   useUpdatePackage,
 } from '@/services/mutations';
-import { useWorkspacePermissions } from '@/utils/hooks';
+import {
+  type PackageMetricWarnings,
+  useWorkspacePermissions,
+} from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import { Commit } from './commit';
 import { DepsTable } from './deps-table';
@@ -47,7 +50,7 @@ const PackageList = ({
   setSelectedPackageIds: Dispatch<SetStateAction<number[]>>;
 }) => {
   const { t } = useTranslation();
-  const { app, appId, packageTimestampWarnings } = useManageContext();
+  const { app, appId, packageMetricWarnings } = useManageContext();
   const { canPublish } = useWorkspacePermissions();
   const deletePackages = useDeletePackages();
   const selectedPackageIdSet = useMemo(
@@ -59,12 +62,23 @@ const PackageList = ({
     [dataSource, selectedPackageIdSet],
   );
   const hasSelectedVisiblePackages = selectedPackages.length > 0;
-  const realtimeMetricsPath = app?.appKey
-    ? `${rootRouterPath.realtimeMetrics}?${new URLSearchParams({
-        appKey: app.appKey,
-        attribute: 'packageVersion_buildTime',
-      }).toString()}`
-    : undefined;
+  // carry the warning window (7 days) and the flagged timestamps/hashes so
+  // the realtime page can pin those categories into the default legend
+  // (the Top 10 cutoff would otherwise hide low-volume categories)
+  const buildRealtimeMetricsPath = (
+    item: Package,
+    warnings: PackageMetricWarnings,
+  ) =>
+    app?.appKey
+      ? `${rootRouterPath.realtimeMetrics}?${new URLSearchParams({
+          appKey: app.appKey,
+          attribute: 'packageVersion_buildTime',
+          range: '7d',
+          focus: [...warnings.timestamps, ...warnings.hashes]
+            .map((value) => `${item.name}_${value}`)
+            .join(','),
+        }).toString()}`
+      : undefined;
 
   const togglePackageSelection = (packageId: number, checked: boolean) => {
     setSelectedPackageIds((prev) => {
@@ -109,17 +123,21 @@ const PackageList = ({
           </div>
         ) : undefined
       }
-      renderItem={(item) => (
-        <Item
-          item={item}
-          selected={selectedPackageIdSet.has(item.id)}
-          onSelectedChange={(checked) =>
-            togglePackageSelection(item.id, checked)
-          }
-          warningTimestamps={packageTimestampWarnings.get(item.id) ?? []}
-          realtimeMetricsPath={realtimeMetricsPath}
-        />
-      )}
+      renderItem={(item) => {
+        const warnings =
+          packageMetricWarnings.get(item.id) ?? EMPTY_METRIC_WARNINGS;
+        return (
+          <Item
+            item={item}
+            selected={selectedPackageIdSet.has(item.id)}
+            onSelectedChange={(checked) =>
+              togglePackageSelection(item.id, checked)
+            }
+            warnings={warnings}
+            realtimeMetricsPath={buildRealtimeMetricsPath(item, warnings)}
+          />
+        );
+      }}
     />
   );
 };
@@ -249,11 +267,16 @@ const EditPackageModal = ({
   );
 };
 
-const TimestampWarning = ({
-  warningTimestamps,
+const EMPTY_METRIC_WARNINGS: PackageMetricWarnings = {
+  timestamps: [],
+  hashes: [],
+};
+
+const MetricWarning = ({
+  warnings,
   realtimeMetricsPath,
 }: {
-  warningTimestamps: string[];
+  warnings: PackageMetricWarnings;
   realtimeMetricsPath: string;
 }) => {
   const { t } = useTranslation();
@@ -262,13 +285,32 @@ const TimestampWarning = ({
       trigger="hover"
       content={
         <div className="max-w-72 text-xs leading-5">
-          <div>{t('package_list.mismatch_title')}</div>
-          <div className="mt-1 break-all text-gray-700">
-            {warningTimestamps.map((timestamp) => (
-              <div key={timestamp}>{timestamp}</div>
-            ))}
-          </div>
-          <div className="mt-2">{t('package_list.mismatch_desc')}</div>
+          {warnings.timestamps.length > 0 && (
+            <div>
+              <div>{t('package_list.mismatch_title')}</div>
+              <div className="mt-1 break-all text-gray-700">
+                {warnings.timestamps.map((timestamp) => (
+                  <div key={timestamp}>{timestamp}</div>
+                ))}
+              </div>
+              <div className="mt-2">{t('package_list.mismatch_desc')}</div>
+            </div>
+          )}
+          {warnings.hashes.length > 0 && (
+            <div className={warnings.timestamps.length > 0 ? 'mt-3' : ''}>
+              <div>{t('package_list.hash_mismatch_title')}</div>
+              <div className="mt-1 break-all text-gray-700">
+                {warnings.hashes.map((hash) => (
+                  <div key={hash}>
+                    <code>
+                      {hash.length > 16 ? `${hash.slice(0, 16)}…` : hash}
+                    </code>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2">{t('package_list.hash_mismatch_desc')}</div>
+            </div>
+          )}
           <div className="mt-1">
             <Link to={realtimeMetricsPath}>
               {t('package_list.view_realtime')}
@@ -288,13 +330,13 @@ const Item = ({
   item,
   selected,
   onSelectedChange,
-  warningTimestamps,
+  warnings,
   realtimeMetricsPath,
 }: {
   item: Package;
   selected: boolean;
   onSelectedChange: (checked: boolean) => void;
-  warningTimestamps: string[];
+  warnings: PackageMetricWarnings;
   realtimeMetricsPath?: string;
 }) => {
   const { t } = useTranslation();
@@ -302,7 +344,8 @@ const Item = ({
   const { canPublish } = useWorkspacePermissions();
   const deletePackage = useDeletePackage();
   const [editing, setEditing] = useState(false);
-  const hasTimestampWarning = warningTimestamps.length > 0;
+  const hasMetricWarning =
+    warnings.timestamps.length > 0 || warnings.hashes.length > 0;
   return (
     // const [_, drag] = useDrag(() => ({ item, type: "package" }));
     <div className="bg-container my-0 [&_li]:!px-0">
@@ -319,9 +362,9 @@ const Item = ({
               <Col flex="auto" className="min-w-0">
                 <div className="flex flex-wrap items-center">
                   <span>{item.name}</span>
-                  {hasTimestampWarning && realtimeMetricsPath && (
-                    <TimestampWarning
-                      warningTimestamps={warningTimestamps}
+                  {hasMetricWarning && realtimeMetricsPath && (
+                    <MetricWarning
+                      warnings={warnings}
                       realtimeMetricsPath={realtimeMetricsPath}
                     />
                   )}

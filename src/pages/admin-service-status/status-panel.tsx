@@ -1,5 +1,5 @@
 import { Line } from '@ant-design/charts';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card, Empty, Spin, Statistic, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -258,6 +258,7 @@ export function ServiceStatusPanel({
       }),
     queryKey: ['internalApi5xxEvents', api5xxEventOffset],
     refetchInterval: 30_000,
+    placeholderData: keepPreviousData,
   });
   const apiDuration = useMemo(
     () =>

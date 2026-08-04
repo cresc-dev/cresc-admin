@@ -99,19 +99,22 @@ export const adminApi = {
         AdminApp & {
           checkCount: number;
           packagesCount: number;
-          packages: Array<{
-            id: number;
-            name: string;
-            hash: string;
-            status: string;
-            buildTime: string | null;
-            note: string | null;
-            createdAt: string;
-            updatedAt: string;
-          }>;
         }
       >;
     }>('get', `/admin/users/${id}`),
+  getAppPackages: (appId: number) =>
+    request<{
+      data: Array<{
+        id: number;
+        name: string;
+        hash: string;
+        status: string;
+        buildTime: string | null;
+        note: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+    }>('get', `/admin/apps/${appId}/packages`),
   // Cloud Run 运维(仅 GCP 部署形态;非 GCP 后端返回 503,前端据此隐藏面板)
   getCloudRunStatus: (baseUrl?: string) =>
     request<{ data: CloudRunServiceStatus[] }>(

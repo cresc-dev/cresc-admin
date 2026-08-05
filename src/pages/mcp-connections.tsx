@@ -62,7 +62,11 @@ function McpConnectionsPage() {
   const [apiBase, setApiBase] = useState('');
   useEffect(() => {
     let cancelled = false;
-    resolveApiBaseUrl().then((base) => {
+    // Custom endpoint wins; reading it here also makes the dependency real
+    const resolving = customBaseUrl
+      ? Promise.resolve(customBaseUrl)
+      : resolveApiBaseUrl();
+    resolving.then((base) => {
       if (!cancelled) {
         setApiBase(base);
       }

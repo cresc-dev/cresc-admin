@@ -41,6 +41,15 @@ const getBaseUrl = FEATURES.versionHealthMock
       return baseUrl;
     });
 
+/**
+ * The API base URL this session actually talks to (custom endpoint first,
+ * otherwise the probed one). Display-only pages such as the MCP endpoint must
+ * follow the same address instead of hard-coding one.
+ */
+export async function resolveApiBaseUrl(): Promise<string> {
+  return getCustomBaseUrl() ?? (await getBaseUrl);
+}
+
 export default async function request<T extends Record<any, any>>(
   method: HttpMethod,
   path: string,

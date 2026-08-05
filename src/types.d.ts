@@ -96,6 +96,24 @@ interface AdminVersion {
   createdAt?: string;
 }
 
+interface McpToken {
+  id: number;
+  name: string;
+  clientId: string;
+  /** Only present in the creation response */
+  token?: string;
+  tokenSuffix: string;
+  scopes: string[];
+  appIds?: number[] | null;
+  createdBy?: number | null;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  isExpired: boolean;
+  isRevoked: boolean;
+}
+
 interface ApiToken {
   id: number;
   name: string;

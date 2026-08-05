@@ -32,6 +32,7 @@ export const rootRouterPath = {
   adminMetrics: '/admin-metrics',
   adminServiceStatus: '/admin-service-status',
   apiTokens: '/api-tokens',
+  mcpConnections: '/mcp-connections',
   members: '/members',
 };
 
@@ -182,6 +183,11 @@ export const router = createHashRouter([
         path: 'api-tokens',
         loader: needAuthLoader,
         lazy: () => import('./pages/api-tokens'),
+      },
+      {
+        path: 'mcp-connections',
+        loader: needAuthLoader,
+        lazy: () => import('./pages/mcp-connections'),
       },
     ],
   },

@@ -30,18 +30,9 @@ import { resolveApiBaseUrl } from '@/services/request';
 import { useCustomBaseUrl } from '@/utils/endpoint';
 import { appKeys, mcpTokenKeys } from '@/utils/query-keys';
 
-// Mirrors the server's ALL_MCP_SCOPES. The second batch (audit/nodes) needs
-// elevated permissions and is re-checked server side; this list only offers
-// the choices.
-const MCP_SCOPES = [
-  'pushy:apps:read',
-  'pushy:diagnose',
-  'pushy:health:read',
-  'pushy:metrics:read',
-  'pushy:quota:read',
-  'pushy:audit:read',
-  'pushy:nodes:read',
-] as const;
+// Only the scopes backed by a shipped tool. The server's ALL_MCP_SCOPES is
+// wider; add entries here as new tools land.
+const MCP_SCOPES = ['pushy:apps:read', 'pushy:diagnose'] as const;
 
 const DEFAULT_SCOPES = ['pushy:apps:read', 'pushy:diagnose'];
 // The server caps this at 365 days and defaults to 90 when omitted

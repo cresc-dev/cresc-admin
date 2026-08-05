@@ -271,7 +271,7 @@
     "n_apps": "{{count}} app(s)"
   },
   "mcp": {
-    "title": "External agents / MCP",
+    "title": "MCP Server",
     "description": "Connect Pushy's read-only diagnostics to your own AI client.",
     "docs_link": "Read the guide",
     "create_token": "Create MCP token",
@@ -632,7 +632,7 @@
     "expand_app_list": "Expand app list",
     "collapse_app_list": "Collapse app list",
     "members": "Team",
-    "mcp_connections": "External agents / MCP"
+    "mcp_connections": "MCP Server"
   },
   "app_drawer": {
     "expand": "Expand app list",

@@ -183,6 +183,9 @@ export function getSelectedKeys(pathname: string) {
   if (pathname === rootRouterPath.apiTokens) {
     return ['api-tokens'];
   }
+  if (pathname === rootRouterPath.mcpConnections) {
+    return ['mcp-connections'];
+  }
   if (pathname === rootRouterPath.members) {
     return ['members'];
   }

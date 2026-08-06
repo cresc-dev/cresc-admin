@@ -411,7 +411,11 @@
     "category_count": "分类计数",
     "current_dimension": "当前维度：",
     "no_top_data": "暂无前 10 数据",
-    "no_data_available": "暂无数据"
+    "no_data_available": "暂无数据",
+    "current_dimension_label": "当前维度：{{dimension}}",
+    "no_data": "暂无数据",
+    "tooltip_count": "{{count}} 次",
+    "tooltip_count_percent": "{{count}} 次（{{percent}}%）"
   },
   "admin_metrics": {
     "mode_requests": "请求",
@@ -449,7 +453,8 @@
     "cancel": "取消",
     "save": "保存",
     "key_required": "请输入配置键",
-    "key_placeholder": "配置键"
+    "key_placeholder": "配置键",
+    "invalid_json": "请输入有效的 JSON 格式"
   },
   "admin_service_status": {
     "counter_5xx": "5xx",
@@ -830,7 +835,8 @@
     "yes": "是",
     "no": "否",
     "loading": "加载中...",
-    "copied": "已复制"
+    "copied": "已复制",
+    "none": "无"
   },
   "workspace": {
     "own_account": "我的账户",

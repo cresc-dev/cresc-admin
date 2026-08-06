@@ -16,7 +16,7 @@ import {
   Table,
 } from 'antd';
 import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   useDeleteBinding,
   useUpdatePackage,
@@ -273,7 +273,12 @@ const DepsChangeConfirmContent = ({
         className="mt-3"
         showIcon
         type="warning"
-        message={<span>{t('bind_package.native_warning')}</span>}
+        message={
+          <Trans
+            i18nKey="bind_package.native_warning"
+            components={{ strong: <strong /> }}
+          />
+        }
       />
       <Table<DepChangeRow>
         className="mt-3"

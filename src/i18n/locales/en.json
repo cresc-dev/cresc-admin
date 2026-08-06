@@ -411,7 +411,11 @@
     "category_count": "Category Count",
     "current_dimension": "Current Dimension:",
     "no_top_data": "No top 10 data",
-    "no_data_available": "No data available"
+    "no_data_available": "No data available",
+    "current_dimension_label": "Current dimension: {{dimension}}",
+    "no_data": "No data available",
+    "tooltip_count": "{{count}} checks",
+    "tooltip_count_percent": "{{count}} checks ({{percent}}%)"
   },
   "admin_metrics": {
     "mode_requests": "Requests",
@@ -449,7 +453,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "key_required": "Please enter a config key",
-    "key_placeholder": "Config key"
+    "key_placeholder": "Config key",
+    "invalid_json": "Please enter valid JSON"
   },
   "admin_service_status": {
     "counter_5xx": "5xx",
@@ -830,7 +835,8 @@
     "yes": "Yes",
     "no": "No",
     "loading": "Loading...",
-    "copied": "Copied"
+    "copied": "Copied",
+    "none": "None"
   },
   "workspace": {
     "own_account": "My Account",

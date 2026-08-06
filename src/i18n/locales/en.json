@@ -609,6 +609,7 @@
     "service_status": "Service Status",
     "audit_logs": "Audit Logs",
     "realtime_metrics": "Real-time Metrics",
+    "automation": "Automation",
     "api_tokens": "API Keys",
     "admin": "Admin",
     "dynamic_config": "Dynamic Config",

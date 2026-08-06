@@ -609,6 +609,7 @@
     "service_status": "服务状态",
     "audit_logs": "审计日志",
     "realtime_metrics": "实时指标",
+    "automation": "自动化",
     "api_tokens": "API Key",
     "admin": "管理员",
     "dynamic_config": "动态配置",

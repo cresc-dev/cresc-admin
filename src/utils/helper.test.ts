@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test';
-import { testUrls } from './helper';
+import {
+  getFatalDepsViolation,
+  packageSupportsForceBoot,
+  parseDepVersion,
+  testUrls,
+} from './helper';
 
 // ─── testUrls (hedged endpoint race) ────────────────────────────────
 
@@ -87,5 +92,48 @@ describe('testUrls', () => {
 
     const result = await testUrls(['https://a/status', 'https://b/status'], 0);
     expect(result).toBe('https://a/status');
+  });
+});
+
+describe('binding deps helpers', () => {
+  test('parseDepVersion tolerates range prefixes and rejects garbage', () => {
+    expect(parseDepVersion('0.73.2')).toEqual([0, 73, 2]);
+    expect(parseDepVersion('^10.51.0')).toEqual([10, 51, 0]);
+    expect(parseDepVersion('workspace:*')).toBeNull();
+    expect(parseDepVersion(undefined)).toBeNull();
+  });
+
+  test('getFatalDepsViolation enforces the two hard rules only', () => {
+    expect(
+      getFatalDepsViolation(
+        { 'react-native': '0.73.2' },
+        { 'react-native': '0.74.0' },
+      ),
+    ).toBe('rn_mismatch');
+    expect(
+      getFatalDepsViolation(
+        { 'react-native-update': '10.51.0' },
+        { 'react-native-update': '10.50.0' },
+      ),
+    ).toBe('rnu_downgrade');
+    expect(
+      getFatalDepsViolation(
+        { 'react-native': '0.73.2', 'react-native-update': '10.51.0' },
+        { 'react-native': '~0.73.2', 'react-native-update': '10.52.0' },
+      ),
+    ).toBeNull();
+    expect(
+      getFatalDepsViolation(undefined, { 'react-native': '1.0.0' }),
+    ).toBeNull();
+  });
+
+  test('packageSupportsForceBoot gates on rnu >= 10.51.0', () => {
+    expect(packageSupportsForceBoot({ 'react-native-update': '10.51.0' })).toBe(
+      true,
+    );
+    expect(packageSupportsForceBoot({ 'react-native-update': '10.50.9' })).toBe(
+      false,
+    );
+    expect(packageSupportsForceBoot(undefined)).toBe(false);
   });
 });

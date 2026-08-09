@@ -254,3 +254,64 @@ export const rememberRecentApp = (appId: number) => {
   window.localStorage.setItem(RECENT_APP_STORAGE_KEY, JSON.stringify(next));
   return next;
 };
+
+// ---- Binding dependency checks (the server is authoritative; this
+// pre-check fails early with readable reasons) ----
+
+/** Tolerates range prefixes (^ ~ >=); takes the first x.y.z; null on failure. */
+export function parseDepVersion(raw?: string): [number, number, number] | null {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const matched = raw.match(/(\d+)\.(\d+)\.(\d+)/);
+  if (!matched) {
+    return null;
+  }
+  return [Number(matched[1]), Number(matched[2]), Number(matched[3])];
+}
+
+export function compareDepVersions(
+  a: [number, number, number],
+  b: [number, number, number],
+) {
+  for (let i = 0; i < 3; i++) {
+    if (a[i] !== b[i]) {
+      return a[i] - b[i];
+    }
+  }
+  return 0;
+}
+
+/**
+ * Hard binding rules (mirrors the server's bindingDeps): a react-native
+ * version mismatch or a react-native-update downgrade blocks binding.
+ * Missing/unparseable deps never block (legacy data; server behaves the same).
+ */
+export function getFatalDepsViolation(
+  packageDeps: Record<string, string> | undefined,
+  versionDeps: Record<string, string> | undefined,
+): 'rn_mismatch' | 'rnu_downgrade' | null {
+  const pkgRn = parseDepVersion(packageDeps?.['react-native']);
+  const verRn = parseDepVersion(versionDeps?.['react-native']);
+  if (pkgRn && verRn && compareDepVersions(pkgRn, verRn) !== 0) {
+    return 'rn_mismatch';
+  }
+  const pkgRnu = parseDepVersion(packageDeps?.['react-native-update']);
+  const verRnu = parseDepVersion(versionDeps?.['react-native-update']);
+  if (pkgRnu && verRnu && compareDepVersions(verRnu, pkgRnu) < 0) {
+    return 'rnu_downgrade';
+  }
+  return null;
+}
+
+/**
+ * forceBoot only means something to packages shipping react-native-update
+ * >= 10.51.0 (the native cold-start check that consumes it); hide the entry
+ * otherwise.
+ */
+export function packageSupportsForceBoot(
+  packageDeps?: Record<string, string>,
+): boolean {
+  const rnu = parseDepVersion(packageDeps?.['react-native-update']);
+  return !!rnu && compareDepVersions(rnu, [10, 51, 0]) >= 0;
+}

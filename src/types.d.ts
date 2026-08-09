@@ -207,6 +207,13 @@ interface Binding {
   versionId: number;
   packageId: number;
   rollout: number;
+  /**
+   * Per-delivery config. forceBoot = the client's native cold-start check
+   * activates this version right after download, regardless of the in-app
+   * updateStrategy (brick rescue). Native check only; rebinding replaces the
+   * binding and clears the mark.
+   */
+  config?: { forceBoot?: boolean; [key: string]: unknown } | null;
 }
 
 type DiffPairStatus = 'pending' | 'done' | 'failed';

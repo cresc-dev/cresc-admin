@@ -372,17 +372,23 @@ const UserDetailDrawer = ({
               <Descriptions.Item
                 label={translate('admin_users.today_used', 'Today Used')}
               >
-                {detail.quotaDetail.todayUsed} pv
+                {detail.quotaDetail.todayUsed === null
+                  ? '-'
+                  : `${detail.quotaDetail.todayUsed} pv`}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.today_remaining', 'Remaining')}
               >
-                {detail.quotaDetail.todayRemaining} pv
+                {detail.quotaDetail.todayRemaining === null
+                  ? '-'
+                  : `${detail.quotaDetail.todayRemaining} pv`}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.avg_7_days', '7d Avg')}
               >
-                {detail.quotaDetail.last7Days.avg} pv
+                {detail.quotaDetail.last7Days
+                  ? `${detail.quotaDetail.last7Days.avg} pv`
+                  : '-'}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate(
@@ -391,15 +397,17 @@ const UserDetailDrawer = ({
                 )}
                 span={2}
               >
-                {detail.quotaDetail.last7Days.counts
-                  .slice()
-                  .reverse()
-                  .map((c, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: list order is static
-                    <span key={i} className="mr-3 inline-block">
-                      Day {i + 1}: <strong>{c}</strong>
-                    </span>
-                  ))}
+                {detail.quotaDetail.last7Days
+                  ? detail.quotaDetail.last7Days.counts
+                      .slice()
+                      .reverse()
+                      .map((c, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: list order is static
+                        <span key={i} className="mr-3 inline-block">
+                          Day {i + 1}: <strong>{c}</strong>
+                        </span>
+                      ))
+                  : '-'}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.app_limit', 'App Limit')}
@@ -434,7 +442,7 @@ const UserDetailDrawer = ({
                         </span>
                         <Space size="middle">
                           <span>
-                            PV: <strong>{app.checkCount}</strong>
+                            PV: <strong>{app.checkCount ?? '-'}</strong>
                           </span>
                           <span>
                             {translate(

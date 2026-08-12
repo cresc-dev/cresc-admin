@@ -433,6 +433,22 @@ const BindPackage = ({
     });
   };
 
+  // forceBoot overrides the client-side update strategy; the operator must
+  // see the full semantics before enabling (copy shared with the Popover on
+  // the enabled marker via force_boot_tip).
+  const confirmForceBoot = (onOk: () => void) => {
+    Modal.confirm({
+      title: t('bind_package.force_boot_confirm_title'),
+      maskClosable: true,
+      okButtonProps: { danger: true },
+      okText: t('bind_package.force_boot_confirm_ok'),
+      cancelText: t('bind_package.cancel'),
+      width: 560,
+      content: t('bind_package.force_boot_tip'),
+      onOk,
+    });
+  };
+
   const publishToPackage = (
     pkg: PublishPackage,
     rollout?: number,
@@ -471,9 +487,11 @@ const BindPackage = ({
                   label: t('bind_package.full_force_boot'),
                   icon: <ThunderboltOutlined />,
                   onClick: () =>
-                    publishToPackages(availablePackages, undefined, {
-                      forceBoot: true,
-                    }),
+                    confirmForceBoot(() =>
+                      publishToPackages(availablePackages, undefined, {
+                        forceBoot: true,
+                      }),
+                    ),
                 },
               ]
             : []),
@@ -510,7 +528,9 @@ const BindPackage = ({
                 label: t('bind_package.full_force_boot'),
                 icon: <ThunderboltOutlined />,
                 onClick: () =>
-                  publishToPackage(p, undefined, { forceBoot: true }),
+                  confirmForceBoot(() =>
+                    publishToPackage(p, undefined, { forceBoot: true }),
+                  ),
               },
             ]
           : []),
@@ -573,12 +593,20 @@ const BindPackage = ({
             ? t('bind_package.force_boot_off')
             : t('bind_package.force_boot_on'),
           icon: <ThunderboltOutlined />,
-          onClick: () =>
-            publishToPackage(
-              p,
-              isFull ? undefined : rolloutConfigNumber,
-              forceBootOn ? undefined : { forceBoot: true },
-            ),
+          onClick: () => {
+            const doPublish = () =>
+              publishToPackage(
+                p,
+                isFull ? undefined : rolloutConfigNumber,
+                forceBootOn ? undefined : { forceBoot: true },
+              );
+            // Turning force boot off just restores normal semantics; no gate.
+            if (forceBootOn) {
+              doPublish();
+            } else {
+              confirmForceBoot(doPublish);
+            }
+          },
         });
       }
       if (items.length > 0) {

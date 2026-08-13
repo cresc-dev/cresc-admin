@@ -305,20 +305,15 @@ export function getFatalDepsViolation(
 }
 
 /**
- * forceBoot only means something to packages where the native cold-start
- * check (its consumer) actually works: Android/iOS since 10.51.0; harmony
- * only since 10.52.1 — a TurboModule bridging bug kept the check dark there
- * in 10.51.0-10.52.0. Below the floor or unknown, hide the entry.
+ * forceBoot is only shown for packages shipping react-native-update
+ * >= 10.52.1 — the uniform floor where the full rescue capability exists
+ * (crash-moment rescue + resumable downloads, and the harmony bridging fix
+ * that made the native check actually work there). Below or unknown, hide
+ * the entry.
  */
 export function packageSupportsForceBoot(
   packageDeps?: Record<string, string>,
-  platform?: 'ios' | 'android' | 'harmony',
 ): boolean {
   const rnu = parseDepVersion(packageDeps?.['react-native-update']);
-  if (!rnu) {
-    return false;
-  }
-  const floor: [number, number, number] =
-    platform === 'harmony' ? [10, 52, 1] : [10, 51, 0];
-  return compareDepVersions(rnu, floor) >= 0;
+  return !!rnu && compareDepVersions(rnu, [10, 52, 1]) >= 0;
 }

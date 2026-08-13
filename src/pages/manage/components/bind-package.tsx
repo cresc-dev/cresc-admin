@@ -313,6 +313,7 @@ const BindPackage = ({
   const { t } = useTranslation();
   const {
     packages: allPackages,
+    app,
     appId,
     bindings,
     packageMap,
@@ -483,7 +484,7 @@ const BindPackage = ({
             })),
           },
           ...(availablePackages.every((pkg) =>
-            packageSupportsForceBoot(pkg.deps),
+            packageSupportsForceBoot(pkg.deps, app?.platform),
           )
             ? [
                 {
@@ -525,7 +526,7 @@ const BindPackage = ({
             onClick: () => publishToPackage(p, percentage),
           })),
         },
-        ...(packageSupportsForceBoot(p.deps)
+        ...(packageSupportsForceBoot(p.deps, app?.platform)
           ? [
               {
                 key: `pkg-${p.id}-force-boot`,
@@ -590,7 +591,7 @@ const BindPackage = ({
       // forceBoot rides the binding: republish the same binding (same
       // rollout) with the flag flipped. Semantics: bind_package.force_boot_tip
       const forceBootOn = !!binding.config?.forceBoot;
-      if (packageSupportsForceBoot(p.deps) || forceBootOn) {
+      if (packageSupportsForceBoot(p.deps, app?.platform) || forceBootOn) {
         items.push({
           key: 'force-boot',
           label: forceBootOn

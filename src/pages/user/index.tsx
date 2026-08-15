@@ -8,6 +8,7 @@ import { useAppList, useUserInfo } from '@/utils/hooks';
 import { PRICING_LINK } from '../../constants/links';
 import { quotas } from '../../constants/quotas';
 import { EmailChangeButton, PasswordChangeButton } from './account-security';
+import { subscriptionControlState } from './billing';
 import { CancelResumeButton, UpgradeDropdown } from './purchase-controls';
 import { QuotaDetailsPanel, type QuotaUsageRow } from './quota-details';
 
@@ -40,7 +41,7 @@ function UserPanel() {
       </div>
     );
   }
-  const { name, email, tier, quota, cancelAtPeriodEnd } = user;
+  const { name, email, tier, quota } = user;
   const defaultQuota = quotas[tier as keyof typeof quotas];
   const currentQuota = quota || defaultQuota;
   const appCount = appList.length;
@@ -120,7 +121,8 @@ function UserPanel() {
     message.info(t('user.logged_out'));
     logout();
   };
-  const canManageSubscription = typeof cancelAtPeriodEnd === 'boolean';
+  const { canManage: canManageSubscription, pendingCancellation } =
+    subscriptionControlState(user);
 
   return (
     <div className="body">
@@ -150,7 +152,7 @@ function UserPanel() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <div className="flex items-center gap-2 shrink-0">
                 <span className="whitespace-nowrap">{currentQuota.title}</span>
-                {cancelAtPeriodEnd && (
+                {pendingCancellation && (
                   <span
                     className="whitespace-nowrap"
                     style={{ color: '#faad14', fontSize: 12 }}
@@ -176,7 +178,7 @@ function UserPanel() {
         </Descriptions.Item>
         <Descriptions.Item
           label={
-            cancelAtPeriodEnd
+            pendingCancellation
               ? t('user.expiration_date')
               : t('user.next_billing')
           }
@@ -185,7 +187,7 @@ function UserPanel() {
             {displayExpireDay ? (
               <div className="flex min-w-0 flex-col">
                 {displayExpireDay}
-                {cancelAtPeriodEnd && displayRemainingDays && (
+                {pendingCancellation && displayRemainingDays && (
                   <>
                     <br />
                     <div>{displayRemainingDays}</div>
@@ -196,7 +198,7 @@ function UserPanel() {
               t('user.not_available')
             )}
             {tier !== 'free' && canManageSubscription && (
-              <CancelResumeButton cancelAtPeriodEnd={cancelAtPeriodEnd} />
+              <CancelResumeButton cancelAtPeriodEnd={pendingCancellation} />
             )}
           </div>
         </Descriptions.Item>

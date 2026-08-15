@@ -9,6 +9,21 @@ export async function purchase(tier?: string) {
   }
 }
 
+export function subscriptionControlState(
+  user: Pick<User, 'cancelAtPeriodEnd' | 'tier' | 'tierExpiresAt'>,
+) {
+  const pendingCancellation = user.cancelAtPeriodEnd === true;
+  const isPaidStripeTier =
+    user.tier !== 'free' &&
+    user.tier !== 'custom' &&
+    Boolean(user.tierExpiresAt);
+
+  return {
+    canManage: typeof user.cancelAtPeriodEnd === 'boolean' || isPaidStripeTier,
+    pendingCancellation,
+  };
+}
+
 export function calculateUpgradePreview({
   currentTier,
   targetTier,

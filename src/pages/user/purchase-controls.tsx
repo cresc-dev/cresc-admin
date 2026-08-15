@@ -62,7 +62,7 @@ export const CancelResumeButton = ({
       }}
       okText={t('user.cancel_ok')}
       okButtonProps={{ danger: true }}
-      cancelText="No"
+      cancelText={t('user.no')}
     >
       <Button
         type="link"

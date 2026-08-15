@@ -282,12 +282,16 @@ export const api = {
     request<{ payUrl: string }>('post', '/orders', params),
   cancelSubscription: () =>
     request<{ message: string }>('post', '/orders/cancel').then((res) => {
-      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      queryClient.setQueryData<User>(['userInfo'], (user) =>
+        user ? { ...user, cancelAtPeriodEnd: true } : user,
+      );
       return res;
     }),
   resumeSubscription: () =>
     request<{ message: string }>('post', '/orders/resume').then((res) => {
-      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      queryClient.setQueryData<User>(['userInfo'], (user) =>
+        user ? { ...user, cancelAtPeriodEnd: false } : user,
+      );
       return res;
     }),
   // global metrics

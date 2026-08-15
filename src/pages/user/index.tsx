@@ -183,7 +183,7 @@ function UserPanel() {
               : t('user.next_billing')
           }
         >
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="grid min-w-0 grid-cols-1 items-center gap-x-3 gap-y-2 sm:grid-cols-[10rem_max-content]">
             {displayExpireDay ? (
               <div className="flex min-w-0 flex-col">
                 {displayExpireDay}

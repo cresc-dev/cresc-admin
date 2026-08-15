@@ -34,11 +34,7 @@ export const CancelResumeButton = ({
         okText={t('user.resume_ok')}
         cancelText={t('user.no')}
       >
-        <Button
-          type="link"
-          loading={loading}
-          className="mt-2 self-start px-0 md:mt-0"
-        >
+        <Button type="link" loading={loading} className="self-start px-0">
           {t('user.resume_button')}
         </Button>
       </Popconfirm>
@@ -64,12 +60,7 @@ export const CancelResumeButton = ({
       okButtonProps={{ danger: true }}
       cancelText={t('user.no')}
     >
-      <Button
-        type="link"
-        danger
-        loading={loading}
-        className="mt-2 self-start px-0 md:mt-0"
-      >
+      <Button type="link" danger loading={loading} className="self-start px-0">
         {t('user.cancel_button')}
       </Button>
     </Popconfirm>

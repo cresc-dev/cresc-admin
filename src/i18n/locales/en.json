@@ -580,7 +580,12 @@
     "placeholder_keep": "Leave empty to keep current",
     "placeholder_no_owner": "Leave empty for no owner",
     "placeholder_store": "App store link",
-    "placeholder_status": "Custom status"
+    "placeholder_status": "Custom status",
+    "status_normal": "Normal",
+    "status_paused": "Paused",
+    "filter_user_id_placeholder": "Enter user ID",
+    "filter_confirm": "Filter",
+    "filter_reset": "Reset"
   },
   "reset_password": {
     "step_email": "Enter your email",

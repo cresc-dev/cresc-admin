@@ -580,7 +580,12 @@
     "placeholder_keep": "留空保持不变",
     "placeholder_no_owner": "留空表示无所有者",
     "placeholder_store": "应用商店链接",
-    "placeholder_status": "自定义状态"
+    "placeholder_status": "自定义状态",
+    "status_normal": "正常",
+    "status_paused": "已暂停",
+    "filter_user_id_placeholder": "输入用户 ID",
+    "filter_confirm": "筛选",
+    "filter_reset": "重置"
   },
   "reset_password": {
     "step_email": "输入邮箱",

@@ -122,6 +122,12 @@ export const api = {
   activate: (params: { token: string }) =>
     request('post', '/user/activate', params),
   me: () => request<User>('get', '/user/me'),
+  // Unauthenticated, and silent on failure: a missing version line in the
+  // footer is not worth an error toast.
+  serverStatus: () =>
+    request<ServerStatus>('get', '/status', undefined, {
+      suppressErrorToast: true,
+    }),
   sendEmail: (params: { email: string }) =>
     request('post', '/user/activate/sendmail', params),
   resetpwdSendMail: (params: { email: string }) =>

@@ -39,6 +39,18 @@ interface Quota {
   price?: number;
 }
 
+/** GET /status: which build is serving this API. The footer and the uptime
+ *  probes read the same endpoint. */
+interface ServerStatus {
+  version: string;
+  commit: string;
+  buildTime: string;
+  hostname: string;
+  startTime: string;
+  runtimeVersion: string;
+  slot: string;
+}
+
 interface User {
   email: string;
   id: number;

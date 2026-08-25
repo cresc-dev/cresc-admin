@@ -7,6 +7,8 @@ export interface ApiResponse {
 
 export class RequestError extends Error {
   status?: number;
+  /** The request layer already toasted this (or a 401 already triggered logout); callers need not report it again. */
+  handled = false;
 
   constructor(message: string, status?: number) {
     super(message);
@@ -35,7 +37,9 @@ export async function handleResponse<T extends Record<any, any>>(
     // Throw instead of resolving undefined: callers chain `.then()` to run
     // optimistic cache updates, which must NOT run when the request was
     // rejected as unauthorized.
-    throw new RequestError('Unauthorized', 401);
+    const unauthorized = new RequestError('Unauthorized', 401);
+    unauthorized.handled = true;
+    throw unauthorized;
   }
 
   // Only parse JSON when the server actually returned JSON. A 204/empty body or
@@ -56,6 +60,7 @@ export async function handleResponse<T extends Record<any, any>>(
   );
   if (!requestOptions.suppressErrorToast && error.message) {
     message.error(error.message);
+    error.handled = true;
   }
   throw error;
 }

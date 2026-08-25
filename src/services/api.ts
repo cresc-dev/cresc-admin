@@ -177,6 +177,13 @@ export const api = {
       'get',
       `/app/${appId}/package/list?limit=1000`,
     ),
+  // When only the count is needed, skip the 1000-row package list; the
+  // account page asks this for every app.
+  getPackageCount: (appId: number) =>
+    request<{ data: Package[]; count: number }>(
+      'get',
+      `/app/${appId}/package/list?limit=1`,
+    ).then((response) => response.count ?? response.data?.length ?? 0),
   updatePackage: ({
     appId,
     packageId,

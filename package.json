@@ -10,15 +10,14 @@
     "test": "bun test",
     "lint": "biome check .",
     "lint:fix": "tsc --noEmit -p tsconfig.json && biome check --write .",
-    "ci": "bun run typecheck && bun run lint && bun run test"
+    "ci": "bun run typecheck && bun run lint && bun run test",
+    "build:check": "bun run build && bun run size",
+    "size": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
-    "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^6.3.2",
+    "@ant-design/plots": "^2.6.8",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
-    "@rsbuild/core": "^2.1.8",
-    "@rsbuild/plugin-react": "^2.1.0",
-    "@rsbuild/plugin-svgr": "^2.0.5",
     "@tanstack/react-query": "^5.101.4",
     "antd": "^6.5.2",
     "dayjs": "^1.11.21",
@@ -36,13 +35,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
+    "@rsbuild/core": "^2.1.8",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@rsbuild/plugin-svgr": "^2.0.5",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.2",
     "@types/git-url-parse": "^16.0.2",
     "@types/node": "^26.1.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/react-router-dom": "^5.3.3",
     "happy-dom": "^20.11.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"

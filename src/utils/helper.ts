@@ -1,4 +1,5 @@
 import type { NavigateOptions, SetURLSearchParams } from 'react-router-dom';
+import { safeStorage } from '@/utils/storage';
 
 export function isPasswordValid(password: string) {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,16}$/.test(password);
@@ -86,7 +87,7 @@ export const testUrls = async (
       if (winner == null) {
         console.log('all ping failed, use first url:', urls[0]);
       }
-      resolve(winner ?? urls[0]);
+      resolve(winner ?? urls[0] ?? '');
     };
 
     const launchNext = () => {
@@ -98,6 +99,9 @@ export const testUrls = async (
         return;
       }
       const url = urls[nextIndex++];
+      if (url === undefined) {
+        return;
+      }
       const controller = new AbortController();
       controllers.push(controller);
       pending++;
@@ -164,9 +168,7 @@ export const getManageAppDrawerPlacement = (): ManageAppDrawerPlacement => {
     return 'left';
   }
 
-  const stored = window.localStorage.getItem(
-    MANAGE_APP_DRAWER_PLACEMENT_STORAGE_KEY,
-  );
+  const stored = safeStorage.get(MANAGE_APP_DRAWER_PLACEMENT_STORAGE_KEY);
   if (stored === 'right' || stored === 'hidden') {
     return stored;
   }
@@ -180,10 +182,7 @@ export const setManageAppDrawerPlacement = (
     return;
   }
 
-  window.localStorage.setItem(
-    MANAGE_APP_DRAWER_PLACEMENT_STORAGE_KEY,
-    placement,
-  );
+  safeStorage.set(MANAGE_APP_DRAWER_PLACEMENT_STORAGE_KEY, placement);
   window.dispatchEvent(
     new CustomEvent(manageAppDrawerPlacementChangeEvent, {
       detail: placement,
@@ -196,9 +195,7 @@ export const getManageAppDrawerCollapsed = () => {
     return false;
   }
 
-  const stored = window.localStorage.getItem(
-    MANAGE_APP_DRAWER_COLLAPSED_STORAGE_KEY,
-  );
+  const stored = safeStorage.get(MANAGE_APP_DRAWER_COLLAPSED_STORAGE_KEY);
   if (stored === '1') {
     return true;
   }
@@ -213,7 +210,7 @@ export const setManageAppDrawerCollapsed = (collapsed: boolean) => {
     return;
   }
 
-  window.localStorage.setItem(
+  safeStorage.set(
     MANAGE_APP_DRAWER_COLLAPSED_STORAGE_KEY,
     collapsed ? '1' : '0',
   );
@@ -230,9 +227,7 @@ export const getRecentAppIds = () => {
   }
 
   try {
-    const parsed = JSON.parse(
-      window.localStorage.getItem(RECENT_APP_STORAGE_KEY) ?? '[]',
-    );
+    const parsed = JSON.parse(safeStorage.get(RECENT_APP_STORAGE_KEY) ?? '[]');
     if (!Array.isArray(parsed)) {
       return [];
     }
@@ -251,7 +246,7 @@ export const rememberRecentApp = (appId: number) => {
     0,
     MAX_RECENT_APP_COUNT,
   );
-  window.localStorage.setItem(RECENT_APP_STORAGE_KEY, JSON.stringify(next));
+  safeStorage.set(RECENT_APP_STORAGE_KEY, JSON.stringify(next));
   return next;
 };
 
@@ -275,8 +270,10 @@ export function compareDepVersions(
   b: [number, number, number],
 ) {
   for (let i = 0; i < 3; i++) {
-    if (a[i] !== b[i]) {
-      return a[i] - b[i];
+    const av = a[i] ?? 0;
+    const bv = b[i] ?? 0;
+    if (av !== bv) {
+      return av - bv;
     }
   }
   return 0;

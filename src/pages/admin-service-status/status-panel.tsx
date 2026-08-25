@@ -1,10 +1,10 @@
-import { Line } from '@ant-design/charts';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card, Empty, Spin, Statistic, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AsyncLine } from '@/components/lazy-chart';
 import {
   api,
   type InternalApi5xxEvent,
@@ -93,7 +93,7 @@ function MetricLineCard({
   return (
     <Card title={title}>
       {data.length > 0 ? (
-        <Line
+        <AsyncLine
           {...createLineConfig(data, yTitle, t, valueFormatter ?? formatCount)}
           theme={isDark ? 'classicDark' : 'classic'}
         />

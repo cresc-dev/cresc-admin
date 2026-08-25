@@ -21,7 +21,7 @@ export {
 export type { RequestOptions };
 export { RequestError };
 
-const SERVER = {
+const SERVER: { main: [string, ...string[]] } = {
   main:
     process.env.NODE_ENV === 'production'
       ? ['https://api.cresc.dev', 'https://api.cresc.app']
@@ -88,6 +88,7 @@ export default async function request<T extends Record<any, any>>(
     // are already toasted and rethrown by handleResponse above.
     if (!requestOptions.suppressErrorToast) {
       message.error(`Error: ${(err as Error).message}`);
+      (err as { handled?: boolean }).handled = true;
     }
     throw err;
   }

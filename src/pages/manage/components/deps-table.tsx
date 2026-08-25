@@ -1,12 +1,17 @@
 import { JavaScriptOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Popover } from 'antd';
-import { useState } from 'react';
+import { Button, Dropdown, Popover, Spin } from 'antd';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mode } from 'vanilla-jsoneditor';
+import type { Mode } from 'vanilla-jsoneditor';
 import { useAllVersions } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
-import { DepsDiff } from './deps-diff';
 import JsonEditor from './json-editor';
+
+// json-diff-kit is only needed by the compare view; load it on demand so it
+// does not slow down the whole app page.
+const DepsDiff = lazy(() =>
+  import('./deps-diff').then((m) => ({ default: m.DepsDiff })),
+);
 export const DepsTable = ({
   deps,
   name,
@@ -101,7 +106,7 @@ export const DepsTable = ({
                           if (!key.includes('_')) {
                             return;
                           }
-                          const [type, id] = key.split('_');
+                          const [type, id = ''] = key.split('_');
                           if (type === 'p') {
                             const pkg = packages.find((p) => p.id === +id);
                             setDiffs({
@@ -127,7 +132,9 @@ export const DepsTable = ({
               </div>
               <div className="deps-popover-body">
                 {diffs ? (
-                  <DepsDiff oldDeps={diffs.oldDeps} newDeps={diffs.newDeps} />
+                  <Suspense fallback={<Spin />}>
+                    <DepsDiff oldDeps={diffs.oldDeps} newDeps={diffs.newDeps} />
+                  </Suspense>
                 ) : (
                   <JsonEditor
                     className="deps-popover-json"
@@ -136,13 +143,13 @@ export const DepsTable = ({
                         .sort() // Sort the keys alphabetically
                         .reduce(
                           (obj, key) => {
-                            obj[key] = deps[key]; // Rebuild the object with sorted keys
+                            obj[key] = deps[key] ?? ''; // Rebuild the object with sorted keys
                             return obj;
                           },
                           {} as Record<string, string>,
                         ),
                     }}
-                    mode={Mode.tree}
+                    mode={'tree' as Mode}
                     mainMenuBar={false}
                     statusBar={false}
                     readOnly

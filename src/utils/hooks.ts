@@ -7,6 +7,7 @@ import { api } from '@/services/api';
 import { hasSession } from '@/services/request';
 import { getWorkspaceAccountId } from '@/services/workspace';
 import { memberKeys, versionKeys } from '@/utils/query-keys';
+import { safeStorage } from '@/utils/storage';
 
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
@@ -181,7 +182,7 @@ const getCooldownRemainingSeconds = (
   storageKey: string,
   durationMs: number,
 ) => {
-  const storedSentAt = window.localStorage.getItem(storageKey);
+  const storedSentAt = safeStorage.get(storageKey);
   const sentAt = Number(storedSentAt);
 
   if (!Number.isFinite(sentAt) || sentAt <= 0) {
@@ -190,7 +191,7 @@ const getCooldownRemainingSeconds = (
 
   const remainingMs = durationMs - (Date.now() - sentAt);
   if (remainingMs <= 0) {
-    window.localStorage.removeItem(storageKey);
+    safeStorage.remove(storageKey);
     return 0;
   }
 
@@ -227,7 +228,7 @@ export const useLocalStorageCooldown = ({
   }, [storageKey, durationMs]);
 
   const startCooldown = () => {
-    window.localStorage.setItem(storageKey, String(Date.now()));
+    safeStorage.set(storageKey, String(Date.now()));
     setRemainingSeconds(Math.ceil(durationMs / 1000));
   };
 

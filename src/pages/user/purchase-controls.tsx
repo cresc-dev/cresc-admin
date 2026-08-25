@@ -126,7 +126,7 @@ export const UpgradeDropdown = ({
   const handleMainButtonClick = () => {
     // Click main button to select the first upgrade option
     if (upgradeOptions.length > 0) {
-      confirmUpgrade(upgradeOptions[0].tier as keyof typeof products);
+      confirmUpgrade(upgradeOptions[0]!.tier as keyof typeof products);
     }
   };
 

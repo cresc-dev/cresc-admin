@@ -29,7 +29,7 @@ function UserPanel() {
   const packageCountQueries = useQueries({
     queries: appList.map((app) => ({
       queryKey: ['accountQuotaPackages', app.id],
-      queryFn: () => api.getPackages(app.id),
+      queryFn: () => api.getPackageCount(app.id),
       staleTime: 60_000,
     })),
   });
@@ -49,9 +49,7 @@ function UserPanel() {
   const isVersionCountLoading = versionCountQueries.some(
     (query) => query.isLoading,
   );
-  const packageCounts = packageCountQueries.map(
-    (query) => query.data?.count ?? query.data?.data?.length,
-  );
+  const packageCounts = packageCountQueries.map((query) => query.data);
   const isPackageCountLoading = packageCountQueries.some(
     (query) => query.isLoading,
   );

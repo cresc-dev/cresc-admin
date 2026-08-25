@@ -10,6 +10,7 @@ import type { MenuProps } from 'antd';
 import { Button, Dropdown } from 'antd';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { THEME_MODE_LABEL_KEY } from '@/constants/i18n-keys';
 import { DOCUMENTATION_LINK } from '@/constants/links';
 import { rootRouterPath } from '@/router';
 import { type ThemeMode, useThemeMode } from '@/utils/theme-mode';
@@ -103,7 +104,7 @@ function ThemeSwitcher() {
   const items: MenuItems = THEME_MODES.map((value) => ({
     key: value,
     icon: themeModeIcons[value],
-    label: t(`nav.theme_${value}`),
+    label: t(THEME_MODE_LABEL_KEY[value]),
   }));
 
   return (
@@ -167,8 +168,8 @@ export function getThemeMenuItem(
       icon: themeModeIcons[value],
       label:
         currentMode === value
-          ? `${t(`nav.theme_${value}`)} ✓`
-          : t(`nav.theme_${value}`),
+          ? `${t(THEME_MODE_LABEL_KEY[value])} ✓`
+          : t(THEME_MODE_LABEL_KEY[value]),
     })),
   };
 }

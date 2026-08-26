@@ -281,15 +281,25 @@ export const api = {
     offset = 0,
     limit = 20,
     startDate,
+    endDate,
   }: {
     offset?: number;
     limit?: number;
     startDate?: string;
-  }) =>
-    request<{ data: AuditLog[]; count: number }>(
+    endDate?: string;
+  }) => {
+    const params = new URLSearchParams({
+      offset: String(offset),
+      limit: String(limit),
+    });
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    // The total field is named differently across server generations (count / total); keep both
+    return request<{ data: AuditLog[]; count?: number; total?: number }>(
       'get',
-      `/audit/logs?offset=${offset}&limit=${limit}&startDate=${startDate}`,
-    ),
+      `/audit/logs?${params.toString()}`,
+    );
+  },
   // order
   createOrder: (params: { tier?: string }) =>
     request<{ payUrl: string }>('post', '/orders', params),

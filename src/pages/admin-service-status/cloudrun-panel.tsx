@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '@/services/admin-api';
+import { serviceStatusKeys } from '@/utils/query-keys';
 
 const { Text } = Typography;
 
@@ -156,21 +157,21 @@ export const CloudRunPanel = () => {
   const [selectedTag, setSelectedTag] = useState<string | undefined>();
 
   const statusQuery = useQuery({
-    queryKey: ['cloudRunStatus'],
+    queryKey: serviceStatusKeys.cloudRunStatus(),
     queryFn: () => adminApi.getCloudRunStatus(),
     refetchInterval: 30_000,
     retry: false,
   });
 
   const metricsQuery = useQuery({
-    queryKey: ['cloudRunMetrics'],
+    queryKey: serviceStatusKeys.cloudRunMetrics(),
     queryFn: () => adminApi.getCloudRunMetrics(),
     refetchInterval: 60_000,
     retry: false,
   });
 
   const revisionsQuery = useQuery({
-    queryKey: ['cloudRunRevisions', rollbackService],
+    queryKey: serviceStatusKeys.cloudRunRevisions(rollbackService),
     queryFn: () =>
       rollbackService
         ? adminApi.getCloudRunRevisions(rollbackService)
@@ -179,7 +180,7 @@ export const CloudRunPanel = () => {
   });
 
   const imagesQuery = useQuery({
-    queryKey: ['cloudRunImages'],
+    queryKey: serviceStatusKeys.cloudRunImages(),
     queryFn: () => adminApi.getCloudRunImages(),
     enabled: deployOpen,
     retry: false,
@@ -196,10 +197,11 @@ export const CloudRunPanel = () => {
     onSuccess: (r) => {
       message.success(t('cloudrun.rollback_done'));
       setRollbackService(null);
-      queryClient.invalidateQueries({ queryKey: ['cloudRunStatus'] });
+      queryClient.invalidateQueries({
+        queryKey: serviceStatusKeys.cloudRunStatus(),
+      });
       void r;
     },
-    onError: (e) => message.error((e as Error).message),
   });
 
   const deployMutation = useMutation({
@@ -208,9 +210,10 @@ export const CloudRunPanel = () => {
       message.success(t('cloudrun.deploy_done'));
       setDeployOpen(false);
       setSelectedTag(undefined);
-      queryClient.invalidateQueries({ queryKey: ['cloudRunStatus'] });
+      queryClient.invalidateQueries({
+        queryKey: serviceStatusKeys.cloudRunStatus(),
+      });
     },
-    onError: (e) => message.error((e as Error).message),
   });
 
   // 非 GCP 后端返回 503(或网络错误)-> 整个面板隐藏,不干扰阿里云视图

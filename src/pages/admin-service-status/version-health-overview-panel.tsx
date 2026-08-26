@@ -5,11 +5,12 @@ import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { adminApi } from '@/services/admin-api';
+import { serviceStatusKeys } from '@/utils/query-keys';
 import { formatCount, formatPercent } from './metrics';
 
 const { Text } = Typography;
 
-// 阈值:回滚率 >5% 异常、>1% 关注;样本太少(<10)不判定
+// Thresholds: rollback rate >5% is bad, >1% worth watching; too few samples (<10) means no verdict
 const CRITICAL_ROLLBACK = 0.05;
 const WARNING_ROLLBACK = 0.01;
 const MIN_SAMPLES = 10;
@@ -30,7 +31,7 @@ function healthTag(row: VersionHealthOverviewRow, t: (key: string) => string) {
 export const VersionHealthOverviewPanel = () => {
   const { t } = useTranslation();
   const overviewQuery = useQuery({
-    queryKey: ['versionHealthOverview'],
+    queryKey: serviceStatusKeys.versionHealthOverview(7),
     queryFn: () => adminApi.getVersionHealthOverview(7),
     refetchInterval: 5 * 60_000,
     retry: false,

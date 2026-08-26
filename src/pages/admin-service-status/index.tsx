@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
+import { serviceStatusKeys } from '@/utils/query-keys';
 import { CloudRunPanel } from './cloudrun-panel';
 import { QuotaAlertsPanel } from './quota-alerts-panel';
 import { ServiceStatusPanel } from './status-panel';
@@ -15,7 +16,7 @@ export const Component = () => {
   const { t } = useTranslation();
   const metricsQuery = useQuery({
     queryFn: () => api.getInternalMetrics({ suppressErrorToast: true }),
-    queryKey: ['internalMetrics'],
+    queryKey: serviceStatusKeys.metrics(),
     refetchInterval: 30_000,
   });
 

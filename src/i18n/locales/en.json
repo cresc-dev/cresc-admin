@@ -386,7 +386,8 @@
     "ip_prefix": "IP:",
     "apikey_prefix": "API Key:",
     "start_date": "Start date",
-    "end_date": "End date"
+    "end_date": "End date",
+    "capped_notice": "Only the latest {{loaded}} of {{total}} logs in this date range are loaded. Narrow the date range to see older entries."
   },
   "realtime_metrics": {
     "update_checks": "Update Checks",
@@ -552,6 +553,7 @@
   "admin_apps": {
     "app_updated": "App updated",
     "copied": "Copied",
+    "copy_failed": "Copy failed, please copy manually",
     "col_id": "ID",
     "col_name": "Name",
     "col_app_key": "App Key",
@@ -850,7 +852,8 @@
     "no": "No",
     "loading": "Loading...",
     "copied": "Copied",
-    "none": "None"
+    "none": "None",
+    "copy_failed": "Copy failed, please copy manually"
   },
   "workspace": {
     "own_account": "My Account",

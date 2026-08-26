@@ -135,6 +135,7 @@ const PackageList = ({
             }
             warnings={warnings}
             realtimeMetricsPath={buildRealtimeMetricsPath(item, warnings)}
+            canPublish={canPublish}
           />
         );
       }}
@@ -332,16 +333,18 @@ const Item = ({
   onSelectedChange,
   warnings,
   realtimeMetricsPath,
+  canPublish,
 }: {
   item: Package;
   selected: boolean;
   onSelectedChange: (checked: boolean) => void;
   warnings: PackageMetricWarnings;
   realtimeMetricsPath?: string;
+  /** Resolved once by the list and passed down, so items don't each mount a query observer */
+  canPublish: boolean;
 }) => {
   const { t } = useTranslation();
   const { appId } = useManageContext();
-  const { canPublish } = useWorkspacePermissions();
   const deletePackage = useDeletePackage();
   const [editing, setEditing] = useState(false);
   const hasMetricWarning =

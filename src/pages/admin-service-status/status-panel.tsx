@@ -10,6 +10,8 @@ import {
   type InternalApi5xxEvent,
   type InternalMetricsResponse,
 } from '@/services/api';
+import { buildTimeSeriesLineConfig } from '@/utils/charts';
+import { serviceStatusKeys } from '@/utils/query-keys';
 import { useThemeMode } from '@/utils/theme-mode';
 import {
   API_5XX_EVENT_PAGE_SIZE,
@@ -32,55 +34,10 @@ import {
 
 const { Paragraph, Text } = Typography;
 
-function createLineConfig(
-  data: SeriesPoint[],
-  yTitle: string,
-  t: (key: string) => string,
-  valueFormatter: (value: number) => string = formatCount,
-) {
-  return {
-    axis: {
-      x: {
-        labelAutoRotate: true,
-        labelFormatter: (value: string) => {
-          const parsed = dayjs(value);
-          return parsed.isValid() ? parsed.format('HH:mm') : value;
-        },
-        title: t('admin_service_status.col_time'),
-      },
-      y: {
-        title: yTitle,
-      },
-    },
-    colorField: 'category',
-    data,
-    height: 300,
-    interaction: {
-      legendFilter: true,
-      tooltip: { shared: true },
-    },
-    legend: {
-      position: 'top',
-    },
-    shapeField: 'smooth',
-    tooltip: {
-      items: [
-        (point: SeriesPoint) => ({
-          name: point.category,
-          value: valueFormatter(point.value),
-        }),
-      ],
-      title: (point: SeriesPoint) => dayjs(point.time).format('MM/DD HH:mm'),
-    },
-    xField: (datum: SeriesPoint) => new Date(datum.time),
-    yField: 'value',
-  };
-}
-
 function MetricLineCard({
   data,
   title,
-  valueFormatter,
+  valueFormatter = formatCount,
   yTitle,
 }: {
   data: SeriesPoint[];
@@ -94,8 +51,17 @@ function MetricLineCard({
     <Card title={title}>
       {data.length > 0 ? (
         <AsyncLine
-          {...createLineConfig(data, yTitle, t, valueFormatter ?? formatCount)}
-          theme={isDark ? 'classicDark' : 'classic'}
+          {...buildTimeSeriesLineConfig({
+            data,
+            isDark,
+            height: 300,
+            xTitle: t('admin_service_status.col_time'),
+            yTitle,
+            // Node metrics only keep a recent window; ticks need no date
+            axisTimeFormat: 'HH:mm',
+            formatTooltipValue: (point: SeriesPoint) =>
+              valueFormatter(point.value),
+          })}
         />
       ) : (
         <div className="flex h-[300px] items-center justify-center">
@@ -240,7 +206,7 @@ export function ServiceStatusPanel({
   isFetching,
   snapshot,
 }: {
-  /** 插在曲线图与端点表之间的区块(部署面板、worker 统计等) */
+  /** Sections inserted between the charts and the endpoint table (deploy panel, worker stats, ...) */
   children?: React.ReactNode;
   error: unknown;
   isFetching: boolean;
@@ -256,7 +222,7 @@ export function ServiceStatusPanel({
         offset: api5xxEventOffset,
         suppressErrorToast: true,
       }),
-    queryKey: ['internalApi5xxEvents', api5xxEventOffset],
+    queryKey: serviceStatusKeys.api5xxEvents(api5xxEventOffset),
     refetchInterval: 30_000,
     placeholderData: keepPreviousData,
   });

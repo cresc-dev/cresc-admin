@@ -6,7 +6,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/services/api';
 import { hasSession } from '@/services/request';
 import { getWorkspaceAccountId } from '@/services/workspace';
-import { memberKeys, versionKeys } from '@/utils/query-keys';
+import {
+  auditKeys,
+  memberKeys,
+  metricsKeys,
+  versionKeys,
+} from '@/utils/query-keys';
 import { safeStorage } from '@/utils/storage';
 
 dayjs.extend(LocalizedFormat);
@@ -403,13 +408,12 @@ export const usePackageMetricWarnings = ({
   }));
 
   const { data, isLoading } = useQuery({
-    queryKey: [
-      'packageMetricWarnings',
+    queryKey: metricsKeys.packageWarnings(
       appId,
       app?.appKey,
       metricsRange.start,
       metricsRange.end,
-    ],
+    ),
     queryFn: () =>
       api.getAppMetrics({
         appKey: app?.appKey as string,
@@ -434,40 +438,56 @@ export const usePackageMetricWarnings = ({
   };
 };
 
+/** Audit logs are retained for 180 days; fetch from that lower bound by default */
+export const AUDIT_LOG_RETENTION_DAYS = 180;
+
+/**
+ * How many rows to ask the server for at once. The server has its own cap
+ * (100 in the Go version); the response decides how many actually arrive and
+ * the page compares total with the row count to detect truncation.
+ */
+export const AUDIT_LOG_FETCH_LIMIT = 1000;
+
+/**
+ * Audit logs: the date range is filtered server-side, while keyword / action /
+ * status filters the server does not support stay on the client within the
+ * fetched window. Hence no server-side pagination here: with it, client-side
+ * filters would only apply to the current page and export would only cover
+ * one page, which is worse.
+ */
 export const useAuditLogs = ({
-  offset = 0,
-  limit = 20,
+  startDate,
+  endDate,
 }: {
-  offset?: number;
-  limit?: number;
-}) => {
-  // Fetch all audit logs (up to 1000) from backend and cache them
-  const { data, isLoading } = useQuery({
-    queryKey: ['auditLogs'],
+  startDate?: string;
+  endDate?: string;
+} = {}) => {
+  const { data, isLoading, isPlaceholderData } = useQuery({
+    queryKey: [...auditKeys.all(), startDate ?? null, endDate ?? null],
     staleTime: 3000,
+    // Keep the previous list while the date range changes so the filter counts don't flash to 0
+    placeholderData: keepPreviousData,
     queryFn: () =>
       api.getAuditLogs({
         offset: 0,
-        limit: 1000,
-        startDate: dayjs().subtract(180, 'day').toISOString(),
+        limit: AUDIT_LOG_FETCH_LIMIT,
+        // The default lower bound is computed inside queryFn; in the key it would change every render
+        startDate:
+          startDate ??
+          dayjs().subtract(AUDIT_LOG_RETENTION_DAYS, 'day').toISOString(),
+        endDate,
       }),
   });
 
-  // Implement frontend pagination
-  const allAuditLogs = data?.data ?? [];
-  const totalCount = data?.count ?? 0;
-
-  // Calculate pagination
-  const startIndex = offset;
-  const endIndex = offset + limit;
-  const paginatedAuditLogs = allAuditLogs.slice(startIndex, endIndex);
+  const auditLogs = data?.data ?? [];
+  const total = data?.total ?? data?.count ?? auditLogs.length;
 
   return {
-    auditLogs: paginatedAuditLogs,
-    count: totalCount,
+    auditLogs,
+    /** Server-side total within the date range; may exceed auditLogs.length */
+    total,
     isLoading,
-    // Also return all audit logs for components that might need them
-    allAuditLogs,
+    isPlaceholderData,
   };
 };
 

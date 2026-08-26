@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Form,
-  Grid,
   Input,
   Modal,
   message,
@@ -22,15 +21,21 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  MEMBER_ROLE_DESC_KEY,
+  MEMBER_ROLE_LABEL_KEY,
+} from '@/constants/i18n-keys';
 import { api } from '@/services/api';
 import {
   getWorkspaceAccountId,
   setWorkspaceAccountId,
 } from '@/services/workspace';
+import { useAppOptions } from '@/utils/app-options';
 import { useUserInfo } from '@/utils/hooks';
 import { memberKeys } from '@/utils/query-keys';
+import { useIsMobile } from '@/utils/responsive';
 
 const ROLE_COLORS: Record<MemberRole, string> = {
   admin: 'gold',
@@ -40,14 +45,13 @@ const ROLE_COLORS: Record<MemberRole, string> = {
 
 function RoleTag({ role }: { role: MemberRole }) {
   const { t } = useTranslation();
-  return <Tag color={ROLE_COLORS[role]}>{t(`members.role_${role}`)}</Tag>;
+  return <Tag color={ROLE_COLORS[role]}>{t(MEMBER_ROLE_LABEL_KEY[role])}</Tag>;
 }
 
 function MembersPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = useIsMobile();
   const { user } = useUserInfo();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteForm] = Form.useForm();
@@ -81,25 +85,14 @@ function MembersPage() {
     retry: false,
   });
 
-  const { data: appsData } = useQuery({
-    queryKey: ['appList'],
-    queryFn: api.appList,
-    enabled: canManage,
-  });
-  const appOptions = useMemo(
-    () =>
-      (appsData?.data ?? []).map((app) => ({
-        label: app.name,
-        value: app.id,
-      })),
-    [appsData],
-  );
+  const { appOptions } = useAppOptions({ enabled: canManage });
 
   const invalidateMembers = () => {
     queryClient.invalidateQueries({ queryKey: memberKeys.list() });
     queryClient.invalidateQueries({ queryKey: memberKeys.workspaces() });
   };
 
+  // Failure toasts for every mutation come from the MutationCache default
   const inviteMutation = useMutation({
     mutationFn: api.inviteMember,
     onSuccess: () => {
@@ -108,7 +101,6 @@ function MembersPage() {
       inviteForm.resetFields();
       invalidateMembers();
     },
-    onError: (error: Error) => message.error(error.message),
   });
 
   const updateMutation = useMutation({
@@ -124,7 +116,6 @@ function MembersPage() {
       message.success(t('members.update_success'));
       invalidateMembers();
     },
-    onError: (error: Error) => message.error(error.message),
   });
 
   const removeMutation = useMutation({
@@ -133,7 +124,6 @@ function MembersPage() {
       message.success(t('members.remove_success'));
       invalidateMembers();
     },
-    onError: (error: Error) => message.error(error.message),
   });
 
   const acceptMutation = useMutation({
@@ -142,7 +132,6 @@ function MembersPage() {
       message.success(t('members.accept_success'));
       invalidateMembers();
     },
-    onError: (error: Error) => message.error(error.message),
   });
 
   const leaveMutation = useMutation({
@@ -156,7 +145,6 @@ function MembersPage() {
       }
       invalidateMembers();
     },
-    onError: (error: Error) => message.error(error.message),
   });
 
   const memberColumns: ColumnsType<AccountMember> = [
@@ -191,7 +179,7 @@ function MembersPage() {
             onChange={(role) => updateMutation.mutate({ id: record.id, role })}
             options={(['admin', 'developer', 'viewer'] as MemberRole[]).map(
               (role) => ({
-                label: t(`members.role_${role}`),
+                label: t(MEMBER_ROLE_LABEL_KEY[role]),
                 value: role,
                 disabled: role === 'admin' && !isOwner,
               }),
@@ -405,7 +393,7 @@ function MembersPage() {
             <Select
               options={(['admin', 'developer', 'viewer'] as MemberRole[]).map(
                 (role) => ({
-                  label: `${t(`members.role_${role}`)} — ${t(`members.role_${role}_desc`)}`,
+                  label: `${t(MEMBER_ROLE_LABEL_KEY[role])} — ${t(MEMBER_ROLE_DESC_KEY[role])}`,
                   value: role,
                   disabled: role === 'admin' && !isOwner,
                 }),

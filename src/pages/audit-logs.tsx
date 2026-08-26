@@ -5,11 +5,11 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   DatePicker,
   Descriptions,
   Drawer,
-  Grid,
   Input,
   message,
   Select,
@@ -23,13 +23,16 @@ import dayjs, { type Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
 import { downloadCsv } from '@/utils/csv';
 import { patchSearchParams } from '@/utils/helper';
 import { useAuditLogs } from '@/utils/hooks';
+import {
+  getTablePagination,
+  usePageClamp,
+  useUrlTableState,
+} from '@/utils/table-state';
 
 const { RangePicker } = DatePicker;
 const { Paragraph, Text } = Typography;
@@ -37,6 +40,11 @@ const { Paragraph, Text } = Typography;
 dayjs.extend(relativeTime);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
+/** Action key (`METHOD /normalized/path`) -> translated action name */
+type ActionMap = Record<string, string>;
 
 type AuditStatusFilter = 'all' | 'success' | 'client-error' | 'server-error';
 
@@ -79,75 +87,58 @@ const normalizePath = (path: string): string => {
   return path.replace(/\/\d+/g, '/{id}').replace(/\/$/, '');
 };
 
-const actionMap: Record<string, string> = {
-  'POST /user/login': 'Login',
-  'POST /user/register': 'Register',
-  'POST /user/activate': 'Activate Account',
-  'POST /user/activate/sendmail': 'Send Activation Email',
-  'POST /user/resetpwd/sendmail': 'Send Password Reset Email',
-  'POST /user/resetpwd/reset': 'Reset Password',
-  'POST /user/email/change-request': 'Request Email Change',
-  'POST /user/email/confirm': 'Confirm Email Change',
-  'POST /user/email/revert': 'Revert Email Change',
-  'POST /user/password/change': 'Change Password',
-  'POST /app/create': 'Create App',
-  'PUT /app/{id}': 'Update App',
-  'DELETE /app/{id}': 'Delete App',
-  'POST /orders': 'Create Order',
-  'POST /upload': 'Upload File',
-  'POST /app/{id}/package/create': 'Create Native Package',
-  'PUT /app/{id}/package/{id}': 'Update Native Package Settings',
-  'DELETE /app/{id}/package': 'Batch Delete Native Package',
-  'DELETE /app/{id}/package/{id}': 'Delete Native Package',
-  'POST /app/{id}/version/create': 'Create Hot Update Package',
-  'PUT /app/{id}/version/{id}': 'Update Hot Update Package Settings',
-  'DELETE /app/{id}/version': 'Batch Delete Hot Update Package',
-  'DELETE /app/{id}/version/{id}': 'Delete Hot Update Package',
-  'POST /app/{id}/binding': 'Create/Update Binding',
-  'DELETE /app/{id}/binding/{id}': 'Delete Binding',
-  'POST /api-token/create': 'Create API Key',
-  'DELETE /api-token/{id}': 'Delete API Key',
-};
+// Built once per render and passed down to the filter / column render /
+// export; don't rebuild the table inside a filter over a thousand rows
+function getActionMap(t: TranslateFn): ActionMap {
+  return {
+    'POST /user/login': t('audit_logs.action_login'),
+    'POST /user/register': t('audit_logs.action_register'),
+    'POST /user/activate': t('audit_logs.action_activate'),
+    'POST /user/activate/sendmail': t('audit_logs.action_send_activation'),
+    'POST /user/resetpwd/sendmail': t('audit_logs.action_send_reset'),
+    'POST /user/resetpwd/reset': t('audit_logs.action_reset_password'),
+    'POST /user/email/change-request': t(
+      'audit_logs.action_request_email_change',
+    ),
+    'POST /user/email/confirm': t('audit_logs.action_confirm_email_change'),
+    'POST /user/email/revert': t('audit_logs.action_revert_email_change'),
+    'POST /user/password/change': t('audit_logs.action_change_password'),
+    'POST /app/create': t('audit_logs.action_create_app'),
+    'PUT /app/{id}': t('audit_logs.action_update_app'),
+    'DELETE /app/{id}': t('audit_logs.action_delete_app'),
+    'POST /orders': t('audit_logs.action_create_order'),
+    'POST /upload': t('audit_logs.action_upload_file'),
+    'POST /app/{id}/package/create': t('audit_logs.action_create_pkg'),
+    'PUT /app/{id}/package/{id}': t('audit_logs.action_update_pkg'),
+    'DELETE /app/{id}/package': t('audit_logs.action_batch_delete_pkg'),
+    'DELETE /app/{id}/package/{id}': t('audit_logs.action_delete_pkg'),
+    'POST /app/{id}/version/create': t('audit_logs.action_create_hotfix'),
+    'PUT /app/{id}/version/{id}': t('audit_logs.action_update_hotfix'),
+    'DELETE /app/{id}/version': t('audit_logs.action_batch_delete_hotfix'),
+    'DELETE /app/{id}/version/{id}': t('audit_logs.action_delete_hotfix'),
+    'POST /app/{id}/binding': t('audit_logs.action_binding'),
+    'DELETE /app/{id}/binding/{id}': t('audit_logs.action_delete_binding'),
+    'POST /api-token/create': t('audit_logs.action_create_key'),
+    'DELETE /api-token/{id}': t('audit_logs.action_delete_key'),
+  };
+}
 
-const actionI18nKeys: Record<string, string> = {
-  Login: 'action_login',
-  Register: 'action_register',
-  'Activate Account': 'action_activate',
-  'Send Activation Email': 'action_send_activation',
-  'Send Password Reset Email': 'action_send_reset',
-  'Reset Password': 'action_reset_password',
-  'Request Email Change': 'action_request_email_change',
-  'Confirm Email Change': 'action_confirm_email_change',
-  'Revert Email Change': 'action_revert_email_change',
-  'Change Password': 'action_change_password',
-  'Create App': 'action_create_app',
-  'Update App': 'action_update_app',
-  'Delete App': 'action_delete_app',
-  'Create Order': 'action_create_order',
-  'Upload File': 'action_upload_file',
-  'Create Native Package': 'action_create_pkg',
-  'Update Native Package Settings': 'action_update_pkg',
-  'Batch Delete Native Package': 'action_batch_delete_pkg',
-  'Delete Native Package': 'action_delete_pkg',
-  'Create Hot Update Package': 'action_create_hotfix',
-  'Update Hot Update Package Settings': 'action_update_hotfix',
-  'Batch Delete Hot Update Package': 'action_batch_delete_hotfix',
-  'Delete Hot Update Package': 'action_delete_hotfix',
-  'Create/Update Binding': 'action_binding',
-  'Delete Binding': 'action_delete_binding',
-  'Create API Key': 'action_create_key',
-  'Delete API Key': 'action_delete_key',
-};
+const getActionKey = (method: string, path: string): string =>
+  `${method.toUpperCase()} ${normalizePath(path)}`;
 
-const getActionLabel = (method: string, path: string): string => {
-  const normalizedPath = normalizePath(path);
-  const key = `${method.toUpperCase()} ${normalizedPath}`;
+function getActionOptions(actionMap: ActionMap) {
+  return Object.entries(actionMap)
+    .map(([value, label]) => ({ label, value }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+const getActionLabel = (
+  actionMap: ActionMap,
+  method: string,
+  path: string,
+): string => {
+  const key = getActionKey(method, path);
   return actionMap[key] || `${method.toUpperCase()} ${path}`;
-};
-
-const parsePositiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 };
 
 const parseStatusFilter = (value: string | null): AuditStatusFilter => {
@@ -202,10 +193,10 @@ const matchesStatusFilter = (
   return code >= 500;
 };
 
-const buildSearchText = (log: AuditLog) => {
+const buildSearchText = (actionMap: ActionMap, log: AuditLog) => {
   return [
     log.id,
-    getActionLabel(log.method, log.path),
+    getActionLabel(actionMap, log.method, log.path),
     log.method,
     log.path,
     log.statusCode,
@@ -227,66 +218,38 @@ export const AuditLogs = () => {
     { label: t('audit_logs.status_4xx'), value: 'client-error' },
     { label: t('audit_logs.status_5xx'), value: 'server-error' },
   ] satisfies Array<{ label: string; value: AuditStatusFilter }>;
-  const translateAction = (actionLabel: string): string => {
-    const i18nKey = actionI18nKeys[actionLabel];
-    return i18nKey ? t(`audit_logs.${i18nKey}`) : actionLabel;
-  };
-  const actionOptions = Object.values(actionMap)
-    .sort()
-    .map((value) => ({
-      label: translateAction(value),
-      value,
-    }));
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState(
-    searchParams.get('query')?.trim() ?? '',
-  );
+  const tableState = useUrlTableState({ searchParam: 'query' });
+  const {
+    searchParams,
+    setSearchParams,
+    isMobile,
+    searchQuery,
+    searchInput,
+    setSearchInput,
+    handleTableChange,
+  } = tableState;
 
-  const currentPage = parsePositiveInt(searchParams.get('page'), 1);
-  const pageSize = parsePositiveInt(
-    searchParams.get('pageSize'),
-    isMobile ? 10 : 20,
-  );
-  const query = searchParams.get('query')?.trim().toLowerCase() ?? '';
+  const query = searchQuery.toLowerCase();
   const selectedAction = searchParams.get('action') ?? undefined;
   const statusFilter = parseStatusFilter(searchParams.get('status'));
   const dateRange = parseDateRange(searchParams);
   const selectedLogId = searchParams.get('logId');
 
-  useEffect(() => {
-    setSearchInput(searchParams.get('query')?.trim() ?? '');
-  }, [searchParams]);
+  const actionMap = getActionMap(t);
+  const actionOptions = getActionOptions(actionMap);
 
-  useEffect(() => {
-    const trimmedKeyword = searchInput.trim();
-    const normalizedQuery = searchParams.get('query')?.trim() ?? '';
-    if (trimmedKeyword === normalizedQuery) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      patchSearchParams(setSearchParams, {
-        query: trimmedKeyword || undefined,
-        page: '1',
-      });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [searchInput, searchParams, setSearchParams]);
-
-  const { allAuditLogs = [], isLoading } = useAuditLogs({
-    offset: 0,
-    limit: 1000,
+  // The date range goes to the server, so narrowing it reveals older logs
+  // that the row cap would otherwise hide
+  const { auditLogs, total, isLoading, isPlaceholderData } = useAuditLogs({
+    startDate: dateRange?.[0]?.startOf('day').toISOString(),
+    endDate: dateRange?.[1]?.endOf('day').toISOString(),
   });
+  const isCapped = total > auditLogs.length;
 
-  const filteredAuditLogs = allAuditLogs.filter((log) => {
+  const filteredAuditLogs = auditLogs.filter((log) => {
     if (
       selectedAction &&
-      getActionLabel(log.method, log.path) !== selectedAction
+      getActionKey(log.method, log.path) !== selectedAction
     ) {
       return false;
     }
@@ -295,7 +258,7 @@ export const AuditLogs = () => {
       return false;
     }
 
-    if (query && !buildSearchText(log).includes(query)) {
+    if (query && !buildSearchText(actionMap, log).includes(query)) {
       return false;
     }
 
@@ -320,16 +283,14 @@ export const AuditLogs = () => {
     return true;
   });
 
-  const maxPage = Math.max(1, Math.ceil(filteredAuditLogs.length / pageSize));
-
-  useEffect(() => {
-    if (!isLoading && currentPage > maxPage) {
-      patchSearchParams(setSearchParams, { page: String(maxPage) });
-    }
-  }, [isLoading, currentPage, maxPage, setSearchParams]);
+  usePageClamp(
+    tableState,
+    filteredAuditLogs.length,
+    !isLoading && !isPlaceholderData,
+  );
 
   const selectedLog = selectedLogId
-    ? (allAuditLogs.find((log) => String(log.id) === selectedLogId) ?? null)
+    ? (auditLogs.find((log) => String(log.id) === selectedLogId) ?? null)
     : null;
 
   const disabledDate = (current: Dayjs | null) => {
@@ -412,7 +373,7 @@ export const AuditLogs = () => {
 
         return [
           date.format('YYYY-MM-DD HH:mm:ss'),
-          getActionLabel(log.method, log.path),
+          getActionLabel(actionMap, log.method, log.path),
           log.method.toUpperCase(),
           log.path,
           log.statusCode,
@@ -469,11 +430,15 @@ export const AuditLogs = () => {
       title: t('audit_logs.col_action'),
       width: 210,
       render: (_value, record) => {
-        const actionLabel = getActionLabel(record.method, record.path);
+        const actionLabel = getActionLabel(
+          actionMap,
+          record.method,
+          record.path,
+        );
         const isDelete = record.method.toUpperCase() === 'DELETE';
         return (
           <span style={isDelete ? { color: '#ff4d4f' } : undefined}>
-            {translateAction(actionLabel)}
+            {actionLabel}
           </span>
         );
       },
@@ -656,9 +621,20 @@ export const AuditLogs = () => {
         <div className="text-sm text-gray-500">
           {t('audit_logs.matching_logs', {
             filtered: filteredAuditLogs.length,
-            total: allAuditLogs.length,
+            total: auditLogs.length,
           })}
         </div>
+        {isCapped && (
+          <Alert
+            type="warning"
+            showIcon
+            className="mt-2"
+            message={t('audit_logs.capped_notice', {
+              loaded: auditLogs.length,
+              total,
+            })}
+          />
+        )}
       </div>
 
       <Table
@@ -666,23 +642,12 @@ export const AuditLogs = () => {
         columns={columns}
         dataSource={filteredAuditLogs}
         loading={isLoading}
-        pagination={{
-          current: currentPage,
-          pageSize,
-          total: filteredAuditLogs.length,
-          showSizeChanger: !isMobile,
-          showQuickJumper: !isMobile,
-          simple: isMobile,
-          showTotal: isMobile
-            ? undefined
-            : (count) => t('audit_logs.records_count', { count }),
-          onChange: (page, nextPageSize) => {
-            patchSearchParams(setSearchParams, {
-              page: String(page),
-              pageSize: String(nextPageSize),
-            });
-          },
-        }}
+        onChange={handleTableChange}
+        pagination={getTablePagination(
+          tableState,
+          filteredAuditLogs.length,
+          (count) => t('audit_logs.records_count', { count }),
+        )}
         size={isMobile ? 'small' : 'middle'}
         scroll={{ x: isMobile ? 860 : 1320 }}
         onRow={(record) => ({
@@ -721,6 +686,7 @@ export const AuditLogs = () => {
                   key: 'action',
                   label: t('audit_logs.detail_action'),
                   children: getActionLabel(
+                    actionMap,
                     selectedLog.method,
                     selectedLog.path,
                   ),

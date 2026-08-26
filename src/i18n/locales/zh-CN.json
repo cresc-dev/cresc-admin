@@ -386,7 +386,8 @@
     "ip_prefix": "IP：",
     "apikey_prefix": "API Key：",
     "start_date": "开始日期",
-    "end_date": "结束日期"
+    "end_date": "结束日期",
+    "capped_notice": "该日期范围内共 {{total}} 条日志，仅载入最近 {{loaded}} 条；缩小日期范围可查看更早的记录。"
   },
   "realtime_metrics": {
     "update_checks": "更新检查",
@@ -552,6 +553,7 @@
   "admin_apps": {
     "app_updated": "应用已更新",
     "copied": "已复制",
+    "copy_failed": "复制失败，请手动复制",
     "col_id": "ID",
     "col_name": "名称",
     "col_app_key": "App Key",
@@ -850,7 +852,8 @@
     "no": "否",
     "loading": "加载中...",
     "copied": "已复制",
-    "none": "无"
+    "none": "无",
+    "copy_failed": "复制失败，请手动复制"
   },
   "workspace": {
     "own_account": "我的账户",

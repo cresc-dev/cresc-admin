@@ -32,6 +32,7 @@ import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
 import { useDeleteVersions, useUpdateVersion } from '@/services/mutations';
 import { useVersions, useWorkspacePermissions } from '@/utils/hooks';
+import { safeStorage } from '@/utils/storage';
 import { useManageContext } from '../hooks/useManageContext';
 import BindPackage from './bind-package';
 import { Commit } from './commit';
@@ -39,16 +40,25 @@ import { DepsTable } from './deps-table';
 
 const JsonEditor = lazy(() => import('./json-editor'));
 
+// Same key as in the ManageContext days, so deep links users already saved survive
+const deepLinkStorageKey = (appId: number) => `${appId}_deeplink`;
+
 const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const { t } = useTranslation();
-  const { appId, deepLink, setDeepLink } = useManageContext();
+  const { appId } = useManageContext();
+  // Only this popover uses the deep link, so the state is local: each keystroke
+  // re-renders just this row's QR code instead of the whole table through
+  // ManageContext. Rows share it via localStorage, re-read when the popover opens.
+  const [deepLink, setDeepLink] = useState(
+    () => safeStorage.get(deepLinkStorageKey(appId)) ?? '',
+  );
   const [enableDeepLink, setEnableDeepLink] = useState(!!deepLink);
 
   const isDeepLinkValid = enableDeepLink && deepLink.endsWith('://');
 
   useEffect(() => {
     if (isDeepLinkValid) {
-      window.localStorage.setItem(`${appId}_deeplink`, deepLink);
+      safeStorage.set(deepLinkStorageKey(appId), deepLink);
     }
   }, [appId, deepLink, isDeepLinkValid]);
 
@@ -62,6 +72,16 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   return (
     <Popover
       className="ant-typography-edit"
+      onOpenChange={(open) => {
+        // Another row may have just changed the deep link; the persisted value
+        // wins when opening, and the row's own draft stays if nothing is stored
+        if (open) {
+          const stored = safeStorage.get(deepLinkStorageKey(appId));
+          if (stored !== null) {
+            setDeepLink(stored);
+          }
+        }
+      }}
       content={
         <div>
           <div className="text-center my-1 mx-auto">

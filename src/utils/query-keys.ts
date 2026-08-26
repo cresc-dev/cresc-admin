@@ -55,9 +55,48 @@ export const activateKeys = {
 export const metricsKeys = {
   global: (startDate: string, endDate: string, mode: 'pv' | 'uv') =>
     ['globalMetrics', startDate, endDate, mode] as const,
-  internal: (target: string) => ['internalMetrics', target] as const,
-  internalApi5xxEvents: (target: string, offset: number) =>
-    ['internalApi5xxEvents', target, offset] as const,
+  app: (appKey: string | undefined, startDate: string, endDate: string) =>
+    ['appMetrics', appKey, startDate, endDate] as const,
+  appEvents: (appKey: string | undefined, startDate: string, endDate: string) =>
+    ['appEventsMetrics', appKey, startDate, endDate] as const,
+  packageWarnings: (
+    appId: number,
+    appKey: string | undefined,
+    startDate: string,
+    endDate: string,
+  ) => ['packageMetricWarnings', appId, appKey, startDate, endDate] as const,
+};
+
+// Service status page: the global overview panels hang under 'global', the
+// API node's own queries under 'node' and the Cloud Run panel under
+// 'cloudRun', so each group can be invalidated by prefix
+export const serviceStatusKeys = {
+  all: () => ['serviceStatus'] as const,
+  analyticsOverview: (days: number) =>
+    ['serviceStatus', 'global', 'analyticsOverview', days] as const,
+  growthStats: (days: number) =>
+    ['serviceStatus', 'global', 'growthStats', days] as const,
+  versionHealthOverview: (days: number) =>
+    ['serviceStatus', 'global', 'versionHealthOverview', days] as const,
+  quotaAlerts: () => ['serviceStatus', 'global', 'quotaAlerts'] as const,
+  workerTaskStats: (days: number) =>
+    ['serviceStatus', 'global', 'workerTaskStats', days] as const,
+  node: () => ['serviceStatus', 'node'] as const,
+  metrics: () => ['serviceStatus', 'node', 'metrics'] as const,
+  api5xxEvents: (offset: number) =>
+    ['serviceStatus', 'node', 'api5xxEvents', offset] as const,
+  cloudRun: () => ['serviceStatus', 'cloudRun'] as const,
+  cloudRunStatus: () => ['serviceStatus', 'cloudRun', 'status'] as const,
+  cloudRunMetrics: () => ['serviceStatus', 'cloudRun', 'metrics'] as const,
+  cloudRunRevisions: (service: string | null) =>
+    ['serviceStatus', 'cloudRun', 'revisions', service] as const,
+  cloudRunImages: () => ['serviceStatus', 'cloudRun', 'images'] as const,
+};
+
+export const emailChangeKeys = {
+  all: () => ['emailChange'] as const,
+  byToken: (mode: 'confirm' | 'revert', token: string) =>
+    ['emailChange', mode, token] as const,
 };
 
 export const adminKeys = {
@@ -71,12 +110,15 @@ export const adminKeys = {
       ? (['adminApps'] as const)
       : (['adminApps', searchQuery, page, pageSize] as const),
   config: () => ['adminConfig'] as const,
-  systemInstances: (target: string) =>
-    ['adminSystemInstances', target] as const,
-  systemNpm: (target: string) => ['adminSystemNpm', target] as const,
 };
 
 export const memberKeys = {
   list: () => ['members'] as const,
   workspaces: () => ['workspaces'] as const,
+};
+
+export const endpointKeys = {
+  // Carries the custom endpoint so switching endpoints re-resolves the base URL
+  apiBase: (customBaseUrl: string | null) =>
+    ['apiBase', customBaseUrl] as const,
 };

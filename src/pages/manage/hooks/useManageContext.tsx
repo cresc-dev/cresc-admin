@@ -1,10 +1,4 @@
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import {
   type PackageMetricWarnings,
   useBinding,
@@ -13,14 +7,9 @@ import {
   usePackages,
 } from '@/utils/hooks';
 
-const noop = () => {};
-// const asyncNoop = () => Promise.resolve();
-
 export const defaultManageContext = {
   appId: 0,
   app: undefined,
-  deepLink: '',
-  setDeepLink: noop,
   packages: [],
   unusedPackages: [],
   bindings: [],
@@ -32,8 +21,6 @@ export const defaultManageContext = {
 export const ManageContext = createContext<{
   appId: number;
   app?: App;
-  deepLink: string;
-  setDeepLink: (deepLink: string) => void;
   packages: Package[];
   unusedPackages: Package[];
   packagesLoading?: boolean;
@@ -62,9 +49,6 @@ export const ManageProvider = ({
   appId: number;
   app?: App;
 }) => {
-  const [deepLink, setDeepLink] = useState(
-    window.localStorage.getItem(`${appId}_deeplink`) ?? '',
-  );
   const {
     packages,
     isLoading: packagesLoading,
@@ -103,8 +87,6 @@ export const ManageProvider = ({
     () => ({
       appId,
       app,
-      deepLink,
-      setDeepLink,
       packages,
       packageMap,
       unusedPackages,
@@ -120,7 +102,6 @@ export const ManageProvider = ({
       appId,
       bindings,
       bindingsLoading,
-      deepLink,
       diffStatusByVersion,
       packageMap,
       packages,

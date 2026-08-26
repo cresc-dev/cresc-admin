@@ -314,3 +314,25 @@ export function packageSupportsForceBoot(
   const rnu = parseDepVersion(packageDeps?.['react-native-update']);
   return !!rnu && compareDepVersions(rnu, [10, 52, 1]) >= 0;
 }
+
+/** Keyword filter for app lists: a hit on name, appKey or platform is enough (shared by the drawer and the apps page). */
+export const filterAppsByQuery = <
+  T extends {
+    name?: string | null;
+    appKey?: string | null;
+    platform?: string | null;
+  },
+>(
+  apps: T[],
+  query: string,
+): T[] => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return apps;
+  }
+  return apps.filter((app) =>
+    [app.name, app.appKey, app.platform]
+      .filter(Boolean)
+      .some((value) => value?.toLowerCase().includes(normalizedQuery)),
+  );
+};

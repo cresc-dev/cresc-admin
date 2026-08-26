@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   cn,
+  filterAppsByQuery,
   getManageAppDrawerCollapsed,
   getManageAppDrawerPlacement,
   type ManageAppDrawerPlacement,
@@ -76,14 +77,7 @@ export function AppDrawer({
 }) {
   const [query, setQuery] = useState('');
   const { t } = useTranslation();
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredApps = normalizedQuery
-    ? apps.filter((app) =>
-        [app.name, app.appKey, app.platform]
-          .filter(Boolean)
-          .some((value) => value?.toLowerCase().includes(normalizedQuery)),
-      )
-    : apps;
+  const filteredApps = filterAppsByQuery(apps, query);
 
   const ToggleIcon = collapsed
     ? placement === 'right'

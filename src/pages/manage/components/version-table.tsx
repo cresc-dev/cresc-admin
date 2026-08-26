@@ -6,7 +6,6 @@ import {
 import {
   Button,
   Checkbox,
-  Grid,
   Input,
   Modal,
   Popover,
@@ -32,7 +31,9 @@ import type { TextContent } from 'vanilla-jsoneditor';
 import { TEST_QR_CODE_DOC } from '@/constants/links';
 import { useDeleteVersions, useUpdateVersion } from '@/services/mutations';
 import { useVersions, useWorkspacePermissions } from '@/utils/hooks';
+import { useIsMobile } from '@/utils/responsive';
 import { safeStorage } from '@/utils/storage';
+import { getTablePagination } from '@/utils/table-state';
 import { useManageContext } from '../hooks/useManageContext';
 import BindPackage from './bind-package';
 import { Commit } from './commit';
@@ -263,8 +264,7 @@ const EditFieldModal = ({
   onSubmit: (value: string) => Promise<unknown>;
   onClose: () => void;
 }) => {
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = useIsMobile();
   const [textValue, setTextValue] = useState(initialValue);
   // vanilla-jsoneditor replays the `content` prop on every re-render, so the
   // JSON draft lives in a ref to keep the editor uncontrolled while typing.
@@ -457,8 +457,7 @@ export default function VersionTable() {
   const { canPublish } = useWorkspacePermissions();
   const columns = useMemo(() => getColumns(t, canPublish), [t, canPublish]);
   const deleteVersions = useDeleteVersions();
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = useIsMobile();
   const { appId } = useManageContext();
   const [selected, setSelected] = useState<number[]>([]);
   const [offset, setOffset] = useState<number>(0);
@@ -505,14 +504,11 @@ export default function VersionTable() {
       dataSource={filteredVersions}
       size={isMobile ? 'small' : 'middle'}
       pagination={{
-        showSizeChanger: !isMobile,
-        simple: isMobile,
-        total: count,
-        current: offset / pageSize + 1,
-        pageSize,
-        showTotal: isMobile
-          ? undefined
-          : (total) => t('version_table.total_versions', { total }),
+        ...getTablePagination(
+          { isMobile, page: offset / pageSize + 1, pageSize },
+          count,
+          (total) => t('version_table.total_versions', { total }),
+        ),
         onChange(page, size) {
           if (size) {
             setOffset((page - 1) * size);

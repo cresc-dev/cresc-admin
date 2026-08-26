@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test';
 import {
+  filterAppsByQuery,
   getFatalDepsViolation,
   packageSupportsForceBoot,
   parseDepVersion,
@@ -141,5 +142,27 @@ describe('binding deps helpers', () => {
       false,
     );
     expect(packageSupportsForceBoot(undefined)).toBe(false);
+  });
+});
+
+describe('filterAppsByQuery', () => {
+  const apps = [
+    { id: 1, name: 'Shop', appKey: 'abc123', platform: 'ios' },
+    { id: 2, name: 'Blog', appKey: 'xyz789', platform: 'android' },
+    { id: 3, name: null, appKey: null, platform: 'harmony' },
+  ];
+
+  test('returns the input as-is for a blank query', () => {
+    expect(filterAppsByQuery(apps, '   ')).toBe(apps);
+  });
+
+  test('matches name, appKey or platform, ignoring case and surrounding whitespace', () => {
+    expect(filterAppsByQuery(apps, ' shop ').map((a) => a.id)).toEqual([1]);
+    expect(filterAppsByQuery(apps, 'XYZ').map((a) => a.id)).toEqual([2]);
+    expect(filterAppsByQuery(apps, 'harm').map((a) => a.id)).toEqual([3]);
+  });
+
+  test('empty fields do not take part in matching', () => {
+    expect(filterAppsByQuery(apps, 'null')).toEqual([]);
   });
 });

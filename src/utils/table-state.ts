@@ -81,6 +81,68 @@ const firstFilterValue = (
   return String(raw) || undefined;
 };
 
+/** Sort params from the URL: a column outside the whitelist counts as unsorted; order is asc only when it says so, otherwise desc */
+export const parseSortState = (
+  searchParams: URLSearchParams,
+  sortableColumns?: ReadonlySet<string>,
+): { orderBy: string | undefined; order: SortDirection | undefined } => {
+  const orderByParam = searchParams.get('orderBy') ?? undefined;
+  const orderBy =
+    orderByParam && sortableColumns?.has(orderByParam)
+      ? orderByParam
+      : undefined;
+  const order: SortDirection | undefined =
+    searchParams.get('order') === 'asc' ? 'asc' : orderBy ? 'desc' : undefined;
+  return { orderBy, order };
+};
+
+/** The three antd Table onChange args -> the patch to write back to the URL (undefined removes the param) */
+export const buildTableChangePatch = ({
+  pagination,
+  filters,
+  sorter,
+  pageSize,
+  filterKeys = [],
+  sortableColumns,
+  normalizeFilter,
+}: Pick<
+  UrlTableStateOptions,
+  'filterKeys' | 'sortableColumns' | 'normalizeFilter'
+> & {
+  pagination: TablePaginationConfig;
+  filters: Record<string, FilterValue | null>;
+  sorter: SorterResult<any> | SorterResult<any>[];
+  /** Page size currently in effect, the fallback when pagination omits it */
+  pageSize: number;
+}): Record<string, string | undefined> => {
+  const patch: Record<string, string | undefined> = {
+    page: String(pagination.current ?? 1),
+    pageSize: String(pagination.pageSize ?? pageSize),
+  };
+
+  for (const key of filterKeys) {
+    const value = firstFilterValue(filters, key);
+    patch[key] = normalizeFilter ? normalizeFilter(key, value) : value;
+  }
+
+  if (sortableColumns) {
+    const single = Array.isArray(sorter) ? sorter[0] : sorter;
+    const field =
+      single?.order && typeof single.field === 'string'
+        ? single.field
+        : undefined;
+    patch.orderBy = field && sortableColumns.has(field) ? field : undefined;
+    patch.order =
+      field && single?.order
+        ? single.order === 'ascend'
+          ? 'asc'
+          : 'desc'
+        : undefined;
+  }
+
+  return patch;
+};
+
 export const useUrlTableState = ({
   searchParam = 'search',
   sortableColumns,
@@ -96,13 +158,7 @@ export const useUrlTableState = ({
     searchParams.get('pageSize'),
     getDefaultPageSize(isMobile),
   );
-  const orderByParam = searchParams.get('orderBy') ?? undefined;
-  const orderBy =
-    orderByParam && sortableColumns?.has(orderByParam)
-      ? orderByParam
-      : undefined;
-  const order: SortDirection | undefined =
-    searchParams.get('order') === 'asc' ? 'asc' : orderBy ? 'desc' : undefined;
+  const { orderBy, order } = parseSortState(searchParams, sortableColumns);
 
   const [searchInput, setSearchInput] = useState(searchQuery);
 
@@ -137,32 +193,18 @@ export const useUrlTableState = ({
     filters,
     sorter,
   ) => {
-    const patch: Record<string, string | undefined> = {
-      page: String(pagination.current ?? 1),
-      pageSize: String(pagination.pageSize ?? pageSize),
-    };
-
-    for (const key of filterKeys) {
-      const value = firstFilterValue(filters, key);
-      patch[key] = normalizeFilter ? normalizeFilter(key, value) : value;
-    }
-
-    if (sortableColumns) {
-      const single = Array.isArray(sorter) ? sorter[0] : sorter;
-      const field =
-        single?.order && typeof single.field === 'string'
-          ? single.field
-          : undefined;
-      patch.orderBy = field && sortableColumns.has(field) ? field : undefined;
-      patch.order =
-        field && single?.order
-          ? single.order === 'ascend'
-            ? 'asc'
-            : 'desc'
-          : undefined;
-    }
-
-    patchSearchParams(setSearchParams, patch);
+    patchSearchParams(
+      setSearchParams,
+      buildTableChangePatch({
+        pagination,
+        filters,
+        sorter,
+        pageSize,
+        filterKeys,
+        sortableColumns,
+        normalizeFilter,
+      }),
+    );
   };
 
   return {

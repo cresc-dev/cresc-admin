@@ -36,6 +36,11 @@ export const rootRouterPath = {
   members: '/members',
 };
 
+// The metrics and health pages both locate the app via ?appKey; build that
+// link here so no page has to encode it on its own.
+export const appViewPath = (path: string, appKey?: string | null) =>
+  appKey ? `${path}?${new URLSearchParams({ appKey })}` : path;
+
 export const needAuthLoader = ({ request }: { request: Request }) => {
   if (!hasSession()) {
     const { pathname, search } = new URL(request.url);

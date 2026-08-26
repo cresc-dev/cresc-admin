@@ -40,35 +40,15 @@ import {
   usePageClamp,
   useUrlTableState,
 } from '@/utils/table-state';
+import {
+  FILTER_KEYS,
+  normalizeFilter,
+  parsePlatformFilter,
+  parseStatusFilter,
+  SORTABLE_COLUMNS,
+} from './admin-apps.logic';
 
 const { Title } = Typography;
-
-// checkCount 由 Redis 事后统计,不在 SQL 里,因此不参与排序。
-const SORTABLE_COLUMNS = new Set([
-  'id',
-  'name',
-  'appKey',
-  'platform',
-  'userId',
-  'status',
-  'createdAt',
-]);
-
-const PLATFORM_VALUES = ['ios', 'android', 'harmony'];
-const STATUS_VALUES = ['normal', 'paused'];
-
-// Header filter columns; values are mirrored into same-named URL params
-const FILTER_KEYS = ['platform', 'status', 'userId'] as const;
-
-// The user id is typed by hand; normalize it before writing it back to the
-// URL so "0"/"abc" cannot leave behind a filter that never applies.
-const normalizeFilter = (key: string, value: string | undefined) => {
-  if (key !== 'userId') {
-    return value;
-  }
-  const userId = parseOptionalPositiveInt(value ?? null);
-  return userId ? String(userId) : undefined;
-};
 
 export const Component = () => {
   const { t } = useTranslation();
@@ -98,16 +78,8 @@ export const Component = () => {
   const [editingApp, setEditingApp] = useState<AdminApp | null>(null);
   const [form] = Form.useForm();
 
-  const platformParam = searchParams.get('platform') ?? undefined;
-  const platformFilter =
-    platformParam && PLATFORM_VALUES.includes(platformParam)
-      ? platformParam
-      : undefined;
-  const statusParam = searchParams.get('status') ?? undefined;
-  const statusFilter =
-    statusParam && STATUS_VALUES.includes(statusParam)
-      ? statusParam
-      : undefined;
+  const platformFilter = parsePlatformFilter(searchParams.get('platform'));
+  const statusFilter = parseStatusFilter(searchParams.get('status'));
   const userIdFilter = parseOptionalPositiveInt(searchParams.get('userId'));
 
   const { data, isLoading, isPlaceholderData } = useQuery({

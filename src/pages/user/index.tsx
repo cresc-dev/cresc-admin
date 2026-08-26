@@ -10,7 +10,8 @@ import { quotas } from '../../constants/quotas';
 import { EmailChangeButton, PasswordChangeButton } from './account-security';
 import { subscriptionControlState } from './billing';
 import { CancelResumeButton, UpgradeDropdown } from './purchase-controls';
-import { QuotaDetailsPanel, type QuotaUsageRow } from './quota-details';
+import { QuotaDetailsPanel } from './quota-details';
+import { buildQuotaUsageRows, getMaxCount } from './quota-usage';
 
 function UserPanel() {
   const { t } = useTranslation();
@@ -53,58 +54,18 @@ function UserPanel() {
   const isPackageCountLoading = packageCountQueries.some(
     (query) => query.isLoading,
   );
-  const maxVersionCount = Math.max(
-    0,
-    ...versionCounts.map((count) => count ?? 0),
-  );
-  const maxPackageCount = Math.max(
-    0,
-    ...packageCounts.map((count) => count ?? 0),
-  );
+  const maxVersionCount = getMaxCount(versionCounts);
+  const maxPackageCount = getMaxCount(packageCounts);
   const remainingChecks = user.checkQuota;
-  const quotaUsageRows: QuotaUsageRow[] = [
-    {
-      key: 'app',
-      label: t('user.apps'),
-      limit: currentQuota.app,
-      note: t('user.apps_note'),
-      percent: Math.min(100, (appCount / currentQuota.app) * 100),
-      status: appCount > currentQuota.app ? 'exception' : 'normal',
-      value: `${appCount.toLocaleString()} / ${currentQuota.app.toLocaleString()}`,
-    },
-    {
-      key: 'bundle',
-      label: t('user.ota_bundles'),
-      limit: currentQuota.bundle,
-      loading: isVersionCountLoading,
-      note: isVersionCountLoading
-        ? t('user.counting_bundles')
-        : t('user.highest_usage'),
-      percent: isVersionCountLoading
-        ? 0
-        : Math.min(100, (maxVersionCount / currentQuota.bundle) * 100),
-      status: maxVersionCount > currentQuota.bundle ? 'exception' : 'normal',
-      value: isVersionCountLoading
-        ? t('user.counting')
-        : `${maxVersionCount.toLocaleString()} / ${currentQuota.bundle.toLocaleString()}`,
-    },
-    {
-      key: 'package',
-      label: t('user.native_packages'),
-      limit: currentQuota.package,
-      loading: isPackageCountLoading,
-      note: isPackageCountLoading
-        ? t('user.counting_packages')
-        : t('user.highest_usage'),
-      percent: isPackageCountLoading
-        ? 0
-        : Math.min(100, (maxPackageCount / currentQuota.package) * 100),
-      status: maxPackageCount > currentQuota.package ? 'exception' : 'normal',
-      value: isPackageCountLoading
-        ? t('user.counting')
-        : `${maxPackageCount.toLocaleString()} / ${currentQuota.package.toLocaleString()}`,
-    },
-  ];
+  const quotaUsageRows = buildQuotaUsageRows({
+    t,
+    quota: currentQuota,
+    appCount,
+    maxVersionCount,
+    maxPackageCount,
+    isVersionCountLoading,
+    isPackageCountLoading,
+  });
   const quotaSizeLimits = [
     {
       label: t('user.ota_bundle_size'),

@@ -65,6 +65,10 @@ export const metricsKeys = {
     startDate: string,
     endDate: string,
   ) => ['packageMetricWarnings', appId, appKey, startDate, endDate] as const,
+  customerRegions: (days: number) =>
+    ['globalMetrics', 'customerRegions', days] as const,
+  writeOperations: (dimension: 'region' | 'client', days: number) =>
+    ['globalMetrics', 'writeOperations', dimension, days] as const,
 };
 
 // Service status page: the global overview panels hang under 'global', the

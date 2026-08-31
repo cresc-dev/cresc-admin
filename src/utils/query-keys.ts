@@ -71,6 +71,20 @@ export const metricsKeys = {
     ['globalMetrics', 'writeOperations', dimension, days] as const,
 };
 
+export const clientErrorKeys = {
+  list: (
+    appId: number | undefined,
+    start: string,
+    end: string,
+    offset: number,
+    limit: number,
+    fatal: boolean | undefined,
+  ) =>
+    ['clientErrors', appId, 'list', start, end, offset, limit, fatal] as const,
+  detail: (appId: number | undefined, issueId: number | undefined) =>
+    ['clientErrors', appId, 'detail', issueId] as const,
+};
+
 // Service status page: the global overview panels hang under 'global', the
 // API node's own queries under 'node' and the Cloud Run panel under
 // 'cloudRun', so each group can be invalidated by prefix

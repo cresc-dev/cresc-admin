@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { rootRouterPath } from '@/router';
 import { adminApi } from '@/services/admin-api';
 
-// Collapse 面板默认首次展开才挂载子内容，借此实现按需拉取包列表
+// Collapse panels mount their children on first expansion, so package data is fetched lazily.
 const AppPackagesTable = ({ appId }: { appId: number }) => {
   const { t } = useTranslation();
   const { data, isLoading } = useQuery({
@@ -25,8 +25,8 @@ const AppPackagesTable = ({ appId }: { appId: number }) => {
   });
 
   const translate = (key: string, fallback: string) => {
-    const val = t(key);
-    return val && val !== key ? val : fallback;
+    const value = t(key);
+    return value && value !== key ? value : fallback;
   };
 
   return (
@@ -53,14 +53,14 @@ const AppPackagesTable = ({ appId }: { appId: number }) => {
           dataIndex: 'hash',
           key: 'hash',
           width: 100,
-          render: (h: string) => (
-            <code className="text-xs">{h.slice(0, 8)}</code>
+          render: (hash: string) => (
+            <code className="text-xs">{hash.slice(0, 8)}</code>
           ),
         },
         {
           title: 'Build',
           key: 'build',
-          render: (_, r) => r.buildTime || '-',
+          render: (_, record) => record.buildTime || '-',
         },
         {
           title: translate('admin_users.col_status', 'Status'),
@@ -99,12 +99,13 @@ export const UserDetailDrawer = ({
 
   const translate = (key: string, fallback: string) => {
     if (t) {
-      // Return translation if key is known, otherwise fallback
-      const val = t(key);
-      if (val && val !== key) return val;
+      const value = t(key);
+      if (value && value !== key) return value;
     }
     return fallback;
   };
+  const renderChecks = (value: number | null | undefined) =>
+    value == null ? '-' : `${value} pv`;
 
   const detail = data;
 
@@ -214,22 +215,22 @@ export const UserDetailDrawer = ({
               <Descriptions.Item
                 label={translate('admin_users.pv_limit', 'Daily Limit')}
               >
-                {detail.quotaDetail.limit.pv} pv
+                {renderChecks(detail.quotaDetail.limit.pv)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.today_used', 'Today Used')}
               >
-                {detail.quotaDetail.todayUsed} pv
+                {renderChecks(detail.quotaDetail.todayUsed)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.today_remaining', 'Remaining')}
               >
-                {detail.quotaDetail.todayRemaining} pv
+                {renderChecks(detail.quotaDetail.todayRemaining)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.avg_7_days', '7d Avg')}
               >
-                {detail.quotaDetail.last7Days.avg} pv
+                {renderChecks(detail.quotaDetail.last7Days?.avg)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate(
@@ -238,15 +239,17 @@ export const UserDetailDrawer = ({
                 )}
                 span={2}
               >
-                {detail.quotaDetail.last7Days.counts
-                  .slice()
-                  .reverse()
-                  .map((c, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: list order is static
-                    <span key={i} className="mr-3 inline-block">
-                      Day {i + 1}: <strong>{c}</strong>
-                    </span>
-                  ))}
+                {detail.quotaDetail.last7Days
+                  ? detail.quotaDetail.last7Days.counts
+                      .slice()
+                      .reverse()
+                      .map((count, index) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: list order is static
+                        <span key={index} className="mr-3 inline-block">
+                          Day {index + 1}: <strong>{count}</strong>
+                        </span>
+                      ))
+                  : '-'}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.app_limit', 'App Limit')}
@@ -281,7 +284,7 @@ export const UserDetailDrawer = ({
                         </span>
                         <Space size="middle">
                           <span>
-                            PV: <strong>{app.checkCount}</strong>
+                            PV: <strong>{app.checkCount ?? '-'}</strong>
                           </span>
                           <span>
                             {translate(

@@ -140,6 +140,26 @@ export const buildDistributionPoints = (
   return points;
 };
 
+/**
+ * Rank legend categories by real volume across the selected window. Summing
+ * daily percentages would give a low-traffic day the same weight as a busy one.
+ */
+export const getDistributionCategoryOrder = (
+  points: readonly DistributionPoint[],
+): string[] => {
+  const totals = new Map<string, number>();
+  for (const point of points) {
+    totals.set(point.category, (totals.get(point.category) ?? 0) + point.count);
+  }
+  return Array.from(totals.entries())
+    .sort(([leftCategory, leftCount], [rightCategory, rightCount]) =>
+      rightCount === leftCount
+        ? leftCategory.localeCompare(rightCategory)
+        : rightCount - leftCount,
+    )
+    .map(([category]) => category);
+};
+
 export const formatDistributionTooltip = (point: DistributionPoint) =>
   `${point.value.toFixed(1)}% (${point.count.toLocaleString()})`;
 

@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { router } from './router';
 import { themeConfig } from './theme';
 import { queryClient } from './utils/queryClient';
+import { retireLegacyPwaState } from './utils/service-worker-retirement';
 import { ThemeModeProvider, useThemeMode } from './utils/theme-mode';
 
 const antdLocales: Record<string, typeof enUS> = {
@@ -22,54 +23,9 @@ const antdLocales: Record<string, typeof enUS> = {
   'zh-CN': zhCN,
 };
 
-const isLocalHost = () => {
-  const { hostname } = window.location;
-  return (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '0.0.0.0' ||
-    hostname === '::1'
-  );
-};
-
-const shouldEnablePwa = process.env.NODE_ENV === 'production' && !isLocalHost();
-
-const hasServiceWorker = () =>
-  typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
-
-const clearLocalPwaState = () => {
-  if (hasServiceWorker()) {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) =>
-        Promise.all(
-          registrations.map((registration) => registration.unregister()),
-        ),
-      )
-      .catch(() => {
-        // SW cleanup failed, app continues normally.
-      });
-  }
-
-  if (typeof caches !== 'undefined') {
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-      .catch(() => {
-        // Cache cleanup failed, app continues normally.
-      });
-  }
-};
-
-if (hasServiceWorker() && shouldEnablePwa) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // SW registration failed, app continues normally
-    });
-  });
-} else if (isLocalHost()) {
-  window.addEventListener('load', clearLocalPwaState);
-}
+window.addEventListener('load', () => {
+  void retireLegacyPwaState();
+});
 
 const root = document.getElementById('main');
 if (root) {

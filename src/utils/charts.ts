@@ -24,6 +24,8 @@ export interface TimeSeriesLineOptions<P extends TimeSeriesPoint> {
   yTitle?: string;
   /** Time format for x-axis ticks, default 'MM/DD HH:mm'; same-day panels use 'HH:mm'. */
   axisTimeFormat?: string;
+  /** Time format for the tooltip title; defaults to 'MM/DD HH:mm'. */
+  tooltipTimeFormat?: string;
   /** Value text of a tooltip item; G2's default rendering when omitted. */
   formatTooltipValue?: (point: P) => string;
   /** Merge simultaneously hit lines into one tooltip, on by default. */
@@ -39,7 +41,7 @@ export interface TimeSeriesLineOptions<P extends TimeSeriesPoint> {
 }
 
 const DEFAULT_AXIS_TIME_FORMAT = 'MM/DD HH:mm';
-const TOOLTIP_TIME_FORMAT = 'MM/DD HH:mm';
+const DEFAULT_TOOLTIP_TIME_FORMAT = 'MM/DD HH:mm';
 
 /**
  * Time-series line config shared by the metrics pages: theme follows dark
@@ -53,6 +55,7 @@ export function buildTimeSeriesLineConfig<P extends TimeSeriesPoint>({
   xTitle,
   yTitle,
   axisTimeFormat = DEFAULT_AXIS_TIME_FORMAT,
+  tooltipTimeFormat = DEFAULT_TOOLTIP_TIME_FORMAT,
   formatTooltipValue,
   sharedTooltip = true,
   colorDomain,
@@ -81,7 +84,7 @@ export function buildTimeSeriesLineConfig<P extends TimeSeriesPoint>({
       y: yTitle === undefined ? {} : { title: yTitle },
     },
     tooltip: {
-      title: (point: P) => dayjs(point.time).format(TOOLTIP_TIME_FORMAT),
+      title: (point: P) => dayjs(point.time).format(tooltipTimeFormat),
       ...(formatTooltipValue
         ? {
             items: [

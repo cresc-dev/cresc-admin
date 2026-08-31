@@ -328,6 +328,7 @@ interface WorkerTaskDaySummary {
   date: string;
   count: number;
   byResult: Record<string, number>;
+  byFailure: Record<string, number>;
   durationMs: WorkerStatsDistribution | null;
   patchBytes: WorkerStatsDistribution | null;
   artifactBytes: WorkerStatsDistribution | null;

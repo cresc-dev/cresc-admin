@@ -1,12 +1,17 @@
 import {
+  DeleteOutlined,
   EditOutlined,
+  JavaScriptOutlined,
+  PullRequestOutlined,
   QrcodeOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import {
   Button,
   Checkbox,
+  Dropdown,
   Input,
+  type MenuProps,
   Modal,
   Popover,
   QRCode,
@@ -36,15 +41,25 @@ import { safeStorage } from '@/utils/storage';
 import { getTablePagination } from '@/utils/table-state';
 import { useManageContext } from '../hooks/useManageContext';
 import BindPackage from './bind-package';
-import { Commit } from './commit';
-import { DepsTable } from './deps-table';
+import { CommitModal } from './commit';
+import { DepsModal } from './deps-table';
 
 const JsonEditor = lazy(() => import('./json-editor'));
 
 // Same key as in the ManageContext days, so deep links users already saved survive
 const deepLinkStorageKey = (appId: number) => `${appId}_deeplink`;
 
-const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
+export const TestQrCodeModal = ({
+  open,
+  onClose,
+  name,
+  hash,
+}: {
+  open: boolean;
+  onClose: () => void;
+  name?: string;
+  hash: string;
+}) => {
   const { t } = useTranslation();
   const { appId } = useManageContext();
   // Only this popover uses the deep link, so the state is local: each keystroke
@@ -56,6 +71,16 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const [enableDeepLink, setEnableDeepLink] = useState(!!deepLink);
 
   const isDeepLinkValid = enableDeepLink && deepLink.endsWith('://');
+
+  useEffect(() => {
+    if (open) {
+      const stored = safeStorage.get(deepLinkStorageKey(appId));
+      if (stored !== null) {
+        setDeepLink(stored);
+        setEnableDeepLink(!!stored);
+      }
+    }
+  }, [open, appId]);
 
   useEffect(() => {
     if (isDeepLinkValid) {
@@ -70,67 +95,233 @@ const TestQrCode = ({ name, hash }: { name?: string; hash: string }) => {
   const codeValue = isDeepLinkValid
     ? `${deepLink}?${new URLSearchParams(codePayload).toString()}`
     : JSON.stringify(codePayload);
+
   return (
-    <Popover
-      className="ant-typography-edit"
-      onOpenChange={(open) => {
-        // Another row may have just changed the deep link; the persisted value
-        // wins when opening, and the row's own draft stays if nothing is stored
-        if (open) {
-          const stored = safeStorage.get(deepLinkStorageKey(appId));
-          if (stored !== null) {
-            setDeepLink(stored);
-          }
-        }
-      }}
-      content={
-        <div>
-          <div className="text-center my-1 mx-auto">
-            {t('version_table.qr_title')} <br />
-            <a
-              target="_blank"
-              className="ml-1 text-xs"
-              href={TEST_QR_CODE_DOC}
-              rel="noreferrer"
-            >
-              {t('version_table.how_to_use')}
-            </a>
-          </div>
-          <QRCode value={codeValue} bordered={false} className="my-0 mx-auto" />
-          <div className="text-center my-0 mx-auto">{name}</div>
-          {/* <div style={{ textAlign: 'center', margin: '0 auto' }}>{hash}</div> */}
-          <div>
-            <Input.TextArea
-              readOnly
-              autoSize
-              value={codeValue}
-              className="mb-1"
-            />
-            <div className="flex flex-row items-center">
-              <Checkbox
-                className="mr-4"
-                checked={enableDeepLink}
-                onChange={({ target }) => {
-                  setEnableDeepLink(target.checked);
-                }}
-              >
-                {t('version_table.use_deep_link')}
-              </Checkbox>
-              <Input
-                placeholder={t('version_table.deep_link_placeholder')}
-                className="flex-1"
-                value={deepLink}
-                onChange={({ target }) => {
-                  setDeepLink(target.value);
-                }}
-              />
-            </div>
-          </div>
+    <Modal
+      open={open}
+      onCancel={onClose}
+      maskClosable
+      keyboard
+      destroyOnClose
+      footer={null}
+      width={480}
+      title={
+        <div className="flex items-center justify-between pr-6">
+          <span className="font-semibold text-base text-[var(--ant-color-text)]">
+            {t('version_table.qr_title')}
+          </span>
+          <a
+            target="_blank"
+            className="text-xs text-[var(--ant-color-primary)] hover:underline font-normal"
+            href={TEST_QR_CODE_DOC}
+            rel="noreferrer"
+          >
+            {t('version_table.how_to_use')}
+          </a>
         </div>
       }
     >
-      <Button type="link" icon={<QrcodeOutlined />} onClick={() => {}} />
-    </Popover>
+      <div className="flex flex-col items-center gap-4 py-2 max-h-[70vh] overflow-y-auto pr-1">
+        <div className="p-3 bg-white rounded-lg shadow-sm border border-[var(--ant-color-border-secondary)]">
+          <QRCode
+            value={codeValue}
+            color="#000000"
+            bgColor="#ffffff"
+            bordered={false}
+            size={180}
+          />
+        </div>
+        {name && (
+          <div className="font-medium text-center text-sm text-[var(--ant-color-text)]">
+            {name}
+          </div>
+        )}
+        <div className="w-full space-y-3">
+          <Input.TextArea
+            readOnly
+            autoSize={{ minRows: 2, maxRows: 4 }}
+            value={codeValue}
+            className="font-mono text-xs"
+          />
+          <div className="flex flex-col gap-2 rounded bg-[var(--ant-color-fill-quaternary)] border border-[var(--ant-color-border-secondary)] p-3">
+            <Checkbox
+              checked={enableDeepLink}
+              onChange={({ target }) => {
+                setEnableDeepLink(target.checked);
+              }}
+            >
+              <span className="text-sm font-medium text-[var(--ant-color-text)]">
+                {t('version_table.use_deep_link')}
+              </span>
+            </Checkbox>
+            <Input
+              placeholder={t('version_table.deep_link_placeholder')}
+              className="mt-1"
+              value={deepLink}
+              onChange={({ target }) => {
+                setDeepLink(target.value);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+const removeVersion = (
+  record: Version,
+  appId: number,
+  deleteVersions: (variables: {
+    appId: number;
+    versionIds: number[];
+  }) => Promise<unknown>,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+) => {
+  Modal.confirm({
+    title: t('version_table.delete_title'),
+    content: record.name,
+    maskClosable: true,
+    keyboard: true,
+    okButtonProps: { danger: true },
+    async onOk() {
+      await deleteVersions({ appId, versionIds: [record.id] });
+    },
+  });
+};
+
+const VersionNameCell = ({
+  record,
+  canPublish,
+}: {
+  record: Version;
+  canPublish: boolean;
+}) => {
+  const { t } = useTranslation();
+  const { appId } = useManageContext();
+  const updateVersion = useUpdateVersion();
+  const deleteVersions = useDeleteVersions();
+  const [modalType, setModalType] = useState<
+    'edit' | 'deps' | 'commit' | 'qr' | null
+  >(null);
+
+  const menuItems: MenuProps['items'] = [
+    {
+      type: 'group',
+      label: (
+        <span className="font-semibold text-xs text-[var(--ant-color-text)] max-w-[240px] truncate block">
+          {record.name}
+        </span>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    ...(canPublish
+      ? [
+          {
+            key: 'edit',
+            icon: <EditOutlined />,
+            label: t('common.edit'),
+          },
+        ]
+      : []),
+    {
+      key: 'deps',
+      icon: <JavaScriptOutlined />,
+      label: t('deps_table.js_deps_heading'),
+    },
+    {
+      key: 'commit',
+      icon: <PullRequestOutlined />,
+      label: t('commit.title'),
+    },
+    {
+      key: 'qr',
+      icon: <QrcodeOutlined />,
+      label: t('version_table.qr_title'),
+    },
+    ...(canPublish
+      ? [
+          {
+            type: 'divider' as const,
+          },
+          {
+            key: 'delete',
+            icon: <DeleteOutlined />,
+            label: t('common.delete'),
+            danger: true,
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="w-full">
+      <Dropdown
+        menu={{
+          items: menuItems,
+          onClick: ({ key }) => {
+            if (key === 'delete') {
+              removeVersion(record, appId, deleteVersions.mutateAsync, t);
+            } else {
+              setModalType(key as 'edit' | 'deps' | 'commit' | 'qr');
+            }
+          },
+        }}
+        trigger={['hover']}
+        placement="bottomLeft"
+      >
+        <div className="w-full cursor-pointer py-1 px-1.5 -mx-1.5 rounded hover:bg-[var(--ant-color-fill-secondary)] transition-colors">
+          <Typography.Text
+            strong
+            className="block max-w-[14rem] md:max-w-xs truncate text-[var(--ant-color-text)]"
+          >
+            {record.name}
+          </Typography.Text>
+        </div>
+      </Dropdown>
+
+      {modalType === 'edit' && (
+        <EditFieldModal
+          title={t('version_table.col_version')}
+          isJson={false}
+          initialValue={record.name ?? ''}
+          saving={updateVersion.isPending}
+          onClose={() => setModalType(null)}
+          onSubmit={(newValue) =>
+            updateVersion.mutateAsync({
+              appId,
+              versionId: record.id,
+              params: { name: newValue },
+            })
+          }
+        />
+      )}
+      {modalType === 'deps' && (
+        <DepsModal
+          open
+          onClose={() => setModalType(null)}
+          deps={record.deps}
+          name={`OTA Version ${record.name}`}
+        />
+      )}
+      {modalType === 'commit' && (
+        <CommitModal
+          open
+          onClose={() => setModalType(null)}
+          commit={record.commit}
+        />
+      )}
+      {modalType === 'qr' && (
+        <TestQrCodeModal
+          open
+          onClose={() => setModalType(null)}
+          name={record.name}
+          hash={record.hash}
+        />
+      )}
+    </div>
   );
 };
 
@@ -175,18 +366,7 @@ const getColumns = (
     title: t('version_table.col_version'),
     dataIndex: 'name',
     render: (_, record) => (
-      <TextColumn
-        record={record}
-        recordKey="name"
-        title={t('version_table.col_version')}
-        extra={
-          <>
-            <DepsTable deps={record.deps} name={`OTA Version ${record.name}`} />
-            <Commit commit={record.commit} />
-            <TestQrCode name={record.name} hash={record.hash} />
-          </>
-        }
-      />
+      <VersionNameCell record={record} canPublish={canPublish} />
     ),
   },
   {
@@ -208,13 +388,13 @@ const getColumns = (
     title: t('version_table.col_metadata'),
     dataIndex: 'metaInfo',
     responsive: ['lg'],
-    width: 300,
+    width: 150,
     render: (_, record) => (
       <TextColumn
         record={record}
         recordKey="metaInfo"
         title={t('version_table.col_metadata')}
-        className="block max-w-[18rem] md:w-72"
+        className="block max-w-[8rem] md:w-32"
         showPopover
       />
     ),
@@ -354,19 +534,21 @@ const TextColumn = ({
   }
 
   const popoverContent = (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 text-[var(--ant-color-text)]">
       {isEditable && (
-        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-1 mb-1">
-          <span className="font-medium text-xs text-gray-400">{title}</span>
+        <div className="flex items-center justify-between border-b border-[var(--ant-color-border-secondary)] pb-1 mb-1">
+          <span className="font-medium text-xs text-[var(--ant-color-text-secondary)]">
+            {title}
+          </span>
           <Button
-            type="link"
+            type="text"
             size="small"
             icon={<EditOutlined />}
             onClick={() => {
               setPopoverOpen(false);
               setEditing(true);
             }}
-            className="p-0 h-auto text-xs"
+            className="p-0 h-auto text-xs text-[var(--ant-color-text)] hover:text-[var(--ant-color-primary)] flex items-center gap-1"
           >
             {t('common.edit')}
           </Button>
@@ -374,15 +556,17 @@ const TextColumn = ({
       )}
       <div
         style={{ maxWidth: '400px', maxHeight: '250px', overflow: 'auto' }}
-        className="whitespace-pre-wrap break-all text-sm"
+        className="whitespace-pre-wrap break-all text-sm text-[var(--ant-color-text)]"
       >
         {key === 'metaInfo' ? (
-          <pre className="font-mono text-xs bg-gray-50 dark:bg-gray-900/50 p-2 rounded m-0 border border-gray-100 dark:border-gray-800">
+          <pre className="font-mono text-xs bg-[var(--ant-color-fill-quaternary)] text-[var(--ant-color-text)] p-2 rounded m-0 border border-[var(--ant-color-border-secondary)]">
             {formatMetadata(value)}
           </pre>
         ) : (
           value || (
-            <span className="text-gray-400 italic">{t('common.none')}</span>
+            <span className="text-[var(--ant-color-text-tertiary)] italic">
+              {t('common.none')}
+            </span>
           )
         )}
       </div>
@@ -390,7 +574,7 @@ const TextColumn = ({
   );
 
   return (
-    <div className="group flex items-center justify-between gap-1">
+    <div className="w-full">
       {showPopover ? (
         <Popover
           open={popoverOpen}
@@ -401,36 +585,41 @@ const TextColumn = ({
           placement="topLeft"
           overlayStyle={{ maxWidth: '420px' }}
         >
-          <Typography.Text
-            className={className || 'block max-w-[9rem] md:w-40'}
-            ellipsis
-          >
-            {value || <span className="text-gray-400 italic">-</span>}
-          </Typography.Text>
+          <div className="w-full cursor-pointer py-1 px-1.5 -mx-1.5 rounded hover:bg-[var(--ant-color-fill-secondary)] transition-colors">
+            <Typography.Text
+              className={
+                className ||
+                'block max-w-[9rem] md:w-40 text-[var(--ant-color-text)]'
+              }
+              ellipsis
+            >
+              {value || (
+                <span className="text-[var(--ant-color-text-tertiary)] italic">
+                  -
+                </span>
+              )}
+            </Typography.Text>
+          </div>
         </Popover>
       ) : (
-        <Typography.Text
-          className={className || 'block max-w-[9rem] md:w-40'}
-          editable={
-            isEditable
-              ? { editing: false, onStart: () => setEditing(true) }
-              : undefined
-          }
-          ellipsis
-        >
-          {value}
-        </Typography.Text>
+        <div className="py-1 px-1.5 -mx-1.5">
+          <Typography.Text
+            className={
+              className ||
+              'block max-w-[9rem] md:w-40 text-[var(--ant-color-text)]'
+            }
+            editable={
+              isEditable
+                ? { editing: false, onStart: () => setEditing(true) }
+                : undefined
+            }
+            ellipsis
+          >
+            {value}
+          </Typography.Text>
+        </div>
       )}
       {extra}
-      {showPopover && isEditable && (
-        <Button
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => setEditing(true)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-0 h-auto shrink-0"
-        />
-      )}
       {editing && (
         <EditFieldModal
           title={title}

@@ -83,6 +83,8 @@ export const clientErrorKeys = {
     ['clientErrors', appId, 'list', start, end, offset, limit, fatal] as const,
   detail: (appId: number | undefined, issueId: number | undefined) =>
     ['clientErrors', appId, 'detail', issueId] as const,
+  symbolicated: (appId: number | undefined, issueId: number | undefined) =>
+    ['clientErrors', appId, 'symbolicated', issueId] as const,
 };
 
 // Service status page: the global overview panels hang under 'global', the

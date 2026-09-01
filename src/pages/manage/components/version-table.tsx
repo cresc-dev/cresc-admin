@@ -21,11 +21,12 @@ import {
 } from 'antd';
 import type { ColumnType } from 'antd/lib/table';
 import dayjs from 'dayjs';
-// import { useDrag, useDrop } from "react-dnd";
 import {
+  type ComponentProps,
   lazy,
   type ReactNode,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -359,14 +360,113 @@ function removeSelectedVersions({
   });
 }
 
+interface ResizableHeaderCellProps extends ComponentProps<'th'> {
+  width?: number;
+  minWidth?: number;
+  onResize?: (width: number) => void;
+}
+
+const ResizableHeaderCell = ({
+  width,
+  minWidth = 100,
+  onResize,
+  children,
+  className,
+  ...restProps
+}: ResizableHeaderCellProps) => {
+  const [isResizing, setIsResizing] = useState(false);
+
+  if (!width || !onResize) {
+    return (
+      <th className={className} {...restProps}>
+        {children}
+      </th>
+    );
+  }
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLSpanElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    const startX = e.clientX;
+    const startWidth = width;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const nextWidth = Math.max(minWidth, startWidth + deltaX);
+      onResize(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
+  return (
+    <th
+      className={`relative select-none ${className || ''}`}
+      style={{ width }}
+      {...restProps}
+    >
+      {children}
+      <span
+        role="slider"
+        aria-orientation="vertical"
+        aria-label="Resize column"
+        aria-valuenow={width}
+        aria-valuemin={minWidth}
+        aria-valuemax={1000}
+        tabIndex={0}
+        className={`absolute right-0 top-0 bottom-0 w-2 cursor-col-resize z-10 hover:bg-[var(--ant-color-primary)] active:bg-[var(--ant-color-primary)] transition-colors ${
+          isResizing ? 'bg-[var(--ant-color-primary)]' : ''
+        }`}
+        onMouseDown={handleMouseDown}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') {
+            onResize(Math.max(minWidth, width - 10));
+          } else if (e.key === 'ArrowRight') {
+            onResize(width + 10);
+          }
+        }}
+      />
+    </th>
+  );
+};
+
+const DEFAULT_COLUMN_WIDTHS = {
+  name: 160,
+  description: 220,
+  metaInfo: 140,
+  createdAt: 160,
+};
+
+type ResizableColumnKey = keyof typeof DEFAULT_COLUMN_WIDTHS;
+
+const getStoredWidth = (key: ResizableColumnKey) => {
+  const val = Number(safeStorage.get(`version_table_col_w_${key}`));
+  return val > 0 ? val : DEFAULT_COLUMN_WIDTHS[key];
+};
+
 const getColumns = (
   t: ReturnType<typeof useTranslation>['t'],
   canPublish: boolean,
+  widths: typeof DEFAULT_COLUMN_WIDTHS,
+  onResize: (key: ResizableColumnKey) => (width: number) => void,
 ): ColumnType<Version>[] => [
   {
     title: t('version_table.col_version'),
     dataIndex: 'name',
-    width: 160,
+    width: widths.name,
+    onHeaderCell: () => ({
+      width: widths.name,
+      minWidth: 100,
+      onResize: onResize('name'),
+    }),
     render: (_, record) => (
       <VersionNameCell record={record} canPublish={canPublish} />
     ),
@@ -375,7 +475,12 @@ const getColumns = (
     title: t('version_table.col_description'),
     dataIndex: 'description',
     responsive: ['md'],
-    width: 220,
+    width: widths.description,
+    onHeaderCell: () => ({
+      width: widths.description,
+      minWidth: 120,
+      onResize: onResize('description'),
+    }),
     render: (_, record) => (
       <TextColumn
         record={record}
@@ -390,7 +495,12 @@ const getColumns = (
     title: t('version_table.col_metadata'),
     dataIndex: 'metaInfo',
     responsive: ['lg'],
-    width: 140,
+    width: widths.metaInfo,
+    onHeaderCell: () => ({
+      width: widths.metaInfo,
+      minWidth: 100,
+      onResize: onResize('metaInfo'),
+    }),
     render: (_, record) => (
       <TextColumn
         record={record}
@@ -422,7 +532,12 @@ const getColumns = (
     title: t('version_table.col_uploaded'),
     dataIndex: 'createdAt',
     responsive: ['md'],
-    width: 160,
+    width: widths.createdAt,
+    onHeaderCell: () => ({
+      width: widths.createdAt,
+      minWidth: 120,
+      onResize: onResize('createdAt'),
+    }),
     render: (_, record) => (
       <TextColumn record={record} recordKey="createdAt" isEditable={false} />
     ),
@@ -646,7 +761,28 @@ const TextColumn = ({
 export default function VersionTable() {
   const { t } = useTranslation();
   const { canPublish } = useWorkspacePermissions();
-  const columns = useMemo(() => getColumns(t, canPublish), [t, canPublish]);
+  const [columnWidths, setColumnWidths] = useState(() => ({
+    name: getStoredWidth('name'),
+    description: getStoredWidth('description'),
+    metaInfo: getStoredWidth('metaInfo'),
+    createdAt: getStoredWidth('createdAt'),
+  }));
+
+  const handleResize = useCallback(
+    (key: ResizableColumnKey) => (newWidth: number) => {
+      setColumnWidths((prev) => {
+        const updated = { ...prev, [key]: newWidth };
+        safeStorage.set(`version_table_col_w_${key}`, String(newWidth));
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const columns = useMemo(
+    () => getColumns(t, canPublish, columnWidths, handleResize),
+    [t, canPublish, columnWidths, handleResize],
+  );
   const deleteVersions = useDeleteVersions();
   const isMobile = useIsMobile();
   const { appId } = useManageContext();
@@ -676,6 +812,11 @@ export default function VersionTable() {
     <Table
       className="versions"
       rowKey="id"
+      components={{
+        header: {
+          cell: ResizableHeaderCell,
+        },
+      }}
       title={() => (
         <div className="flex items-center gap-2">
           {!isMobile && <span>{t('version_table.title')}</span>}

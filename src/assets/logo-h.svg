@@ -1,13 +1,21 @@
 <svg viewBox="0 0 320 110" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cresc_h_grad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#40D4EA"/>
-      <stop offset="1" stop-color="#4483ED"/>
+    <linearGradient id="cresc_h_stroke" x1="16" y1="19" x2="90" y2="91" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D7B57C"/>
+      <stop offset="0.55" stop-color="#A86A42"/>
+      <stop offset="1" stop-color="#6E3428"/>
     </linearGradient>
+    <radialGradient id="cresc_h_pearl" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(84 51) rotate(56.31) scale(18.6011)">
+      <stop stop-color="#FFFDF9"/>
+      <stop offset="0.56" stop-color="#F0E1CA"/>
+      <stop offset="1" stop-color="#C7A072"/>
+    </radialGradient>
   </defs>
   <g transform="translate(10, 0)">
-    <path d="M 88 26 A 40 40 0 1 0 88 84" stroke="url(#cresc_h_grad)" stroke-width="18" stroke-linecap="round" />
-    <circle cx="88" cy="55" r="10" fill="url(#cresc_h_grad)" />
+    <path d="M 88 26 A 40 40 0 1 0 88 84" stroke="url(#cresc_h_stroke)" stroke-width="18" stroke-linecap="round" />
+    <path d="M 86 32 A 32 32 0 1 0 86 78" stroke="#F4E6CD" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round" />
+    <circle cx="88" cy="55" r="10" fill="url(#cresc_h_pearl)" stroke="#B68657" stroke-width="1.6" />
+    <circle cx="84.2" cy="50.3" r="2.8" fill="#FFFFFF" fill-opacity="0.88" />
   </g>
   <text x="130" y="77" font-family="inherit" font-weight="800" font-size="64" fill="currentColor" letter-spacing="-2.0">cresc</text>
 </svg>

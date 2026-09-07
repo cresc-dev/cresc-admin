@@ -84,12 +84,14 @@ export const UserDetailDrawer = ({
   onClose,
   isMobile,
   t,
+  zIndex,
 }: {
   userId: number | null;
   open: boolean;
   onClose: () => void;
   isMobile: boolean;
   t?: (key: string) => string;
+  zIndex?: number;
 }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['adminUserDetail', userId],
@@ -113,6 +115,7 @@ export const UserDetailDrawer = ({
     <Drawer
       title={translate('admin_users.detail_title', 'User Detail')}
       width={isMobile ? '100%' : 720}
+      zIndex={zIndex}
       onClose={onClose}
       open={open}
       destroyOnHidden
@@ -123,7 +126,7 @@ export const UserDetailDrawer = ({
             <Descriptions
               title={translate('admin_users.basic_info', 'Basic Info')}
               bordered
-              column={2}
+              column={isMobile ? 1 : 2}
             >
               <Descriptions.Item label="ID">{detail.user.id}</Descriptions.Item>
               <Descriptions.Item
@@ -210,7 +213,7 @@ export const UserDetailDrawer = ({
             <Descriptions
               title={translate('admin_users.quota_usage', 'Quota & PV Usage')}
               bordered
-              column={2}
+              column={isMobile ? 1 : 2}
             >
               <Descriptions.Item
                 label={translate('admin_users.pv_limit', 'Daily Limit')}

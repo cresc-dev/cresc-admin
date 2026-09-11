@@ -1,3 +1,4 @@
+import type { AppGeoResponse } from '@/pages/realtime-metrics-geo.logic';
 import { queryClient } from '@/utils/queryClient';
 import request from './request';
 
@@ -382,6 +383,13 @@ export const api = {
     }>(
       'get',
       `/metrics/app?appKey=${encodeURIComponent(params.appKey)}&start=${encodeURIComponent(params.start)}&end=${encodeURIComponent(params.end)}`,
+    ),
+  // Completed update checks per region per day (UTC+8 calendar day; today
+  // is a live running total)
+  getAppGeo: (params: { appKey: string; days: number }) =>
+    request<AppGeoResponse>(
+      'get',
+      `/metrics/app/geo?appKey=${encodeURIComponent(params.appKey)}&days=${params.days}`,
     ),
   // Client hot-update lifecycle events (version health); dict entries look like `${type}${versionName}`
   getAppEventsMetrics: (params: {

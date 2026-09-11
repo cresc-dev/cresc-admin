@@ -23,6 +23,7 @@ import {
 import { metricsKeys } from '@/utils/query-keys';
 import { useSelectedAppFromUrl } from '@/utils/selected-app';
 import { useThemeMode } from '@/utils/theme-mode';
+import { RealtimeGeoPanel } from './realtime-metrics-geo';
 
 const { RangePicker } = DatePicker;
 
@@ -496,6 +497,7 @@ export const Component = () => {
             )}
           </Card>
         </Spin>
+        <RealtimeGeoPanel appKey={selectedAppKey} isAdmin={isAdmin} />
       </Card>
     </AppDrawerLayout>
   );

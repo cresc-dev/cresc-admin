@@ -119,6 +119,10 @@ export const buildChartPoints = (metrics?: MetricsResponse) => {
 // for the tooltip so a small category keeps its real traffic context.
 export const buildDistributionPoints = (
   rows?: DailyDistributionRow[],
+  // Category key to display name; keys that map to the same name within a
+  // day merge into one point (the region charts use it to fold country codes
+  // and legacy Chinese country names into one line).
+  labelOf: (category: string) => string = (category) => category,
 ): DistributionPoint[] => {
   if (!rows) return [];
   const points: DistributionPoint[] = [];
@@ -128,10 +132,16 @@ export const buildDistributionPoints = (
     );
     const total = entries.reduce((sum, [, count]) => sum + count, 0);
     if (total <= 0) continue;
+    const counts = new Map<string, number>();
     for (const [rawCategory, count] of entries) {
+      const trimmed = rawCategory.trim();
+      const category = (trimmed && labelOf(trimmed)) || 'unknown';
+      counts.set(category, (counts.get(category) ?? 0) + count);
+    }
+    for (const [category, count] of counts) {
       points.push({
         time: row.date,
-        category: rawCategory.trim() || 'unknown',
+        category,
         value: (count / total) * 100,
         count,
       });

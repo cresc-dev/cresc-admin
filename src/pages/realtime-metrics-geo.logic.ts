@@ -55,17 +55,25 @@ export const parseGeoWindow = (value: string | null): GeoWindow =>
  * `days` arrives newest first; a window sums the first N of them. The unknown
  * region takes part in the total and the ranking (it is often the largest
  * bucket, and hiding it would skew every share) but is also reported alone.
+ * labelOf maps a server label to its display name (see utils/region); summing
+ * by display name is what folds a country's code form and the legacy Chinese
+ * form into one row. The unknown label never goes through it.
  */
 export const summarizeGeo = (
   days: readonly AppGeoDay[] | undefined,
   window: GeoWindow,
   limit = GEO_TOP_LIMIT,
+  labelOf: (region: string) => string = (region) => region,
 ): GeoSummary => {
   const totals = new Map<string, number>();
   for (const day of (days ?? []).slice(0, GEO_WINDOW_DAYS[window])) {
     for (const [rawRegion, count] of Object.entries(day.regions ?? {})) {
       if (!Number.isFinite(count) || count <= 0) continue;
-      const region = rawRegion.trim() || UNKNOWN_REGION;
+      const trimmed = rawRegion.trim();
+      const region =
+        !trimmed || trimmed === UNKNOWN_REGION
+          ? UNKNOWN_REGION
+          : labelOf(trimmed) || UNKNOWN_REGION;
       totals.set(region, (totals.get(region) ?? 0) + count);
     }
   }

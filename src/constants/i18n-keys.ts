@@ -1,4 +1,5 @@
 import type { ApiTokenScope, McpScope } from '@/constants/token-scopes';
+import type { FunnelHealth } from '@/pages/app-insights/logic';
 import type { RangePresetKey } from '@/utils/charts';
 import type { getFatalDepsViolation } from '@/utils/helper';
 import type { ThemeMode } from '@/utils/theme-mode';
@@ -81,4 +82,15 @@ export const DEPS_VIOLATION_MESSAGE_KEY: Record<
 > = {
   rn_mismatch: 'bind_package.deps_rn_mismatch',
   rnu_downgrade: 'bind_package.deps_rnu_downgrade',
+};
+
+/** Health tag of the version funnel (rollback-rate thresholds; null means too
+ * few samples to judge). */
+export const FUNNEL_HEALTH_LABEL_KEY: Record<
+  NonNullable<FunnelHealth>,
+  string
+> = {
+  healthy: 'app_insights.health_healthy',
+  warning: 'app_insights.health_warning',
+  critical: 'app_insights.health_critical',
 };

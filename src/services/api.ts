@@ -1,3 +1,8 @@
+import type {
+  AppEventBreakdownResponse,
+  AppTrafficResponse,
+  VersionFunnelResponse,
+} from '@/pages/app-insights/types';
 import type { AppGeoResponse } from '@/pages/realtime-metrics-geo.logic';
 import { queryClient } from '@/utils/queryClient';
 import request from './request';
@@ -390,6 +395,31 @@ export const api = {
     request<AppGeoResponse>(
       'get',
       `/metrics/app/geo?appKey=${encodeURIComponent(params.appKey)}&days=${params.days}`,
+    ),
+  // The three per-app insight endpoints below share geo's authorization
+  // boundary. When the analytics store is down the server answers 503 with
+  // analyticsUnavailableMessage, which each panel shows in place rather than
+  // as a global toast.
+  getAppTraffic: (params: { appKey: string; days: number }) =>
+    request<AppTrafficResponse>(
+      'get',
+      `/metrics/app/traffic?appKey=${encodeURIComponent(params.appKey)}&days=${params.days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
+  getAppEventBreakdown: (params: { appKey: string; days: number }) =>
+    request<AppEventBreakdownResponse>(
+      'get',
+      `/metrics/app/events/breakdown?appKey=${encodeURIComponent(params.appKey)}&days=${params.days}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
+  getAppVersionFunnel: (params: { appKey: string; days: number }) =>
+    request<VersionFunnelResponse>(
+      'get',
+      `/metrics/app/versions?appKey=${encodeURIComponent(params.appKey)}&days=${params.days}`,
+      undefined,
+      { suppressErrorToast: true },
     ),
   // Client hot-update lifecycle events (version health); dict entries look like `${type}${versionName}`
   getAppEventsMetrics: (params: {

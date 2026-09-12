@@ -269,8 +269,6 @@ const MIN_SAMPLES = 10;
 export interface FunnelRates {
   /** downloadSuccess / (downloadSuccess + downloadFail) */
   downloadSuccessRate: number | null;
-  /** markSuccess / downloadSuccess; can exceed 1 when the download happened before the window. */
-  activationRate: number | null;
   /** rollback / (markSuccess + rollback) */
   rollbackRate: number | null;
   failures: number;
@@ -293,10 +291,6 @@ export const computeFunnelRates = (events: FunnelEventCounts): FunnelRates => {
   return {
     downloadSuccessRate:
       downloadSamples > 0 ? events.downloadSuccess / downloadSamples : null,
-    activationRate:
-      events.downloadSuccess > 0
-        ? events.markSuccess / events.downloadSuccess
-        : null,
     rollbackRate,
     failures: events.downloadFail + events.patchFail,
     health,
@@ -305,6 +299,14 @@ export const computeFunnelRates = (events: FunnelEventCounts): FunnelRates => {
 
 export interface FunnelRow extends VersionFunnel, FunnelRates {
   servedTotal: number;
+  /**
+   * adopted.mark / adopted.download: of the devices that ever downloaded this
+   * version, how many ever activated it. Both are cumulative distinct-device
+   * counts on the same time basis, so unlike "activations in the window over
+   * downloads in the window" it cannot run past 100% just because the
+   * download happened before the window and the activation inside it.
+   */
+  adoptionRate: number | null;
   /** adopted.mark / dauToday; null when dauToday is 0. */
   coverage: number | null;
   /** A null name means the version has been deleted. */
@@ -318,6 +320,10 @@ export const buildFunnelRows = (
     ...version,
     ...computeFunnelRates(version.events),
     servedTotal: servedTotal(version.served),
+    adoptionRate:
+      version.adopted.download > 0
+        ? version.adopted.mark / version.adopted.download
+        : null,
     coverage:
       response && response.dauToday > 0
         ? version.adopted.mark / response.dauToday

@@ -11,5 +11,9 @@ export type ApiTokenScope = (typeof API_TOKEN_SCOPES)[number];
 
 // Only the scopes backed by a shipped tool. The server's ALL_MCP_SCOPES is
 // wider; add entries here as new tools land.
-export const MCP_SCOPES = ['pushy:apps:read', 'pushy:diagnose'] as const;
+export const MCP_SCOPES = [
+  'pushy:apps:read',
+  'pushy:diagnose',
+  'pushy:health:read',
+] as const;
 export type McpScope = (typeof MCP_SCOPES)[number];

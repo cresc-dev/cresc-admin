@@ -17,5 +17,5 @@
     <circle cx="88" cy="55" r="10" fill="url(#cresc_h_pearl)" stroke="#B68657" stroke-width="1.6" />
     <circle cx="84.2" cy="50.3" r="2.8" fill="#FFFFFF" fill-opacity="0.88" />
   </g>
-  <text x="130" y="77" font-family="inherit" font-weight="800" font-size="64" fill="currentColor" letter-spacing="-2.0">cresc</text>
+  <text x="130" y="77" font-family="inherit" font-weight="800" font-size="64" fill="#111111" letter-spacing="-2.0">cresc</text>
 </svg>

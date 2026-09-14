@@ -836,6 +836,7 @@
     "user_management": "用户管理",
     "app_management": "应用管理",
     "global_metrics": "全局指标",
+    "error_logs": "错误日志",
     "switch_endpoint": "切换端点",
     "account_settings": "账号设置",
     "open_menu": "打开菜单",
@@ -1282,5 +1283,22 @@
     "loading": "加载编辑器...",
     "load_failed": "JSON 编辑器组件加载失败",
     "reload": "重新加载编辑器"
+  },
+  "admin_error_logs": {
+    "title": "错误日志",
+    "description": "cresc-api、worker 与定时任务的应用错误日志，直接读取 Cloud Logging，仅管理员可见。",
+    "all_sources": "全部来源",
+    "severity_error": "仅错误",
+    "severity_warning": "警告及以上",
+    "last_hours": "最近 {{count}} 小时",
+    "search_placeholder": "搜索日志文本，回车查询",
+    "refresh": "刷新",
+    "time": "时间",
+    "severity": "级别",
+    "source": "来源",
+    "message": "内容",
+    "empty": "该时间范围内没有匹配的日志",
+    "load_more": "加载更多",
+    "load_failed": "读取错误日志失败"
   }
 }

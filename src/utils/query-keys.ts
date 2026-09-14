@@ -138,6 +138,19 @@ export const adminKeys = {
       ? (['adminApps'] as const)
       : (['adminApps', searchQuery, page, pageSize] as const),
   config: () => ['adminConfig'] as const,
+  errorLogs: (filters: {
+    source: string;
+    severity: string;
+    hours: number;
+    q: string;
+  }) =>
+    [
+      'adminErrorLogs',
+      filters.source,
+      filters.severity,
+      filters.hours,
+      filters.q,
+    ] as const,
 };
 
 export const memberKeys = {

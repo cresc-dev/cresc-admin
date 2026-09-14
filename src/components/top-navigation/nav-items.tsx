@@ -211,5 +211,8 @@ export function getSelectedKeys(pathname: string) {
   if (pathname === rootRouterPath.adminServiceStatus) {
     return ['admin-service-status'];
   }
+  if (pathname === rootRouterPath.adminErrorLogs) {
+    return ['admin-error-logs'];
+  }
   return [];
 }

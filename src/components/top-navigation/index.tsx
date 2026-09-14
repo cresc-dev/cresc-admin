@@ -187,6 +187,14 @@ export default function TopNavigation({
                       ),
                     },
                     {
+                      key: 'admin-error-logs',
+                      label: (
+                        <Link to={rootRouterPath.adminErrorLogs}>
+                          {t('nav.error_logs')}
+                        </Link>
+                      ),
+                    },
+                    {
                       key: 'admin-endpoint',
                       label: (
                         <span className="flex items-center justify-between gap-2">

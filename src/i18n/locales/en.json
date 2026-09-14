@@ -836,6 +836,7 @@
     "user_management": "User Management",
     "app_management": "App Management",
     "global_metrics": "Global Metrics",
+    "error_logs": "Error Logs",
     "switch_endpoint": "Switch Endpoint",
     "account_settings": "Account Settings",
     "open_menu": "Open menu",
@@ -1282,5 +1283,22 @@
     "loading": "Loading editor...",
     "load_failed": "Failed to load the JSON editor",
     "reload": "Reload editor"
+  },
+  "admin_error_logs": {
+    "title": "Error Logs",
+    "description": "Application error logs from cresc-api, the worker and scheduled jobs, read straight from Cloud Logging. Administrators only.",
+    "all_sources": "All sources",
+    "severity_error": "Errors only",
+    "severity_warning": "Warnings and above",
+    "last_hours": "Last {{count}}h",
+    "search_placeholder": "Search log text, press Enter",
+    "refresh": "Refresh",
+    "time": "Time",
+    "severity": "Severity",
+    "source": "Source",
+    "message": "Message",
+    "empty": "No matching logs in this time range",
+    "load_more": "Load more",
+    "load_failed": "Failed to load error logs"
   }
 }

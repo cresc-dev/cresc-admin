@@ -1,3 +1,8 @@
+import {
+  buildErrorLogQuery,
+  type ErrorLogFilters,
+  type ErrorLogPage,
+} from '@/pages/admin-error-logs.logic';
 import request from './request';
 
 export type WriteOperationDimension = 'path' | 'region' | 'client';
@@ -187,6 +192,13 @@ export const adminApi = {
     request<{ data: WriteOperationDay[] }>(
       'get',
       `/admin/analytics/write-operations?days=${days}&dimension=${dimension}`,
+      undefined,
+      { suppressErrorToast: true },
+    ),
+  getErrorLogs: (filters: ErrorLogFilters, pageToken?: string) =>
+    request<{ data: ErrorLogPage }>(
+      'get',
+      `/admin/system/logs/errors?${buildErrorLogQuery(filters, pageToken)}`,
       undefined,
       { suppressErrorToast: true },
     ),

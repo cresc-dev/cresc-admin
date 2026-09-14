@@ -31,6 +31,7 @@ export const rootRouterPath = {
   adminApps: '/admin-apps',
   adminMetrics: '/admin-metrics',
   adminServiceStatus: '/admin-service-status',
+  adminErrorLogs: '/admin-error-logs',
   apiTokens: '/api-tokens',
   mcpConnections: '/mcp-connections',
   members: '/members',
@@ -184,6 +185,14 @@ export const router = createHashRouter([
         element: <AdminRoute />,
         children: [
           { index: true, lazy: () => import('./pages/admin-service-status') },
+        ],
+      },
+      {
+        path: 'admin-error-logs',
+        loader: needAuthLoader,
+        element: <AdminRoute />,
+        children: [
+          { index: true, lazy: () => import('./pages/admin-error-logs') },
         ],
       },
       {

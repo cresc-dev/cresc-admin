@@ -2,6 +2,7 @@ import { Card, Select, Spin, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getBrowserTimezone } from '@/utils/timezone';
 import {
   type DimensionRow,
   FAILURE_EVENT_TYPES,
@@ -327,6 +328,7 @@ export const FailuresPanel = ({
         <Footnote>
           {t('app_insights.breakdown_footnote', {
             retention: breakdown.data?.retentionDays ?? 35,
+            timezone: breakdown.data?.timezone ?? getBrowserTimezone(),
           })}
         </Footnote>
       </Card>

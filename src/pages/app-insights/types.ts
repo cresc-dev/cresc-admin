@@ -37,6 +37,8 @@ export interface AppTrafficDay {
 }
 
 export interface AppTrafficResponse {
+  /** IANA zone the days were counted in (the browser's, echoed back). */
+  timezone: string;
   days: AppTrafficDay[];
   retentionDays: number;
 }
@@ -81,6 +83,7 @@ export interface AppEventBreakdownDay {
 }
 
 export interface AppEventBreakdownResponse {
+  timezone: string;
   days: AppEventBreakdownDay[];
   retentionDays: number;
 }
@@ -140,6 +143,9 @@ export interface VersionFunnelResponse {
   start: string;
   end: string;
   /** Live hourly buckets are read from this UTC day onwards. */
+  /** IANA zone the window's start/end dates are in. */
+  timezone: string;
+  /** UTC instant from which the live hourly buckets were read. */
   hourlyFrom: string;
   dauToday: number;
   truncated?: boolean;

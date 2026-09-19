@@ -12,6 +12,7 @@ import { subscriptionControlState } from './billing';
 import { CancelResumeButton, UpgradeDropdown } from './purchase-controls';
 import { QuotaDetailsPanel } from './quota-details';
 import { buildQuotaUsageRows, getMaxCount } from './quota-usage';
+import { TimezoneSetting } from './timezone-setting';
 
 function UserPanel() {
   const { t } = useTranslation();
@@ -99,6 +100,9 @@ function UserPanel() {
         <Descriptions.Item label={t('user.username')}>{name}</Descriptions.Item>
         <Descriptions.Item label={t('user.email')}>
           <span className="break-all">{email}</span>
+        </Descriptions.Item>
+        <Descriptions.Item label={t('user.timezone')}>
+          <TimezoneSetting current={user.timezone} />
         </Descriptions.Item>
         <Descriptions.Item label={t('user.security_settings')}>
           <div className="flex flex-wrap items-center gap-3">

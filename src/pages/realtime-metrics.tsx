@@ -8,6 +8,7 @@ import { appViewPath, rootRouterPath, router } from '@/router';
 import { patchSearchParams, rememberRecentApp } from '@/utils/helper';
 import { useWorkspacePermissions } from '@/utils/hooks';
 import { useSelectedAppFromUrl } from '@/utils/selected-app';
+import { getBrowserTimezone } from '@/utils/timezone';
 import { FailuresPanel } from './app-insights/failures-panel';
 import {
   DEFAULT_INSIGHT_DAYS,
@@ -162,7 +163,7 @@ export const Component = () => {
           <FailuresPanel appKey={selectedAppKey} days={days} />
         )}
         <div className="mt-4 text-xs text-gray-400">
-          {t('app_insights.page_footnote')}
+          {t('app_insights.page_footnote', { timezone: getBrowserTimezone() })}
         </div>
       </Card>
     </AppDrawerLayout>

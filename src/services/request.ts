@@ -3,6 +3,7 @@ import { getVersionHealthDevMock } from '@/services/version-health-dev-mock';
 import { getCustomBaseUrl } from '@/utils/endpoint';
 import { FEATURES } from '@/utils/features';
 import { testUrls } from '@/utils/helper';
+import { getBrowserTimezone } from '@/utils/timezone';
 import { buildRequest, type HttpMethod } from './build-request';
 import { handleResponse, RequestError, type RequestOptions } from './response';
 import { getToken, usesCookieSession } from './session';
@@ -75,6 +76,7 @@ export default async function request<T extends Record<any, any>>(
     // Only send cookies once the server has switched us to a cookie session,
     // so current wildcard-CORS deployments keep working untouched.
     withCredentials: usesCookieSession(),
+    timezone: getBrowserTimezone(),
   });
   try {
     const response = await fetch(url, options);

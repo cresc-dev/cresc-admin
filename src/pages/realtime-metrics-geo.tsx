@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { metricsKeys } from '@/utils/query-keys';
 import { formatRegion } from '@/utils/region';
+import { getBrowserTimezone } from '@/utils/timezone';
 import {
   GEO_FETCH_DAYS,
   GEO_WINDOWS,
@@ -14,7 +15,7 @@ import {
 } from './realtime-metrics-geo.logic';
 
 // The region breakdown only exists at day granularity (the server
-// accumulates per UTC+8 calendar day), so it does not share the time range
+// accumulates per calendar day of the browser time zone), so it does not share the time range
 // of the 5-minute series above: today is a live running total, older days
 // are looked back per day.
 
@@ -190,6 +191,7 @@ export const RealtimeGeoPanel = ({
           <div className="mt-3 text-xs text-gray-500">
             {t('realtime_metrics.geo_hint', {
               days: data?.retentionDays ?? GEO_FETCH_DAYS,
+              timezone: data?.timezone ?? getBrowserTimezone(),
             })}
           </div>
         </Spin>

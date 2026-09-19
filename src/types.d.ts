@@ -57,6 +57,8 @@ interface User {
   name: string;
   tier: Tier;
   tierExpiresAt?: string;
+  /** IANA zone analytics default to for this account; null until chosen. */
+  timezone?: string | null;
   checkQuota?: number;
   last7dAvg?: number;
   last7dCounts?: number[];

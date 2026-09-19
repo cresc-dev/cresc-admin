@@ -4,9 +4,9 @@ const near = (value: number | null | undefined, expected: number) =>
   expect(Math.abs((value ?? Number.NaN) - expected) < 1e-9).toBe(true);
 
 import {
-  beijingToday,
   buildFunnelRows,
   computeFunnelRates,
+  insightToday,
   lagShares,
   parseFailureReason,
   parseInsightDays,
@@ -45,10 +45,9 @@ describe('URL params', () => {
     expect(parseInsightView('nope')).toBe('overview');
   });
 
-  it('derives today in Beijing time', () => {
-    // 2026-09-11T20:00Z is already the 12th in UTC+8
-    expect(beijingToday(Date.UTC(2026, 8, 11, 20))).toBe('2026-09-12');
-    expect(beijingToday(Date.UTC(2026, 8, 11, 15))).toBe('2026-09-11');
+  it('derives today in the browser time zone', () => {
+    const noon = new Date(2026, 8, 11, 12, 0, 0);
+    expect(insightToday(noon.getTime())).toBe('2026-09-11');
   });
 });
 
@@ -204,9 +203,10 @@ describe('funnel', () => {
   it('adds served totals, coverage and the deleted flag per version', () => {
     const response: VersionFunnelResponse = {
       days: 7,
+      timezone: 'Asia/Singapore',
       start: '2026-09-05',
       end: '2026-09-11',
-      hourlyFrom: '2026-09-10',
+      hourlyFrom: '2026-09-10T00:00:00Z',
       dauToday: 200,
       versions: [
         {

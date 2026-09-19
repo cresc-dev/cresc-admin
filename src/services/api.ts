@@ -173,6 +173,8 @@ export const api = {
   activate: (params: { token: string }) =>
     request('post', '/user/activate', params),
   me: () => request<User>('get', '/user/me'),
+  updateProfile: (params: { timezone: string }) =>
+    request<{ timezone: string }>('post', '/user/profile', params),
   // Unauthenticated, and silent on failure: a missing version line in the
   // footer is not worth an error toast.
   serverStatus: () =>

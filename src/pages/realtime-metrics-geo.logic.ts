@@ -1,6 +1,6 @@
 // Region breakdown for the realtime page: the server accumulates the
-// completed update checks of each app per calendar day (UTC+8) under
-// app_geo:<day>:<appKey>; today's entry keeps growing live. This module
+// completed update checks of each app per calendar day of the time zone the
+// request names (the browser's); today's entry keeps growing live. This module
 // only sums and ranks within a window; it never touches the time series.
 
 export interface AppGeoDay {
@@ -10,6 +10,7 @@ export interface AppGeoDay {
 }
 
 export interface AppGeoResponse {
+  timezone: string;
   days: AppGeoDay[];
   retentionDays: number;
   regionResolver: boolean;

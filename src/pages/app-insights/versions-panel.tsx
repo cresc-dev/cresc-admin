@@ -1,5 +1,6 @@
 import { Alert, Card, Select, Spin, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -482,6 +483,7 @@ export const VersionsPanel = ({
                 ? t('app_insights.window_utc', {
                     start: data.start,
                     end: data.end,
+                    timezone: data.timezone,
                   })
                 : ''
             }
@@ -562,7 +564,9 @@ export const VersionsPanel = ({
         </Spin>
         <Footnote>
           {t('app_insights.funnel_footnote', {
-            hourlyFrom: data?.hourlyFrom ?? '-',
+            hourlyFrom: data?.hourlyFrom
+              ? dayjs(data.hourlyFrom).format('YYYY-MM-DD HH:mm')
+              : '-',
           })}
           {packageFilter !== ALL && (
             <> {t('app_insights.package_filter_note')}</>

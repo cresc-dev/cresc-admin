@@ -5,6 +5,7 @@ import { AsyncColumn, AsyncLine } from '@/components/lazy-chart';
 import { FUNNEL_HEALTH_LABEL_KEY } from '@/constants/i18n-keys';
 import { buildTimeSeriesLineConfig } from '@/utils/charts';
 import { useThemeMode } from '@/utils/theme-mode';
+import { getBrowserTimezone } from '@/utils/timezone';
 import {
   buildFunnelRows,
   type FunnelRow,
@@ -279,6 +280,7 @@ export const OverviewPanel = ({
         <Footnote>
           {t('app_insights.daily_footnote', {
             retention: traffic.data?.retentionDays ?? 35,
+            timezone: traffic.data?.timezone ?? getBrowserTimezone(),
           })}
         </Footnote>
       </Card>

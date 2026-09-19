@@ -21,6 +21,26 @@ describe('buildRequest', () => {
     expect(options.body).toBeUndefined();
   });
 
+  it('sends the caller time zone as a header when given', () => {
+    const { options } = buildRequest({
+      method: 'get',
+      path: '/metrics/app/traffic',
+      baseUrl: BASE_URL,
+      timezone: 'America/Los_Angeles',
+    });
+    expect((options.headers as Record<string, string>)['x-timezone']).toBe(
+      'America/Los_Angeles',
+    );
+    const { options: bare } = buildRequest({
+      method: 'get',
+      path: '/user/me',
+      baseUrl: BASE_URL,
+    });
+    expect(
+      (bare.headers as Record<string, string>)['x-timezone'],
+    ).toBeUndefined();
+  });
+
   it('serializes non-GET params as a JSON body with content-type', () => {
     const { url, options } = buildRequest({
       method: 'post',

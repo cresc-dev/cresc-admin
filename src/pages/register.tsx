@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
 import { RequestError } from '@/services/request';
+import { getBrowserTimezone } from '@/utils/timezone';
 import { ReactComponent as Logo } from '../assets/logo.svg';
 import { rootRouterPath, router } from '../router';
 import { isPasswordValid } from '../utils/helper';
@@ -52,6 +53,7 @@ export const Register = () => {
         email: values.email.trim(),
         name: values.name.trim(),
         pwd: await md5(values.pwd),
+        timezone: getBrowserTimezone(),
       });
       setUserEmail(values.email.trim());
       router.navigate(rootRouterPath.welcome);

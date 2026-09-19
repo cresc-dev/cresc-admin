@@ -12,6 +12,7 @@ export function buildRequest({
   token,
   accountId,
   withCredentials,
+  timezone,
 }: {
   method: HttpMethod;
   path: string;
@@ -22,6 +23,8 @@ export function buildRequest({
   accountId?: number | null;
   /** Send cookies cross-origin — required for httpOnly-cookie sessions. */
   withCredentials?: boolean;
+  /** IANA zone the day-bucketed analytics should be summed in (x-timezone). */
+  timezone?: string;
 }): { url: string; options: RequestInit } {
   const headers: Record<string, string> = {};
   const options: RequestInit = { method, headers };
@@ -34,6 +37,9 @@ export function buildRequest({
   }
   if (accountId) {
     headers['x-account-id'] = String(accountId);
+  }
+  if (timezone) {
+    headers['x-timezone'] = timezone;
   }
   if (params) {
     if (method === 'get') {

@@ -2,6 +2,7 @@
 // into window totals, rankings and rates. No React and no copy in here, so it
 // stays unit-testable.
 
+import { localToday } from '@/utils/timezone';
 import {
   type AppEventBreakdownDay,
   type AppTrafficDay,
@@ -40,9 +41,12 @@ export const parseInsightView = (value: string | null): InsightView =>
     ? (value as InsightView)
     : 'overview';
 
-/** The server accumulates per UTC+8 calendar day; today's entry is live. */
-export const beijingToday = (now: number = Date.now()): string =>
-  new Date(now + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+/**
+ * The server sums the hourly aggregates into calendar days of the time zone
+ * every request sends (the browser's), so "today" is the browser's date.
+ */
+export const insightToday = (now: number = Date.now()): string =>
+  localToday(new Date(now));
 
 export interface RankedItem {
   key: string;
@@ -141,7 +145,7 @@ const percentOf = (part: number, total: number) =>
  */
 export const summarizeTraffic = (
   days: readonly AppTrafficDay[] | undefined,
-  today: string = beijingToday(),
+  today: string = insightToday(),
 ): TrafficSummary => {
   const hit = emptyHit();
   const hourly = new Array<number>(24).fill(0);

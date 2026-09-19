@@ -135,6 +135,7 @@ export interface VersionFunnel {
 }
 
 export interface VersionFunnelResponse {
+  releaseInsights?: import('./release-insights-types').ReleaseInsights;
   days: number;
   start: string;
   end: string;

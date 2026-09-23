@@ -22,6 +22,13 @@ export interface PackageTraffic {
   devices: number;
 }
 
+/** Refused requests (hit:blocked / hit:unknown_package) split by the native package version the client reported. */
+export interface RefusedPackage {
+  outcome: 'blocked' | 'unknown_package';
+  packageVersion: string;
+  requests: number;
+}
+
 /** One UTC+8 calendar day of traffic; today accumulates live. */
 export interface AppTrafficDay {
   date: string;
@@ -34,6 +41,8 @@ export interface AppTrafficDay {
   hosts: Record<string, number>;
   carriers: Record<string, number>;
   packages: PackageTraffic[];
+  /** Empty for days before the split was collected; absent from older servers. */
+  refused?: RefusedPackage[];
 }
 
 export interface AppTrafficResponse {

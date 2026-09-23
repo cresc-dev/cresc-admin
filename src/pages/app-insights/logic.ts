@@ -101,6 +101,13 @@ export interface PackageTrafficSummary {
   percent: number;
 }
 
+export type RefusalOutcome = 'blocked' | 'unknown_package';
+
+export interface RefusedPackageSummary {
+  packageVersion: string;
+  requests: number;
+}
+
 export interface TrafficSummary {
   requests: number;
   today: DailyTrafficPoint | null;
@@ -119,6 +126,8 @@ export interface TrafficSummary {
   hosts: RankedItem[];
   carriers: RankedItem[];
   packages: PackageTrafficSummary[];
+  /** Refused requests by native package version, most requests first; older buckets were not split, so the sum can fall short of hit. */
+  refused: Record<RefusalOutcome, RefusedPackageSummary[]>;
   /** Ascending by date, for the charts. */
   daily: DailyTrafficPoint[];
 }
@@ -137,6 +146,16 @@ const emptyHit = (): Record<HitOutcome, number> => ({
 const percentOf = (part: number, total: number) =>
   total > 0 ? (part / total) * 100 : 0;
 
+const rankRefused = (counts: Map<string, number>): RefusedPackageSummary[] =>
+  Array.from(counts, ([packageVersion, requests]) => ({
+    packageVersion,
+    requests,
+  })).sort((left, right) =>
+    right.requests === left.requests
+      ? left.packageVersion.localeCompare(right.packageVersion)
+      : right.requests - left.requests,
+  );
+
 /**
  * The server returns newest first; this folds the window's days into one
  * summary. DAU is HLL-distinct and cannot be summed across days, so only the
@@ -153,6 +172,10 @@ export const summarizeTraffic = (
   const hosts: Record<string, number> = {};
   const carriers: Record<string, number> = {};
   const packages = new Map<string, { requests: number; peakDevices: number }>();
+  const refused: Record<RefusalOutcome, Map<string, number>> = {
+    blocked: new Map(),
+    unknown_package: new Map(),
+  };
   const daily: DailyTrafficPoint[] = [];
   let requests = 0;
   let dauSum = 0;
@@ -199,6 +222,16 @@ export const summarizeTraffic = (
       entry.peakDevices = Math.max(entry.peakDevices, item.devices ?? 0);
       packages.set(item.packageVersion, entry);
     }
+    for (const item of day.refused ?? []) {
+      const target = refused[item.outcome];
+      if (!target || !Number.isFinite(item.requests) || item.requests <= 0) {
+        continue;
+      }
+      target.set(
+        item.packageVersion,
+        (target.get(item.packageVersion) ?? 0) + item.requests,
+      );
+    }
     daily.push({
       date: day.date,
       requests: dayRequests,
@@ -238,6 +271,10 @@ export const summarizeTraffic = (
     hosts: rankCounts(hosts),
     carriers: rankCounts(carriers),
     packages: packageRows,
+    refused: {
+      blocked: rankRefused(refused.blocked),
+      unknown_package: rankRefused(refused.unknown_package),
+    },
     daily,
   };
 };

@@ -4,19 +4,21 @@ import { Card, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import {
+  CRITICAL_ROLLBACK,
+  MIN_EVENT_SAMPLES,
+  WARNING_ROLLBACK,
+} from '@/constants/metric-thresholds';
 import { adminApi } from '@/services/admin-api';
 import { serviceStatusKeys } from '@/utils/query-keys';
 import { formatCount, formatPercent } from './metrics';
 
 const { Text } = Typography;
 
-// Thresholds: rollback rate >5% is bad, >1% worth watching; too few samples (<10) means no verdict
-const CRITICAL_ROLLBACK = 0.05;
-const WARNING_ROLLBACK = 0.01;
-const MIN_SAMPLES = 10;
+// Shared with the per-app rollback report view; not an overall health verdict.
 
 function healthTag(row: VersionHealthOverviewRow, t: (key: string) => string) {
-  if (row.startSamples < MIN_SAMPLES || row.rollbackRate === null) {
+  if (row.startSamples < MIN_EVENT_SAMPLES || row.rollbackRate === null) {
     return null;
   }
   if (row.rollbackRate >= CRITICAL_ROLLBACK) {

@@ -3,15 +3,12 @@
 from pathlib import Path
 import json
 import re
+import runpy
 import subprocess
-import sys
 
-sys.path.insert(0, str(Path(__file__).parent))
-from port_insights_audit import BASE, HEAD, CACHE, FILES, fetch
-
-# The audit verified that overwritten UI modules differ only in translated
-# comments and timezone presentation. Keep all target-only release features.
-fetch()
+source_tools = runpy.run_path(str(Path(__file__).with_name('port-insights-audit.py')))
+BASE, HEAD, CACHE, FILES = (source_tools[key] for key in ['BASE', 'HEAD', 'CACHE', 'FILES'])
+source_tools['fetch']()
 BASELINE = 'b6c2718b3e78a8e80b6222b3ed881387ceb47078'
 for name in FILES:
     path = Path(name)
@@ -22,6 +19,8 @@ for name in FILES:
     else:
         assert path.read_bytes() == before, ('target changed since audit', name)
 
+# The audit verified that these overwritten UI modules differ only in
+# translated comments and timezone presentation. Keep target-only release UI.
 COPIES = [
  'src/constants/metric-thresholds.ts', 'src/i18n/canonical-resources.test.ts',
  'src/i18n/locales.test.ts', 'src/i18n/resources.ts',
@@ -50,7 +49,7 @@ edit(name, '/** Health tag of the version funnel (rollback-rate thresholds; null
 
 name = 'src/pages/admin-service-status/version-health-overview-panel.tsx'
 edit(name, "import { adminApi } from '@/services/admin-api';", "import { CRITICAL_ROLLBACK, MIN_EVENT_SAMPLES, WARNING_ROLLBACK } from '@/constants/metric-thresholds';\nimport { adminApi } from '@/services/admin-api';")
-edit(name, '// Thresholds: rollback rate >5% is bad, >1% worth watching; too few samples (<10) means no verdict\nconst CRITICAL_ROLLBACK = 0.05;\nconst WARNING_ROLLBACK = 0.01;\nconst MIN_SAMPLES = 10;', '// Shared with the per-app rollback report view; thresholds are not an overall health verdict.')
+edit(name, '// Thresholds: rollback rate >5% is bad, >1% worth watching; too few samples (<10) means no verdict\nconst CRITICAL_ROLLBACK = 0.05;\nconst WARNING_ROLLBACK = 0.01;\nconst MIN_SAMPLES = 10;', '// Shared with the per-app rollback report view; not an overall health verdict.')
 edit(name, 'row.startSamples < MIN_SAMPLES', 'row.startSamples < MIN_EVENT_SAMPLES')
 
 name = 'src/i18n/index.ts'
@@ -99,7 +98,7 @@ for locale in ['en', 'zh-CN']:
         })
     section.pop('window_utc_legacy', None)
     section.pop('window_business_legacy', None)
-    assert current.get('app_insights', {}).get('release') == original.get('app_insights', {}).get('release')
+    assert section.get('release') == original['app_insights'].get('release')
     assert {k:v for k,v in current.items() if k != 'app_insights'} == {k:v for k,v in original.items() if k != 'app_insights'}
     path.write_text(json.dumps(current, indent=2, ensure_ascii=False) + '\n')
 
@@ -148,8 +147,7 @@ export const summarizeTrafficResponse = (
 
 export const trafficWarnings = (''')
 
-# The shared helper differs only in English comments. Transplant just the
-# changed reason-label hook; keep request/cache/auth hooks unchanged.
+# Transplant only the changed reason-label hook; preserve target query hooks.
 name = 'src/pages/app-insights/shared.tsx'
 current = Path(name).read_text()
 source = (CACHE / HEAD / name).read_text()
@@ -162,11 +160,14 @@ send = source.index('\n};', sstart) + len('\n};')
 Path(name).write_text(current[:start] + source[sstart:send] + current[end:])
 
 for name in ['overview-panel.tsx', 'traffic-panel.tsx']:
-    path = 'src/pages/app-insights/' + name
-    edit(path, 'summarizeTraffic,', 'summarizeTrafficResponse,')
-    edit(path, 'summarizeTraffic(traffic.data?.days, traffic.data?.window?.today)', 'summarizeTrafficResponse(traffic.data)')
+    path = Path('src/pages/app-insights/' + name)
+    text = path.read_text()
+    assert text.count('summarizeTraffic') == 2, name
+    text = text.replace('summarizeTraffic', 'summarizeTrafficResponse')
+    path.write_text(text)
+    edit(str(path), 'summarizeTrafficResponse(traffic.data?.days, traffic.data?.window?.today)', 'summarizeTrafficResponse(traffic.data)')
 
-# All Cresc windows share caller-timezone semantics, including version events.
+# Version events and traffic share the resolved timezone in Cresc.
 for name in ['overview-panel.tsx', 'traffic-panel.tsx', 'failures-panel.tsx', 'versions-panel.tsx']:
     path = Path('src/pages/app-insights/' + name)
     text = path.read_text()
@@ -187,8 +188,7 @@ edit(name, "      <div>{t('app_insights.best_effort')}</div>", '''      {window?
       )}
       <div>{t('app_insights.best_effort')}</div>''')
 
-# Preserve all upstream regression cases while adapting the legacy date and
-# response fixtures to Cresc's published timezone / RFC3339 wire contract.
+# Keep every upstream regression, adapting dates and fixtures to Cresc's wire.
 for name in COPIES:
     if '.test.' not in name: continue
     path = Path(name)
@@ -199,9 +199,8 @@ for name in COPIES:
     text = re.sub(r'(?m)^(\s*)retentionDays:', r"\1timezone: 'Asia/Singapore',\n\1retentionDays:", text)
     path.write_text(text)
 
-# Semantic assertions prevent the high-risk parts of a cross-product copy.
 assert 'beijingToday' not in Path('src/pages/app-insights/logic.ts').read_text()
 assert 'DEPLOY_STATUS_LABEL_KEY' not in Path('src/constants/i18n-keys.ts').read_text()
 assert "fallbackLng: 'en'" in Path('src/i18n/index.ts').read_text()
-assert "releaseInsights?:" in Path('src/pages/app-insights/types.ts').read_text()
+assert 'releaseInsights?:' in Path('src/pages/app-insights/types.ts').read_text()
 print('Applied insights-only delta, preserving Cresc timezones, English fallback, release metrics and non-insights locale content.')

@@ -314,9 +314,7 @@ export const useFailureReasonLabel = () => {
   return (reason: string) => {
     const parsed = parseFailureReason(reason);
     if (parsed.kind === 'other') {
-      return parsed.detail
-        ? t('app_insights.reason_other_detail', { detail: parsed.detail })
-        : t('app_insights.reason_other');
+      return t('app_insights.reason_other');
     }
     const key = {
       empty: 'app_insights.reason_empty',

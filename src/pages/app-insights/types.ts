@@ -1,8 +1,26 @@
-// Response shapes of the three per-app insight endpoints (see the server's
-// client-telemetry doc). All three share the /metrics/app/geo authorization
-// boundary and its days parameter (default 7, capped at 35).
+// Additive v2 observation contract; optional fields support rolling deploys.
+export interface ObservationWindow {
+  timezone: string;
+  startDate: string;
+  endDate: string;
+  startInclusive: string;
+  endExclusive: string;
+  today: string;
+  generatedAt: string;
+  partialDay: boolean;
+  /** Exact boundaries follow Cresc's existing nearest-UTC-hour rule. */
+  bucketAlignment?: 'nearest_utc_hour';
+  /** A previous date can still be incomplete near rounded local midnight. */
+  incompleteDates?: string[];
+}
 
-/** Final outcome class of a checkUpdate request (the server's classifyResult). */
+export type ObservationStatus = 'observed' | 'unavailable';
+export type DeviceStatus = ObservationStatus | 'partial' | 'expired';
+export interface ObservationContract {
+  version: number;
+  collection: string;
+}
+
 export const HIT_OUTCOMES = [
   'uptodate',
   'hdiff',
@@ -18,38 +36,40 @@ export type HitOutcome = (typeof HIT_OUTCOMES)[number];
 export interface PackageTraffic {
   packageVersion: string;
   requests: number;
-  /** From an HLL; may be 0 (no uuid sent, or past the tracking bound). */
-  devices: number;
+  devices: number | null;
+  devicesStatus?: DeviceStatus;
 }
 
-/** Refused requests (hit:blocked / hit:unknown_package) split by the native package version the client reported. */
 export interface RefusedPackage {
   outcome: 'blocked' | 'unknown_package';
   packageVersion: string;
   requests: number;
 }
 
-/** One UTC+8 calendar day of traffic; today accumulates live. */
 export interface AppTrafficDay {
   date: string;
-  /** Sum over hit:*, i.e. every completed request including the refusals. */
   requests: number;
   dau: number;
+  requestsStatus?: ObservationStatus;
+  dauStatus?: ObservationStatus;
   hourly: number[];
   hit: Partial<Record<HitOutcome, number>> & Record<string, number>;
   ipVersion: Record<string, number>;
   hosts: Record<string, number>;
   carriers: Record<string, number>;
   packages: PackageTraffic[];
-  /** Empty for days before the split was collected; absent from older servers. */
   refused?: RefusedPackage[];
+  packageDevicesLimited?: boolean;
 }
 
 export interface AppTrafficResponse {
-  /** IANA zone the days were counted in (the browser's, echoed back). */
+  /** Resolved Cresc request timezone; independent of the billing calendar. */
   timezone: string;
   days: AppTrafficDay[];
   retentionDays: number;
+  packageDevicesRetentionDays?: number;
+  window?: ObservationWindow | null;
+  contract?: ObservationContract;
 }
 
 export const CLIENT_EVENT_TYPES = [
@@ -64,7 +84,6 @@ export type ClientEventType = (typeof CLIENT_EVENT_TYPES)[number];
 export interface EventOSCount {
   type: ClientEventType;
   hash: string;
-  /** null when the version has been deleted. */
   name: string | null;
   os: string;
   count: number;
@@ -86,26 +105,31 @@ export interface EventCarrierCount {
 
 export interface AppEventBreakdownDay {
   date: string;
+  status?: ObservationStatus;
   byOS: EventOSCount[];
   byReason: EventReasonCount[];
   byCarrier: EventCarrierCount[];
 }
 
 export interface AppEventBreakdownResponse {
+  /** Resolved Cresc request timezone; independent of the billing calendar. */
   timezone: string;
   days: AppEventBreakdownDay[];
   retentionDays: number;
+  window?: ObservationWindow | null;
+  contract?: ObservationContract;
 }
 
+// Offered targets/options, not unique requests or file downloads.
 export interface ServedCounts {
   hdiff: number;
   pdiff: number;
   full: number;
-  /** Times a full bundle was served because the diff was not generated yet. */
   fullPending: number;
   exp: number;
 }
 
+// Unlinked client reports, not mutually exclusive update attempts.
 export interface FunnelEventCounts {
   downloadSuccess: number;
   downloadFail: number;
@@ -140,23 +164,44 @@ export interface VersionFunnel {
   name: string | null;
   served: ServedCounts;
   events: FunnelEventCounts;
-  /** Devices that ever activated / downloaded this version (HLL, not per day). */
   adopted: { mark: number; download: number };
+  observed?: { mark: number | null; download: number | null } | null;
   lag: LagBuckets;
   byPackage: PackageFunnel[];
 }
 
+export interface VersionEventSummary {
+  versionCount: number;
+  offeredTargets: number;
+  events: FunnelEventCounts;
+  unattributed: FunnelEventCounts;
+  unattributedOffers: number;
+}
+
 export interface VersionFunnelResponse {
+  /** Resolved Cresc request timezone; independent of the billing calendar. */
+  timezone: string;
   releaseInsights?: import('./release-insights-types').ReleaseInsights;
   days: number;
   start: string;
   end: string;
-  /** Live hourly buckets are read from this UTC day onwards. */
-  /** IANA zone the window's start/end dates are in. */
-  timezone: string;
-  /** UTC instant from which the live hourly buckets were read. */
+  /** RFC3339 UTC instant separating settled and live hour buckets. */
   hourlyFrom: string;
   dauToday: number;
   truncated?: boolean;
   versions: VersionFunnel[];
+  window?: ObservationWindow | null;
+  dauWindow?: ObservationWindow | null;
+  summary?: VersionEventSummary;
+  contract?: ObservationContract & {
+    servedUnit: string;
+    eventUnit: string;
+    deviceUnit: string;
+    adoptionScope: string;
+    adoptionInactivityDays: number;
+    lagOrigin: string;
+    lagUnit: string;
+    lagInactivityDays: number;
+    versionOrder: string;
+  };
 }

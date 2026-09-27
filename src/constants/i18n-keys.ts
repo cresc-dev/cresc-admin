@@ -85,13 +85,12 @@ export const DEPS_VIOLATION_MESSAGE_KEY: Record<
   rnu_downgrade: 'bind_package.deps_rnu_downgrade',
 };
 
-/** Health tag of the version funnel (rollback-rate thresholds; null means too
- * few samples to judge). */
+/** Rollback-report classification only, not overall version health. */
 export const FUNNEL_HEALTH_LABEL_KEY: Record<
   NonNullable<FunnelHealth>,
   string
 > = {
-  healthy: 'app_insights.health_healthy',
-  warning: 'app_insights.health_warning',
-  critical: 'app_insights.health_critical',
+  healthy: 'app_insights.rollback_low',
+  warning: 'app_insights.rollback_warning',
+  critical: 'app_insights.rollback_high',
 };

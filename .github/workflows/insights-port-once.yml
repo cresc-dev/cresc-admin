@@ -1,0 +1,17 @@
+name: Cresc insights port preparation
+on:
+  push:
+    branches: [fix/insights-metric-contract-20260927]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Compare only insights-related public source files
+        run: python3 scripts/port-insights-audit.py

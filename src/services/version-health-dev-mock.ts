@@ -119,15 +119,6 @@ function buildTrafficDays(days: number) {
         'api.cresc.dev': Math.round(requests * 0.8),
         'update.cresc.dev': Math.round(requests * 0.2),
       },
-      carriers: {
-        电信: Math.round(requests * 0.38),
-        移动: Math.round(requests * 0.31),
-        联通: Math.round(requests * 0.18),
-        广电: Math.round(requests * 0.02),
-        云: Math.round(requests * 0.03),
-        其他地区: Math.round(requests * 0.05),
-        unknown: Math.round(requests * 0.03),
-      },
       packages: [
         {
           packageVersion: '7.4.0',
@@ -270,16 +261,6 @@ function buildBreakdownDays(days: number) {
           reason: 'other:ENOENT',
           count: n(5),
         },
-      ],
-      byCarrier: [
-        { type: 'download_success', carrier: '电信', count: n(1_400) },
-        { type: 'download_success', carrier: '移动', count: n(1_200) },
-        { type: 'download_success', carrier: '联通', count: n(700) },
-        { type: 'download_fail', carrier: '移动', count: n(70) },
-        { type: 'download_fail', carrier: '电信', count: n(25) },
-        { type: 'download_fail', carrier: '联通', count: n(10) },
-        { type: 'mark_success', carrier: '电信', count: n(1_350) },
-        { type: 'rollback', carrier: '电信', count: n(6) },
       ],
     };
   });

@@ -170,7 +170,6 @@ export interface TrafficSummary {
   hourlyDays: HourlyDay[];
   ipVersion: RankedItem[];
   hosts: RankedItem[];
-  carriers: RankedItem[];
   /** Platform (first word of the os label) and system version (full label). */
   platforms: RankedItem[];
   osVersions: RankedItem[];
@@ -282,7 +281,6 @@ export const summarizeTraffic = (
   const hourlyDays: HourlyDay[] = [];
   const ipVersion: Record<string, number> = {};
   const hosts: Record<string, number> = {};
-  const carriers: Record<string, number> = {};
   const platforms: Record<string, number> = {};
   const osVersions: Record<string, number> = {};
   let hasClientInfo = false;
@@ -332,7 +330,6 @@ export const summarizeTraffic = (
     hourlyDays.push({ date: day.date, hourly });
     addCounts(ipVersion, day.ipVersion);
     addCounts(hosts, day.hosts);
-    addCounts(carriers, day.carriers);
     if (day.os) hasClientInfo = true;
     for (const [label, count] of Object.entries(day.os ?? {})) {
       if (validCount(count) && count > 0) {
@@ -424,7 +421,6 @@ export const summarizeTraffic = (
       .slice(-HOURLY_DAYS),
     ipVersion: rankCounts(ipVersion),
     hosts: rankCounts(hosts),
-    carriers: rankCounts(carriers),
     platforms: rankCounts(platforms),
     osVersions: rankCounts(osVersions),
     hasClientInfo,
@@ -818,7 +814,6 @@ export interface BreakdownSummary {
   failures: number;
   reasons: ReasonRow[];
   os: DimensionRow[];
-  carriers: DimensionRow[];
   versionNames: Map<string, string | null>;
 }
 
@@ -835,7 +830,6 @@ export const summarizeBreakdown = (
     }
   >();
   const os = new Map<string, EventTypeCounts>();
-  const carriers = new Map<string, EventTypeCounts>();
   const versionNames = new Map<string, string | null>();
   let failures = 0;
   let availableDays = 0;
@@ -846,7 +840,6 @@ export const summarizeBreakdown = (
     const legacyHasReports = [
       ...(day.byReason ?? []),
       ...(day.byOS ?? []),
-      ...(day.byCarrier ?? []),
     ].some((item) => validCount(item.count) && item.count > 0);
     // Availability belongs to the unfiltered bucket, not to the selected
     // version. Explicit unavailable always wins over leftover numeric fields.
@@ -900,13 +893,6 @@ export const summarizeBreakdown = (
       if (Object.hasOwn(counts, item.type)) counts[item.type] += item.count;
       os.set(item.os, counts);
     }
-    if (hashFilter) continue;
-    for (const item of day.byCarrier ?? []) {
-      if (!validCount(item.count) || item.count <= 0) continue;
-      const counts = carriers.get(item.carrier) ?? emptyEventCounts();
-      if (Object.hasOwn(counts, item.type)) counts[item.type] += item.count;
-      carriers.set(item.carrier, counts);
-    }
   }
   const byCount = (a: DimensionRow, b: DimensionRow) =>
     b.total - a.total || a.key.localeCompare(b.key);
@@ -928,9 +914,6 @@ export const summarizeBreakdown = (
     os: Array.from(os, ([key, counts]) => finishDimensionRow(key, counts)).sort(
       byCount,
     ),
-    carriers: Array.from(carriers, ([key, counts]) =>
-      finishDimensionRow(key, counts),
-    ).sort(byCount),
     versionNames,
   };
 };
@@ -956,18 +939,3 @@ export const parseFailureReason = (
   KNOWN_FAILURE_REASONS.includes(reason as KnownFailureReason)
     ? { kind: 'known', reason: reason as KnownFailureReason }
     : { kind: 'other' };
-
-export const KNOWN_CARRIERS = [
-  '电信',
-  '联通',
-  '移动',
-  '广电',
-  '教育网',
-  '云',
-  '其他',
-  '其他地区',
-  'unknown',
-] as const;
-export type KnownCarrier = (typeof KNOWN_CARRIERS)[number];
-export const isKnownCarrier = (carrier: string): carrier is KnownCarrier =>
-  KNOWN_CARRIERS.includes(carrier as KnownCarrier);

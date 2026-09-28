@@ -29,7 +29,6 @@ const day = (
   date: '2026-09-26',
   byOS: [],
   byReason: [],
-  byCarrier: [],
   ...overrides,
 });
 const show = (days: AppEventBreakdownDay[]) => {

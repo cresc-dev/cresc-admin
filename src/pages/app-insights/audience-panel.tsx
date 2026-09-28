@@ -11,7 +11,6 @@ import {
   InsightsError,
   Question,
   useAppTraffic,
-  useCarrierLabel,
 } from './shared';
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -27,7 +26,7 @@ const formatOS = (label: string) => {
   return [PLATFORM_LABEL[platform] ?? platform, ...rest].join(' ');
 };
 
-/** Platform (switchable to system versions), network and region; all follow the page's day range. */
+/** Platform (switchable to system versions), IP version and region; all follow the page's day range. */
 export const AudiencePanel = ({
   appKey,
   days,
@@ -38,7 +37,6 @@ export const AudiencePanel = ({
   isAdmin: boolean;
 }) => {
   const { t } = useTranslation();
-  const carrierLabel = useCarrierLabel();
   const traffic = useAppTraffic(appKey, days);
   const summary = useMemo(
     () => summarizeTrafficResponse(traffic.data),
@@ -88,15 +86,6 @@ export const AudiencePanel = ({
           : undefined,
     },
     {
-      key: 'carriers',
-      title: t('app_insights.carriers_title'),
-      question: t('app_insights.carriers_question'),
-      items: summary.carriers.map((row) => ({
-        ...row,
-        label: carrierLabel(row.key),
-      })),
-    },
-    {
       key: 'ip',
       title: t('app_insights.ip_title'),
       question: t('app_insights.ip_question'),
@@ -114,7 +103,7 @@ export const AudiencePanel = ({
         updatedAt={traffic.dataUpdatedAt}
         stale={!!traffic.error && !!traffic.data}
       />
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-2">
         {cards.map((card) => (
           <Card
             size="small"

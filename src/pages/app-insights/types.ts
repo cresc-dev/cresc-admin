@@ -56,7 +56,6 @@ export interface AppTrafficDay {
   hit: Partial<Record<HitOutcome, number>> & Record<string, number>;
   ipVersion: Record<string, number>;
   hosts: Record<string, number>;
-  carriers: Record<string, number>;
   /** Platform and system version such as "android 34"; older servers omit it. */
   os?: Record<string, number>;
   packages: PackageTraffic[];
@@ -99,18 +98,11 @@ export interface EventReasonCount {
   count: number;
 }
 
-export interface EventCarrierCount {
-  type: ClientEventType;
-  carrier: string;
-  count: number;
-}
-
 export interface AppEventBreakdownDay {
   date: string;
   status?: ObservationStatus;
   byOS: EventOSCount[];
   byReason: EventReasonCount[];
-  byCarrier: EventCarrierCount[];
 }
 
 export interface AppEventBreakdownResponse {

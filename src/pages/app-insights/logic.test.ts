@@ -5,7 +5,6 @@ import {
   computeFunnelRates,
   highestFailureDimension,
   insightToday,
-  isKnownCarrier,
   lagShares,
   normalizeOSVersion,
   observationCount,
@@ -75,7 +74,6 @@ const day = (
   hit: {},
   ipVersion: {},
   hosts: {},
-  carriers: {},
   packages: [],
   ...overrides,
 });
@@ -85,7 +83,6 @@ const breakdown = (
   date: '2026-09-26',
   byOS: [],
   byReason: [],
-  byCarrier: [],
   ...overrides,
 });
 
@@ -292,7 +289,6 @@ describe('package observations and refusals', () => {
         hit: { blocked: 2, unknown_package: 1, full: 7 },
         refused: [{ outcome: 'blocked', packageVersion: '1.0', requests: 2 }],
         hourly: [3, 7],
-        carriers: { 电信: 10 },
       }),
     ]);
     expect(trafficWarnings(result.hit)).toEqual(['blocked', 'unknown_package']);
@@ -301,7 +297,6 @@ describe('package observations and refusals', () => {
     expect(result.refused.blocked).toEqual([
       { packageVersion: '1.0', requests: 2 },
     ]);
-    expect(result.carriers[0]?.percent).toBe(100);
   });
 });
 
@@ -488,7 +483,7 @@ describe('diagnostic report shares, not attempt failure rates', () => {
       highestFailureDimension(result.os.filter((row) => row.key === 'android')),
     ).toBeNull();
   });
-  it('normalizes legacy free-text reasons and keeps version and carrier scopes separate', () => {
+  it('normalizes legacy free-text reasons and scopes them per version', () => {
     const days = [
       breakdown({
         byReason: [
@@ -507,7 +502,6 @@ describe('diagnostic report shares, not attempt failure rates', () => {
             count: 3,
           },
         ],
-        byCarrier: [{ type: 'download_fail', carrier: '电信', count: 5 }],
       }),
     ];
     const result = summarizeBreakdown(days);
@@ -516,7 +510,6 @@ describe('diagnostic report shares, not attempt failure rates', () => {
     expect(result.reasons[0]?.reason).toBe('other');
     expect(result.reasons[0]?.percent).toBe(100);
     expect(summarizeBreakdown(days, 'v1').failures).toBe(2);
-    expect(summarizeBreakdown(days, 'v1').carriers).toEqual([]);
     expect(parseFailureReason('other:private')).toEqual({
       kind: 'other',
     });
@@ -524,7 +517,6 @@ describe('diagnostic report shares, not attempt failure rates', () => {
       kind: 'known',
       reason: 'timeout',
     });
-    expect(isKnownCarrier('移动')).toBe(true);
     expect(summarizeBreakdown(undefined).reasons).toEqual([]);
   });
   it('ignores legacy rollback reason rows', () => {

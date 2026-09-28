@@ -22,7 +22,6 @@ const traffic = (overrides: Partial<AppTrafficDay> = {}): AppTrafficDay => ({
   hit: {},
   ipVersion: {},
   hosts: {},
-  carriers: {},
   packages: [],
   ...overrides,
 });
@@ -42,7 +41,6 @@ const breakdown = (
   date: '2026-09-25',
   byReason: [],
   byOS: [],
-  byCarrier: [],
   ...overrides,
 });
 const failedDay = (): AppEventBreakdownDay =>
@@ -66,7 +64,6 @@ const failedDay = (): AppEventBreakdownDay =>
         count: 500,
       },
     ],
-    byCarrier: [{ type: 'download_fail', carrier: 'unavailable', count: 500 }],
   });
 
 describe('review: request ratios use matching observation days', () => {
@@ -188,7 +185,6 @@ describe('review: failure availability and canonical reason identity', () => {
         byOS: [
           { type: 'patch_fail', hash: 'v1', name: 'V1', os: 'ios', count: 2 },
         ],
-        byCarrier: [{ type: 'patch_fail', carrier: 'known', count: 2 }],
       }),
     ];
     const before = structuredClone(input);
@@ -202,7 +198,6 @@ describe('review: failure availability and canonical reason identity', () => {
     });
     expect(result.reasons.map((row) => row.reason)).toEqual(['patch_apply']);
     expect(result.os.map((row) => row.key)).toEqual(['ios']);
-    expect(result.carriers.map((row) => row.key)).toEqual(['known']);
     expect(result.versionNames.has('unavailable')).toBe(false);
     expect(summarizeBreakdown(input, 'absent')).toMatchObject({
       availableDays: 2,
@@ -210,7 +205,6 @@ describe('review: failure availability and canonical reason identity', () => {
       failures: 0,
       reasons: [],
       os: [],
-      carriers: [],
     });
     expect(input).toEqual(before);
   });

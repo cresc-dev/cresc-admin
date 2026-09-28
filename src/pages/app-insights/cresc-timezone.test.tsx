@@ -21,7 +21,6 @@ const day = (date: string, requests: number): AppTrafficDay => ({
   hourly: [],
   ipVersion: {},
   hosts: {},
-  carriers: {},
   packages: [],
 });
 

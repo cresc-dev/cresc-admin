@@ -24,7 +24,6 @@ import {
   Question,
   StatTile,
   useAppEventBreakdown,
-  useCarrierLabel,
   useEventTypeLabel,
   useFailureReasonLabel,
   VersionLabel,
@@ -113,7 +112,6 @@ export const FailuresPanel = ({
 }) => {
   const { t } = useTranslation();
   const reasonLabel = useFailureReasonLabel();
-  const carrierLabel = useCarrierLabel();
   const eventLabel = useEventTypeLabel();
   const breakdown = useAppEventBreakdown(appKey, days);
   const [versionFilter, setVersionFilter] = useState(ALL);
@@ -279,18 +277,6 @@ export const FailuresPanel = ({
           keyTitle={t('app_insights.col_os')}
           labelOf={(key) => key}
         />
-      </Card>
-      <Card size="small" title={t('app_insights.carrier_events_title')}>
-        {versionFilter === ALL ? (
-          <DimensionTable
-            rows={summary.carriers}
-            emptyText={emptyText}
-            keyTitle={t('app_insights.carriers_title')}
-            labelOf={carrierLabel}
-          />
-        ) : (
-          <EmptyState>{t('app_insights.carrier_no_version_filter')}</EmptyState>
-        )}
       </Card>
       <Footnote>{t('app_insights.breakdown_footnote')}</Footnote>
     </div>

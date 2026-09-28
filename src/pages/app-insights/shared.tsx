@@ -6,7 +6,7 @@ import { api } from '@/services/api';
 import { RequestError } from '@/services/request';
 import { cn } from '@/utils/helper';
 import { metricsKeys } from '@/utils/query-keys';
-import { isKnownCarrier, parseFailureReason, shortHash } from './logic';
+import { parseFailureReason, shortHash } from './logic';
 import type { HitOutcome } from './types';
 
 const { Text } = Typography;
@@ -305,25 +305,6 @@ export const useHitOutcomeLabel = () => {
     unknown_package: t('app_insights.hit_unknown_package'),
   };
   return (outcome: HitOutcome) => labels[outcome];
-};
-
-export const useCarrierLabel = () => {
-  const { t } = useTranslation();
-  return (carrier: string) => {
-    if (!isKnownCarrier(carrier)) return carrier;
-    const key = {
-      电信: 'app_insights.carrier_telecom',
-      联通: 'app_insights.carrier_unicom',
-      移动: 'app_insights.carrier_mobile',
-      广电: 'app_insights.carrier_broadcast',
-      教育网: 'app_insights.carrier_cernet',
-      云: 'app_insights.carrier_cloud',
-      其他: 'app_insights.carrier_other',
-      其他地区: 'app_insights.carrier_overseas',
-      unknown: 'app_insights.carrier_unknown',
-    }[carrier];
-    return t(key);
-  };
 };
 
 export const useFailureReasonLabel = () => {

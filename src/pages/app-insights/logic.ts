@@ -24,19 +24,22 @@ import {
   type VersionFunnelResponse,
 } from './types';
 
-export const INSIGHT_DAY_OPTIONS = [7, 14, 35] as const;
+export const INSIGHT_DAY_OPTIONS = [7, 14, 30] as const;
 export type InsightDays = (typeof INSIGHT_DAY_OPTIONS)[number];
 export const DEFAULT_INSIGHT_DAYS: InsightDays = 7;
 export const INSIGHT_VIEWS = [
   'overview',
   'versions',
   'traffic',
+  'audience',
   'failures',
 ] as const;
 export type InsightView = (typeof INSIGHT_VIEWS)[number];
 
 export const parseInsightDays = (value: string | null): InsightDays => {
   const parsed = Number(value);
+  // Old links with days=35 land on today's largest option.
+  if (parsed === 35) return 30;
   return INSIGHT_DAY_OPTIONS.includes(parsed as InsightDays)
     ? (parsed as InsightDays)
     : DEFAULT_INSIGHT_DAYS;
@@ -163,10 +166,16 @@ export interface TrafficSummary {
   hit: Record<HitOutcome, number>;
   refusedPercent: number;
   updatePercent: number;
-  hourly: number[];
+  /** Each of the last 7 days' 24-hour split, oldest first; days are never summed. */
+  hourlyDays: HourlyDay[];
   ipVersion: RankedItem[];
   hosts: RankedItem[];
   carriers: RankedItem[];
+  /** Platform (first word of the os label) and system version (full label). */
+  platforms: RankedItem[];
+  osVersions: RankedItem[];
+  /** Whether the server returned os at all; older servers do not. */
+  hasClientInfo: boolean;
   packages: PackageTrafficSummary[];
   refused: Record<RefusalOutcome, RefusedPackageSummary[]>;
   daily: DailyTrafficPoint[];
@@ -193,6 +202,74 @@ const rankRefused = (counts: Map<string, number>): RefusedPackageSummary[] =>
       : right.requests - left.requests,
   );
 
+// Android clients report the API level (Platform.Version); map it to the
+// system version, merging levels that share one (12 / 12L).
+const ANDROID_API_VERSION: Record<number, string> = {
+  21: '5',
+  22: '5.1',
+  23: '6',
+  24: '7',
+  25: '7.1',
+  26: '8',
+  27: '8.1',
+  28: '9',
+  29: '10',
+  30: '11',
+  31: '12',
+  32: '12',
+  33: '13',
+  34: '14',
+  35: '15',
+  36: '16',
+};
+
+// HarmonyOS also reports an API level; mapped per Huawei's release notes (5.0.0 onwards).
+const HARMONY_API_VERSION: Record<number, string> = {
+  12: '5.0.0',
+  13: '5.0.1',
+  14: '5.0.2',
+  15: '5.0.3',
+  16: '5.0.4',
+  17: '5.0.5',
+  18: '5.1.0',
+  19: '5.1.1',
+  20: '6.0.0',
+  21: '6.0.1',
+  22: '6.0.2',
+  23: '6.1.0',
+  24: '6.1.1',
+};
+
+/**
+ * Folds the SDK's os label into a readable system version: Android and
+ * HarmonyOS API levels become release versions, iOS / tvOS keep major.minor
+ * (17.5.1 → 17.5, 18 → 18.0), anything else is kept as is.
+ */
+export const normalizeOSVersion = (label: string): string => {
+  const [platform = '', version = ''] = label.split(' ');
+  if (!version) return label;
+  if (platform === 'android' && /^\d+$/.test(version)) {
+    const mapped = ANDROID_API_VERSION[Number(version)];
+    return mapped ? `android ${mapped}` : `android API ${version}`;
+  }
+  if (platform === 'harmony' && /^\d+$/.test(version)) {
+    const mapped = HARMONY_API_VERSION[Number(version)];
+    return mapped ? `harmony ${mapped}` : `harmony API ${version}`;
+  }
+  if (platform === 'ios' || platform === 'tvos') {
+    const [major, minor = '0'] = version.split('.');
+    return `${platform} ${major}.${minor}`;
+  }
+  return label;
+};
+
+export const HOURLY_DAYS = 7;
+
+export interface HourlyDay {
+  date: string;
+  hourly: number[];
+}
+
 /** Both means exclude today, include valid zeroes, and disclose sample days.
  * Unavailable values are not zero. Daily device estimates cannot be added;
  * merging retained original HLLs would require a different server API. */
@@ -202,10 +279,13 @@ export const summarizeTraffic = (
   incompleteDates: readonly string[] = [],
 ): TrafficSummary => {
   const hit = emptyHit();
-  const hourly = new Array<number>(24).fill(0);
+  const hourlyDays: HourlyDay[] = [];
   const ipVersion: Record<string, number> = {};
   const hosts: Record<string, number> = {};
   const carriers: Record<string, number> = {};
+  const platforms: Record<string, number> = {};
+  const osVersions: Record<string, number> = {};
+  let hasClientInfo = false;
   const packages = new Map<string, PackageTrafficSummary>();
   const refused: Record<RefusalOutcome, Map<string, number>> = {
     blocked: new Map(),
@@ -245,12 +325,23 @@ export const summarizeTraffic = (
         dauSampleDays += 1;
       }
     }
+    const hourly = new Array<number>(24).fill(0);
     (day.hourly ?? []).forEach((count, hour) => {
-      if (hour < 24) hourly[hour] = (hourly[hour] ?? 0) + countOf(count);
+      if (hour < 24) hourly[hour] = countOf(count);
     });
+    hourlyDays.push({ date: day.date, hourly });
     addCounts(ipVersion, day.ipVersion);
     addCounts(hosts, day.hosts);
     addCounts(carriers, day.carriers);
+    if (day.os) hasClientInfo = true;
+    for (const [label, count] of Object.entries(day.os ?? {})) {
+      if (validCount(count) && count > 0) {
+        const platform = label.split(' ')[0] || 'unknown';
+        platforms[platform] = (platforms[platform] ?? 0) + count;
+        const version = normalizeOSVersion(label);
+        osVersions[version] = (osVersions[version] ?? 0) + count;
+      }
+    }
     for (const item of day.packages ?? []) {
       const entry: PackageTrafficSummary = packages.get(
         item.packageVersion,
@@ -328,10 +419,15 @@ export const summarizeTraffic = (
     hit,
     refusedPercent: percentOf(hit.blocked + hit.unknown_package, requests),
     updatePercent: percentOf(hit.hdiff + hit.pdiff + hit.full, requests),
-    hourly,
+    hourlyDays: hourlyDays
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-HOURLY_DAYS),
     ipVersion: rankCounts(ipVersion),
     hosts: rankCounts(hosts),
     carriers: rankCounts(carriers),
+    platforms: rankCounts(platforms),
+    osVersions: rankCounts(osVersions),
+    hasClientInfo,
     packages: Array.from(packages.values())
       .map((entry) => ({
         ...entry,
@@ -472,31 +568,116 @@ export const rankFunnelRows = (rows: readonly FunnelRow[]): FunnelRow[] => {
   );
 };
 
-export const filterFunnelRows = (
-  rows: readonly FunnelRow[],
-  hash?: string,
-  packageVersion?: string,
-): FunnelRow[] =>
-  rows.flatMap((row) => {
-    if (hash && row.hash !== hash) return [];
-    if (!packageVersion) return [row];
-    const item = row.byPackage.find(
-      (entry) => entry.packageVersion === packageVersion,
+/** In the native package view: the events of each bundle within one package. */
+export interface PackageVersionRow extends FunnelRates {
+  hash: string;
+  name: string | null | undefined;
+  served: ServedCounts;
+  events: FunnelEventCounts;
+  servedTotal: number;
+}
+
+/** One native package row: requests and devices from traffic, events summed from each bundle's per-package split. */
+export interface PackageRow extends FunnelRates {
+  packageVersion: string;
+  requests: number | null;
+  percent: number | null;
+  peakDevices: number | null;
+  served: ServedCounts;
+  events: FunnelEventCounts;
+  servedTotal: number;
+  versions: PackageVersionRow[];
+}
+
+const SERVED_KEYS = ['hdiff', 'pdiff', 'full', 'fullPending', 'exp'] as const;
+const EVENT_KEYS = [
+  'downloadSuccess',
+  'downloadFail',
+  'patchFail',
+  'markSuccess',
+  'rollback',
+] as const;
+
+export const buildPackageRows = (
+  versions: readonly FunnelRow[],
+  traffic: readonly PackageTrafficSummary[],
+): PackageRow[] => {
+  const rows = new Map<string, PackageRow>();
+  const rowOf = (packageVersion: string): PackageRow => {
+    let row = rows.get(packageVersion);
+    if (!row) {
+      row = {
+        packageVersion,
+        requests: null,
+        percent: null,
+        peakDevices: null,
+        served: { hdiff: 0, pdiff: 0, full: 0, fullPending: 0, exp: 0 },
+        events: {
+          downloadSuccess: 0,
+          downloadFail: 0,
+          patchFail: 0,
+          markSuccess: 0,
+          rollback: 0,
+        },
+        servedTotal: 0,
+        versions: [],
+        ...computeFunnelRates({
+          downloadSuccess: 0,
+          downloadFail: 0,
+          patchFail: 0,
+          markSuccess: 0,
+          rollback: 0,
+        }),
+      };
+      rows.set(packageVersion, row);
+    }
+    return row;
+  };
+  for (const item of traffic) {
+    Object.assign(rowOf(item.packageVersion), {
+      requests: item.requests,
+      percent: item.percent,
+      peakDevices: item.peakDevices,
+    });
+  }
+  for (const version of versions) {
+    for (const item of version.byPackage) {
+      const row = rowOf(item.packageVersion);
+      for (const key of SERVED_KEYS) {
+        row.served[key] += countOf(item.served[key]);
+      }
+      for (const key of EVENT_KEYS) {
+        row.events[key] += countOf(item.events[key]);
+      }
+      row.versions.push({
+        hash: version.hash,
+        name: version.name,
+        served: item.served,
+        events: item.events,
+        servedTotal: servedTotal(item.served),
+        ...computeFunnelRates(item.events),
+      });
+    }
+  }
+  return Array.from(rows.values())
+    .map((row) => ({
+      ...row,
+      ...computeFunnelRates(row.events),
+      servedTotal: servedTotal(row.served),
+      versions: row.versions.sort(
+        (a, b) =>
+          b.servedTotal +
+          b.events.markSuccess -
+          (a.servedTotal + a.events.markSuccess),
+      ),
+    }))
+    .sort(
+      (a, b) =>
+        (b.requests ?? 0) - (a.requests ?? 0) ||
+        b.servedTotal - a.servedTotal ||
+        a.packageVersion.localeCompare(b.packageVersion),
     );
-    return item
-      ? [
-          {
-            ...row,
-            ...computeFunnelRates(item.events),
-            served: item.served,
-            events: item.events,
-            servedTotal: servedTotal(item.served),
-            retained: null,
-            byPackage: [item],
-          },
-        ]
-      : [];
-  });
+};
 
 export const versionTotals = (response: VersionFunnelResponse | undefined) => {
   if (!response) return null;

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import {
   buildFunnelRows,
+  buildPackageRows,
   computeFunnelRates,
-  filterFunnelRows,
   highestFailureDimension,
   insightToday,
   isKnownCarrier,
   lagShares,
+  normalizeOSVersion,
   observationCount,
   parseFailureReason,
   parseInsightDays,
@@ -92,6 +93,7 @@ describe('parameters and basic aggregation', () => {
   it('keeps URL compatibility and defaults', () => {
     expect(parseInsightDays('14')).toBe(14);
     expect(parseInsightDays('9')).toBe(7);
+    expect(parseInsightDays('35')).toBe(30);
     expect(parseInsightView('versions')).toBe('versions');
     expect(parseInsightView(null)).toBe('overview');
     expect(insightToday(new Date(2026, 8, 26, 12).getTime())).toBe(
@@ -168,13 +170,48 @@ describe('complete-day means and missing observations', () => {
     expect(result.today?.dau).toBe(9);
     expect(result.averageDau).toBeNull();
   });
+  it('maps Android API levels and folds iOS patch versions', () => {
+    expect(normalizeOSVersion('android 34')).toBe('android 14');
+    expect(normalizeOSVersion('android 32')).toBe('android 12');
+    expect(normalizeOSVersion('android 99')).toBe('android API 99');
+    expect(normalizeOSVersion('ios 17.5.1')).toBe('ios 17.5');
+    expect(normalizeOSVersion('ios 18')).toBe('ios 18.0');
+    expect(normalizeOSVersion('tvos 18.0')).toBe('tvos 18.0');
+    expect(normalizeOSVersion('harmony 12')).toBe('harmony 5.0.0');
+    expect(normalizeOSVersion('harmony 20')).toBe('harmony 6.0.0');
+    expect(normalizeOSVersion('harmony 24')).toBe('harmony 6.1.1');
+    expect(normalizeOSVersion('harmony 99')).toBe('harmony API 99');
+    expect(normalizeOSVersion('unknown')).toBe('unknown');
+  });
+  it('groups OS labels into platforms and ranks OS versions', () => {
+    const result = summarizeTraffic(
+      [
+        day('2026-09-26', {
+          os: { 'android 34': 30, 'ios 17.5': 10 },
+        }),
+        day('2026-09-27', { os: { 'android 35': 20, 'ios 17.5.1': 5 } }),
+      ],
+      '2026-09-27',
+    );
+    expect(result.hasClientInfo).toBe(true);
+    expect(result.platforms.map((row) => [row.key, row.count])).toEqual([
+      ['android', 50],
+      ['ios', 15],
+    ]);
+    expect(result.osVersions.map((row) => [row.key, row.count])).toEqual([
+      ['android 14', 30],
+      ['android 15', 20],
+      ['ios 17.5', 15],
+    ]);
+    expect(summarizeTraffic([day('2026-09-27')]).hasClientInfo).toBe(false);
+  });
   it('is empty safe without fabricating means or device peaks', () => {
     const result = summarizeTraffic(undefined);
     expect(result.averageDau).toBeNull();
     expect(result.averageDailyRequests).toBeNull();
     expect(result.peakDau).toBeNull();
     expect(result.today).toBeNull();
-    expect(result.hourly).toHaveLength(24);
+    expect(result.hourlyDays).toEqual([]);
   });
   it('keeps legacy positive device observations but does not invent observed zeroes', () => {
     const result = summarizeTraffic(
@@ -285,15 +322,64 @@ describe('independent version observations', () => {
     expect(row.retained?.mark).toBeNull();
     expect(row.retained?.download).toBeNull();
   });
-  it('hides whole-version observations under native-package filters without mutation', () => {
-    const original = buildFunnelRows(response());
-    const filtered = filterFunnelRows(original, 'v1', '1.0')[0]!;
-    expect(filtered.retained).toBeNull();
-    expect(filtered.events.markSuccess).toBe(2);
-    expect(filtered.servedTotal).toBe(2);
-    expect(original[0]?.retained?.mark).toBe(5);
-    expect(filterFunnelRows(original, undefined, 'missing')).toEqual([]);
-    expect(filterFunnelRows(original, 'missing')).toEqual([]);
+  it('pivots versions into native package rows with traffic context', () => {
+    const second = {
+      ...version(),
+      hash: 'v2',
+      name: 'Version 2',
+      byPackage: [
+        {
+          packageVersion: '1.0',
+          served: { ...offered, hdiff: 3 },
+          events: events({ markSuccess: 4, rollback: 1 }),
+        },
+        {
+          packageVersion: '2.0',
+          served: offered,
+          events: events({ markSuccess: 1 }),
+        },
+      ],
+    };
+    const rows = buildPackageRows(
+      buildFunnelRows(response({ versions: [version(), second] })),
+      [
+        {
+          packageVersion: '2.0',
+          requests: 50,
+          percent: 50,
+          peakDevices: 9,
+          observedDays: 1,
+          availableStart: null,
+          availableEnd: null,
+          partial: false,
+          expiredDays: 0,
+          unavailableDays: 0,
+        },
+        {
+          packageVersion: '3.0',
+          requests: 10,
+          percent: 10,
+          peakDevices: null,
+          observedDays: 0,
+          availableStart: null,
+          availableEnd: null,
+          partial: false,
+          expiredDays: 0,
+          unavailableDays: 0,
+        },
+      ],
+    );
+    expect(rows.map((row) => row.packageVersion)).toEqual([
+      '2.0',
+      '3.0',
+      '1.0',
+    ]);
+    const one = rows.find((row) => row.packageVersion === '1.0')!;
+    expect(one.events.markSuccess).toBe(6);
+    expect(one.events.rollback).toBe(1);
+    expect(one.requests).toBeNull();
+    expect(one.versions.map((item) => item.hash)).toEqual(['v2', 'v1']);
+    expect(rows[1]?.versions).toEqual([]);
   });
   it('uses uncapped app summaries including unattributed events', () => {
     const result = versionTotals(

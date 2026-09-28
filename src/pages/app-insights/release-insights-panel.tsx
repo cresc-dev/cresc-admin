@@ -9,16 +9,18 @@ import {
 } from './release-insights-format';
 import type {
   ArtifactInsight,
-  ReleaseDelivery,
   ReleaseVersionInsight,
   RolloutInsight,
 } from './release-insights-types';
-import { useAppVersionFunnel } from './shared';
+import { HeaderHint, useAppVersionFunnel } from './shared';
+
+export type ReleaseSection = 'rollout' | 'hermes';
 
 export const ReleaseInsightsPanel = ({
   appKey,
   days,
   isAdmin = false,
+  section,
 }: {
   appKey: string;
   days: number;
@@ -29,11 +31,14 @@ export const ReleaseInsightsPanel = ({
    * compile while the release itself is fine.
    */
   isAdmin?: boolean;
+  /** Render only one card; omit to render all of them in order. */
+  section?: ReleaseSection;
 }) => {
   const { t } = useTranslation();
   const text = {
     title: t('app_insights.release.title'),
     gray: t('app_insights.release.gray'),
+    grayQuestion: t('app_insights.release.gray_question'),
     missing: t('app_insights.release.missing'),
     unavailable: t('app_insights.release.unavailable'),
     upgrade: t('app_insights.release.upgrade'),
@@ -47,8 +52,8 @@ export const ReleaseInsightsPanel = ({
     hit: t('app_insights.release.hit'),
     miss: t('app_insights.release.miss'),
     unknown: t('app_insights.release.unknown'),
+    unknownHint: t('app_insights.release.unknown_hint'),
     rate: t('app_insights.release.rate'),
-    reasons: t('app_insights.release.reasons'),
     status: t('app_insights.release.status'),
     hermes: t('app_insights.release.hermes'),
     version: t('app_insights.release.version'),
@@ -64,13 +69,6 @@ export const ReleaseInsightsPanel = ({
     reduction: t('app_insights.release.reduction'),
     observedAt: t('app_insights.release.observed_at'),
     distinction: t('app_insights.release.distinction'),
-    offers: t('app_insights.release.offers'),
-    offersNote: t('app_insights.release.offers_note'),
-    target: t('app_insights.release.target'),
-    kind: t('app_insights.release.kind'),
-    reason: t('app_insights.release.reason'),
-    count: t('app_insights.release.count'),
-    requests: t('app_insights.release.requests'),
     used: t('app_insights.release.used'),
     rejected: t('app_insights.release.rejected'),
     dumpFailed: t('app_insights.release.dump_failed'),
@@ -79,11 +77,6 @@ export const ReleaseInsightsPanel = ({
     observed: t('app_insights.release.observed'),
     limited: t('app_insights.release.limited'),
     unknownStatus: t('app_insights.release.unknown_status'),
-    current: t('app_insights.release.current'),
-    experimental: t('app_insights.release.experimental'),
-    pending: t('app_insights.release.pending'),
-    mismatch: t('app_insights.release.mismatch'),
-    noPatch: t('app_insights.release.no_patch'),
   };
   const query = useAppVersionFunnel(appKey, days);
   const dateSelectID = useId();
@@ -109,44 +102,31 @@ export const ReleaseInsightsPanel = ({
     {
       title: text.rule,
       key: 'rule',
-      width: 270,
       render: (_, row) => (
         <div>
           <div>
-            {row.packageVersion} · {name(row.targetHash)}
+            {row.packageVersion} → {name(row.targetHash)}
           </div>
-          <div className="text-xs text-gray-500">
-            {row.rollout == null ? text.missing : `${row.rollout}%`} ·{' '}
-            {row.algorithm}
-          </div>
-          <code className="text-xs">{row.id.slice(0, 12)}</code>
         </div>
       ),
     },
     { title: text.exposed, dataIndex: 'exposedDevices', render: number },
     { title: text.hit, dataIndex: 'hitDevices', render: number },
     { title: text.miss, dataIndex: 'missDevices', render: number },
-    { title: text.unknown, dataIndex: 'unknownDevices', render: number },
     {
-      title: text.rate,
-      dataIndex: 'hitRate',
-      render: (value: number | null) => observationPercent(value, text.missing),
+      title: <HeaderHint label={text.unknown} hint={text.unknownHint} />,
+      dataIndex: 'unknownDevices',
+      render: number,
     },
     {
-      title: text.reasons,
-      key: 'reasons',
-      width: 220,
+      title: text.rate,
+      key: 'rate',
       render: (_, row) => (
-        <div>
-          <div>
-            {text.requests}: {number(row.requests.unknown)}
-          </div>
-          <div className="text-xs">
-            UUID: {number(row.requests.missingUUID)} · SDK:{' '}
-            {number(row.requests.missingSDK)} · Rule:{' '}
-            {number(row.requests.missingRule)}
-          </div>
-        </div>
+        <span className="whitespace-nowrap tabular-nums">
+          {row.rollout == null ? text.missing : `${row.rollout}%`}
+          <span className="mx-1 text-gray-400">/</span>
+          {observationPercent(row.hitRate, text.missing)}
+        </span>
       ),
     },
     { title: text.status, dataIndex: 'status', render: status },
@@ -217,68 +197,69 @@ export const ReleaseInsightsPanel = ({
     },
     { title: text.artifacts, dataIndex: 'artifactStatus', render: status },
   ];
-  const reasons: Record<string, string> = {
-    response_artifacts_pending: text.pending,
-    bundle_mismatch_observed: text.mismatch,
-    no_patch_offered: text.noPatch,
-  };
-  const deliveryColumns: ColumnsType<ReleaseDelivery> = [
-    { title: text.version, dataIndex: 'hash', render: name },
-    {
-      title: text.target,
-      dataIndex: 'target',
-      render: (value: string) =>
-        value === 'exp' ? text.experimental : text.current,
-    },
-    { title: text.kind, dataIndex: 'kind' },
-    {
-      title: text.reason,
-      dataIndex: 'reason',
-      render: (value: string) => reasons[value] ?? value,
-    },
-    { title: text.count, dataIndex: 'count', render: number },
-  ];
+  const unavailableMessage = (
+    <Alert
+      showIcon
+      type="info"
+      title={
+        query.isLoading
+          ? '…'
+          : query.error || insights?.status === 'unavailable'
+            ? text.unavailable
+            : text.upgrade
+      }
+    />
+  );
+  const available = !!insights && insights.status !== 'unavailable';
+  const dateSelect = (name: ReleaseSection) =>
+    available && (
+      <span className="flex items-center gap-2 text-sm font-normal">
+        <label htmlFor={`${dateSelectID}-${name}`}>{text.day}</label>
+        <Select
+          id={`${dateSelectID}-${name}`}
+          size="small"
+          value={day?.date}
+          onChange={setSelectedDate}
+          options={insights.days.map((item) => ({
+            value: item.date,
+            label: item.date,
+          }))}
+          className="w-36"
+        />
+      </span>
+    );
+  const dayNotice = (
+    <>
+      {day && (day.limited || day.status === 'partial') && (
+        <Alert showIcon type="warning" title={text.partial} />
+      )}
+      {(day?.status === 'expired' || day?.status === 'unavailable') && (
+        <Alert
+          type="info"
+          title={day.status === 'expired' ? text.expired : text.missing}
+        />
+      )}
+    </>
+  );
+  const dayReadable =
+    day?.status !== 'expired' && day?.status !== 'unavailable';
+  const show = (name: ReleaseSection) => !section || section === name;
+  // Older server or unavailable data: show the notice once, in the first card's place.
+  if (!available) {
+    return show('rollout') ? (
+      <Card size="small" title={text.title}>
+        <Spin spinning={query.isLoading}>{unavailableMessage}</Spin>
+      </Card>
+    ) : null;
+  }
   return (
-    <Card title={text.title} className="mb-4">
-      <Spin spinning={query.isLoading}>
-        {!insights || insights.status === 'unavailable' ? (
-          <Alert
-            showIcon
-            type="info"
-            title={
-              query.isLoading
-                ? '…'
-                : query.error || insights?.status === 'unavailable'
-                  ? text.unavailable
-                  : text.upgrade
-            }
-          />
-        ) : (
-          <div className="flex flex-col gap-4">
-            <h3 className="font-medium">{text.gray}</h3>
-            <Alert showIcon type="info" title={text.inference} />
-            <div className="flex flex-wrap items-center gap-2">
-              <label htmlFor={dateSelectID}>{text.day}</label>
-              <Select
-                id={dateSelectID}
-                value={day?.date}
-                onChange={setSelectedDate}
-                options={insights.days.map((item) => ({
-                  value: item.date,
-                  label: item.date,
-                }))}
-                className="w-44"
-              />
-            </div>
-            {day && (day.limited || day.status === 'partial') && (
-              <Alert showIcon type="warning" title={text.partial} />
-            )}
-            {day?.status === 'expired' || day?.status === 'unavailable' ? (
-              <Alert
-                type="info"
-                title={day.status === 'expired' ? text.expired : text.missing}
-              />
-            ) : (
+    <>
+      {show('rollout') && (
+        <Card size="small" title={text.gray} extra={dateSelect('rollout')}>
+          <div className="flex flex-col gap-3">
+            <p className="m-0 text-sm text-gray-500">{text.grayQuestion}</p>
+            {dayNotice}
+            {dayReadable && (
               <Table
                 rowKey="id"
                 dataSource={day?.cohorts ?? []}
@@ -289,47 +270,38 @@ export const ReleaseInsightsPanel = ({
                 locale={{ emptyText: text.noGray }}
               />
             )}
-            {isAdmin && (
-              <>
-                <h3 className="font-medium">{text.hermes}</h3>
-                <Alert showIcon type="info" title={text.distinction} />
-                <Table
-                  rowKey="hash"
-                  dataSource={insights.versions}
-                  columns={versionColumns}
-                  scroll={{ x: 950 }}
-                  size="small"
-                  pagination={{ pageSize: 10 }}
-                  expandable={{
-                    expandedRowRender: (row) => (
-                      <Table
-                        rowKey="key"
-                        dataSource={row.artifacts}
-                        columns={artifactColumns}
-                        size="small"
-                        scroll={{ x: 1000 }}
-                        pagination={{ pageSize: 10 }}
-                        locale={{ emptyText: text.empty }}
-                      />
-                    ),
-                  }}
-                />
-              </>
-            )}
-            <h3 className="font-medium">{text.offers}</h3>
-            <p className="text-sm text-gray-500">{text.offersNote}</p>
+            <p className="m-0 text-xs text-gray-400">{text.inference}</p>
+          </div>
+        </Card>
+      )}
+      {show('hermes') && isAdmin && (
+        <Card size="small" title={text.hermes}>
+          <div className="flex flex-col gap-3">
+            <p className="m-0 text-sm text-gray-500">{text.distinction}</p>
             <Table
-              rowKey="id"
-              dataSource={day?.deliveries ?? []}
-              columns={deliveryColumns}
+              rowKey="hash"
+              dataSource={insights.versions}
+              columns={versionColumns}
+              scroll={{ x: 950 }}
               size="small"
-              scroll={{ x: 800 }}
               pagination={{ pageSize: 10 }}
-              locale={{ emptyText: text.missing }}
+              expandable={{
+                expandedRowRender: (row) => (
+                  <Table
+                    rowKey="key"
+                    dataSource={row.artifacts}
+                    columns={artifactColumns}
+                    size="small"
+                    scroll={{ x: 1000 }}
+                    pagination={{ pageSize: 10 }}
+                    locale={{ emptyText: text.empty }}
+                  />
+                ),
+              }}
             />
           </div>
-        )}
-      </Spin>
-    </Card>
+        </Card>
+      )}
+    </>
   );
 };

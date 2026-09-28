@@ -8,7 +8,7 @@ import { appViewPath, rootRouterPath, router } from '@/router';
 import { patchSearchParams, rememberRecentApp } from '@/utils/helper';
 import { useWorkspacePermissions } from '@/utils/hooks';
 import { useSelectedAppFromUrl } from '@/utils/selected-app';
-import { getBrowserTimezone } from '@/utils/timezone';
+import { AudiencePanel } from './app-insights/audience-panel';
 import { FailuresPanel } from './app-insights/failures-panel';
 import {
   DEFAULT_INSIGHT_DAYS,
@@ -20,7 +20,6 @@ import {
 } from './app-insights/logic';
 import { OverviewPanel } from './app-insights/overview-panel';
 import { hasRealtimeSeriesEntryParams } from './app-insights/realtime-series-panel';
-import { ReleaseInsightsPanel } from './app-insights/release-insights-panel';
 import { TrafficPanel } from './app-insights/traffic-panel';
 import { VersionsPanel } from './app-insights/versions-panel';
 
@@ -32,6 +31,7 @@ const VIEW_LABEL_KEY: Record<InsightView, string> = {
   overview: 'app_insights.view_overview',
   versions: 'app_insights.view_versions',
   traffic: 'app_insights.view_traffic',
+  audience: 'app_insights.view_audience',
   failures: 'app_insights.view_failures',
 };
 
@@ -96,7 +96,7 @@ export const Component = () => {
         }
         sectionLabel={t('realtime_metrics.title')}
       />
-      <Card>
+      <Card className="insights-page">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
           <Segmented
             value={view}
@@ -120,25 +120,28 @@ export const Component = () => {
                 }}
               />
             )}
-            <Radio.Group
-              value={days}
-              onChange={(event) =>
-                patchSearchParams(setSearchParams, {
-                  days:
-                    event.target.value === DEFAULT_INSIGHT_DAYS
-                      ? undefined
-                      : String(event.target.value),
-                })
-              }
-              optionType="button"
-              buttonStyle="solid"
-            >
-              {INSIGHT_DAY_OPTIONS.map((value) => (
-                <Radio.Button key={value} value={value}>
-                  {t('app_insights.days_option', { days: value })}
-                </Radio.Button>
-              ))}
-            </Radio.Group>
+            {/* The traffic view's live series and hourly split have their own ranges */}
+            {view !== 'traffic' && (
+              <Radio.Group
+                value={days}
+                onChange={(event) =>
+                  patchSearchParams(setSearchParams, {
+                    days:
+                      event.target.value === DEFAULT_INSIGHT_DAYS
+                        ? undefined
+                        : String(event.target.value),
+                  })
+                }
+                optionType="button"
+                buttonStyle="solid"
+              >
+                {INSIGHT_DAY_OPTIONS.map((value) => (
+                  <Radio.Button key={value} value={value}>
+                    {t('app_insights.days_option', { days: value })}
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+            )}
           </div>
         </div>
 
@@ -153,22 +156,22 @@ export const Component = () => {
             onNavigate={setView}
           />
         ) : view === 'versions' ? (
-          <>
-            <ReleaseInsightsPanel
-              appKey={selectedAppKey}
-              days={days}
-              isAdmin={isAdmin}
-            />
-            <VersionsPanel appKey={selectedAppKey} days={days} />
-          </>
+          <VersionsPanel
+            appKey={selectedAppKey}
+            days={days}
+            isAdmin={isAdmin}
+          />
         ) : view === 'traffic' ? (
-          <TrafficPanel appKey={selectedAppKey} days={days} isAdmin={isAdmin} />
+          <TrafficPanel appKey={selectedAppKey} isAdmin={isAdmin} />
+        ) : view === 'audience' ? (
+          <AudiencePanel
+            appKey={selectedAppKey}
+            days={days}
+            isAdmin={isAdmin}
+          />
         ) : (
           <FailuresPanel appKey={selectedAppKey} days={days} />
         )}
-        <div className="mt-4 text-xs text-gray-400">
-          {t('app_insights.page_footnote', { timezone: getBrowserTimezone() })}
-        </div>
       </Card>
     </AppDrawerLayout>
   );

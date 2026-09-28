@@ -86,25 +86,17 @@ test('legacy timezone is honored without inventing exact observation boundaries'
   expect(summary.today?.date).toBe('2026-09-26');
   expect(summary.completedDays).toBe(1);
   expect(summary.averageDailyRequests).toBe(20);
-  render(<ObservationNotice timezone={response.timezone} updatedAt={0} />);
-  expect(screen.getByText(/Legacy timezone: America\/New_York/)).not.toBeNull();
-  expect(
-    screen.getByText(/Exact bucket boundaries.*not supplied/),
-  ).not.toBeNull();
+  render(<ObservationNotice updatedAt={0} />);
+  expect(screen.getByText(en.app_insights.not_loaded)).not.toBeNull();
 });
 
 test('the UI displays actual fractional-zone boundaries and incomplete date warnings', () => {
-  render(
-    <ObservationNotice
-      timezone="Asia/Kolkata"
-      window={roundedWindow()}
-      updatedAt={1}
-    />,
-  );
-  expect(screen.getByText(/2026-09-24T00:30:00\+05:30/)).not.toBeNull();
-  expect(screen.getByText(en.app_insights.hour_alignment)).not.toBeNull();
+  render(<ObservationNotice window={roundedWindow()} updatedAt={1} />);
   expect(
-    screen.getByText(/Incomplete bucket dates.*2026-09-26, 2026-09-27/),
+    screen.getByText(/2026-09-24 – 2026-09-27 \(Asia\/Kolkata\)/),
+  ).not.toBeNull();
+  expect(
+    screen.getByText(/2026-09-26, 2026-09-27 is still coming in/),
   ).not.toBeNull();
   expect(screen.queryByText(/version events use UTC days/i)).toBeNull();
 });

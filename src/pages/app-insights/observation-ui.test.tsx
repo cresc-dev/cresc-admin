@@ -6,9 +6,8 @@ import '@/i18n';
 import en from '@/i18n/locales/en.json';
 import zhCN from '@/i18n/locales/zh-CN.json';
 import { metricsKeys } from '@/utils/query-keys';
-import { buildFunnelRows, filterFunnelRows } from './logic';
-import { ObservationNotice, RollbackObservation } from './observation-ui';
-import { PackageObservation } from './traffic-panel';
+import { buildFunnelRows } from './logic';
+import { ObservationNotice, RollbackShare } from './observation-ui';
 import type { VersionFunnelResponse } from './types';
 import { VersionDetail, VersionsPanel } from './versions-panel';
 
@@ -70,36 +69,19 @@ test('canonical metric language catalogs have identical keys', () => {
   expect(Object.keys(insightsEn).sort()).toEqual(
     Object.keys(insightsZh).sort(),
   );
-  expect(i18n.t('app_insights.hit_uptodate')).toBe('No update offered');
-  expect(i18n.t('app_insights.view_versions')).toBe('Version events');
+  expect(i18n.t('app_insights.hit_uptodate')).toBe('No update');
+  expect(i18n.t('app_insights.view_versions')).toBe('Versions');
 });
 
-test('low rollback does not claim overall health and tiny samples are explicit', () => {
-  const response = fixture();
-  const row = buildFunnelRows(response)[0]!;
-  render(
-    <RollbackObservation
-      health={row.health}
-      samples={row.rollbackSamples}
-      count={row.events.rollback}
-    />,
-  );
-  expect(screen.getByText('Low rollback report share')).not.toBeNull();
-  expect(screen.queryByText('Healthy')).toBeNull();
+test('compact rollback share shows the ratio and flags thin samples', () => {
+  render(<RollbackShare health="warning" samples={200} count={3} />);
+  expect(screen.getByText('1.5%')).not.toBeNull();
+  expect(screen.getByText('3/200')).not.toBeNull();
+  expect(screen.queryByText(insightsEn.samples_short)).toBeNull();
   cleanup();
-  render(<RollbackObservation health={null} samples={4} count={1} />);
-  expect(
-    screen.getByText('Insufficient rollback observations (4 / 10)'),
-  ).not.toBeNull();
-});
-
-test('package-filtered details hide whole-version cumulative metrics', () => {
-  const row = filterFunnelRows(buildFunnelRows(fixture()), 'v1', '1.0')[0]!;
-  render(<VersionDetail row={row} />);
-  expect(
-    screen.getByText(insightsEn.retained_unavailable_package),
-  ).not.toBeNull();
-  expect(screen.queryByText(insightsEn.retained_title)).toBeNull();
+  render(<RollbackShare health={null} samples={2} count={1} />);
+  expect(screen.getByText('50.0%')).not.toBeNull();
+  expect(screen.getByText(insightsEn.samples_short)).not.toBeNull();
 });
 
 test('retained counts are rendered without a coverage or adoption percentage', () => {
@@ -120,10 +102,9 @@ test('legacy table labels returned-version totals and keeps download failures vi
   });
   render(
     <QueryClientProvider client={client}>
-      <VersionsPanel appKey="metric-test" days={7} />
+      <VersionsPanel appKey="metric-test" days={7} isAdmin={false} />
     </QueryClientProvider>,
   );
-  expect(screen.getByText(insightsEn.totals_returned)).not.toBeNull();
   expect(screen.getByText('90')).not.toBeNull();
   expect(screen.queryByText('250.0%')).toBeNull();
 });
@@ -131,7 +112,6 @@ test('legacy table labels returned-version totals and keeps download failures vi
 test('window and stale state disclose actual UTC boundaries and refresh freshness', () => {
   render(
     <ObservationNotice
-      timezone="UTC"
       updatedAt={1}
       stale
       window={{
@@ -146,30 +126,7 @@ test('window and stale state disclose actual UTC boundaries and refresh freshnes
       }}
     />,
   );
-  expect(screen.getByText(/2026-09-21T00:00:00Z/)).not.toBeNull();
+  expect(screen.getByText(/2026-09-21 – 2026-09-27 \(UTC\)/)).not.toBeNull();
   expect(screen.getByText(insightsEn.stale_data)).not.toBeNull();
-  expect(screen.getByText(/refreshes every minute/)).not.toBeNull();
-});
-
-test('package observations surface short retention and collection limits', () => {
-  render(
-    <PackageObservation
-      row={{
-        packageVersion: '1',
-        requests: 100,
-        percent: 100,
-        peakDevices: 3,
-        observedDays: 2,
-        availableStart: '2026-09-26',
-        availableEnd: '2026-09-27',
-        expiredDays: 20,
-        unavailableDays: 1,
-        partial: true,
-      }}
-    />,
-  );
-  expect(
-    screen.getByText('20 expired days; 1 unavailable days'),
-  ).not.toBeNull();
-  expect(screen.getByText(insightsEn.package_partial)).not.toBeNull();
+  expect(screen.getByText(/Updated /)).not.toBeNull();
 });

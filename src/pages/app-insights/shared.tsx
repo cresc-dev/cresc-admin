@@ -125,6 +125,21 @@ export const StatTile = ({
   );
 };
 
+/** Header label with a dotted underline; hover for the definition. */
+export const HeaderHint = ({
+  label,
+  hint,
+}: {
+  label: ReactNode;
+  hint: ReactNode;
+}) => (
+  <Tooltip title={hint}>
+    <span className="cursor-help underline decoration-dotted underline-offset-4">
+      {label}
+    </span>
+  </Tooltip>
+);
+
 /** The one line under a card title saying which question the chart answers,
  * kept separate from the data-definition footnote. */
 export const Question = ({ children }: { children: ReactNode }) => (
@@ -184,7 +199,7 @@ export const BarList = ({
       {top.map((item, index) => (
         <li
           key={item.key}
-          className="grid grid-cols-[1.5rem_minmax(0,11rem)_minmax(0,1fr)_4.5rem_3.5rem] items-center gap-2 py-1 text-sm"
+          className="grid grid-cols-[1.5rem_minmax(6rem,11rem)_minmax(0,1fr)_4.5rem_3.5rem] items-center gap-2 py-1 text-sm"
         >
           <span className="text-xs text-gray-400 tabular-nums">
             {index + 1}
@@ -216,7 +231,7 @@ export const BarList = ({
         </li>
       ))}
       {rest.length > 0 && (
-        <li className="grid grid-cols-[1.5rem_minmax(0,11rem)_minmax(0,1fr)_4.5rem_3.5rem] items-center gap-2 py-1 text-sm text-gray-500">
+        <li className="grid grid-cols-[1.5rem_minmax(6rem,11rem)_minmax(0,1fr)_4.5rem_3.5rem] items-center gap-2 py-1 text-sm text-gray-500">
           <span />
           <span className="truncate">
             {restLabel ? restLabel(rest.length) : `+${rest.length}`}
@@ -267,6 +282,8 @@ export const VersionLabel = ({
         copyable={{
           text: hash,
           tooltips: [t('app_insights.copy_hash'), false],
+          // Rows expand on click; copying must not toggle the row
+          onCopy: (event) => event?.stopPropagation(),
         }}
       >
         {shortHash(hash)}
@@ -336,11 +353,11 @@ export const useFailureReasonLabel = () => {
 export const useEventTypeLabel = () => {
   const { t } = useTranslation();
   const labels = {
-    download_success: t('version_health.download_success'),
-    download_fail: t('version_health.download_fail'),
-    patch_fail: t('version_health.patch_fail'),
-    rollback: t('version_health.rollback'),
-    mark_success: t('version_health.mark_success'),
+    download_success: t('app_insights.col_downloaded'),
+    download_fail: t('app_insights.col_download_fail'),
+    patch_fail: t('app_insights.col_patch_fail'),
+    rollback: t('app_insights.col_rollback'),
+    mark_success: t('app_insights.col_activated'),
   } as const;
   return (type: keyof typeof labels) => labels[type];
 };

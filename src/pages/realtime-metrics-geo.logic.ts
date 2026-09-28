@@ -16,17 +16,7 @@ export interface AppGeoResponse {
   regionResolver: boolean;
 }
 
-export type GeoWindow = 'today' | '7d' | '30d';
-
-export const GEO_WINDOWS: GeoWindow[] = ['today', '7d', '30d'];
-
-export const GEO_WINDOW_DAYS: Record<GeoWindow, number> = {
-  today: 1,
-  '7d': 7,
-  '30d': 30,
-};
-
-// Fetch the full 30 days once; switching windows only re-sums on the client.
+// Fetch the full 30 days once; switching the range only re-sums on the client.
 export const GEO_FETCH_DAYS = 30;
 export const GEO_TOP_LIMIT = 12;
 
@@ -49,9 +39,6 @@ export interface GeoSummary {
   rest: { regions: number; count: number; percent: number } | null;
 }
 
-export const parseGeoWindow = (value: string | null): GeoWindow =>
-  GEO_WINDOWS.includes(value as GeoWindow) ? (value as GeoWindow) : 'today';
-
 /**
  * `days` arrives newest first; a window sums the first N of them. The unknown
  * region takes part in the total and the ranking (it is often the largest
@@ -62,12 +49,12 @@ export const parseGeoWindow = (value: string | null): GeoWindow =>
  */
 export const summarizeGeo = (
   days: readonly AppGeoDay[] | undefined,
-  window: GeoWindow,
+  windowDays: number,
   limit = GEO_TOP_LIMIT,
   labelOf: (region: string) => string = (region) => region,
 ): GeoSummary => {
   const totals = new Map<string, number>();
-  for (const day of (days ?? []).slice(0, GEO_WINDOW_DAYS[window])) {
+  for (const day of (days ?? []).slice(0, windowDays)) {
     for (const [rawRegion, count] of Object.entries(day.regions ?? {})) {
       if (!Number.isFinite(count) || count <= 0) continue;
       const trimmed = rawRegion.trim();

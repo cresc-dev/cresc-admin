@@ -1,30 +1,37 @@
-import { Alert, Card, Select, Spin, Table, Tooltip } from 'antd';
+import { Alert, Card, Spin, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/utils/helper';
 import {
   buildFunnelRows,
+  buildPackageRows,
   computeFunnelRates,
   type FunnelRates,
   type FunnelRow,
-  filterFunnelRows,
   lagShares,
+  type PackageRow,
   servedTotal,
+  summarizeTrafficResponse,
   versionTotals,
 } from './logic';
 import {
   ObservationNotice,
   observedInteger,
-  RollbackObservation,
+  RollbackShare,
 } from './observation-ui';
+import { ReleaseInsightsPanel } from './release-insights-panel';
 import {
+  BarList,
   EmptyState,
   Footnote,
   formatInteger,
   formatShare,
+  HeaderHint,
   InsightsError,
   Question,
   StatTile,
+  useAppTraffic,
   useAppVersionFunnel,
   VersionLabel,
 } from './shared';
@@ -35,7 +42,6 @@ import type {
   ServedCounts,
 } from './types';
 
-const ALL = '__all__';
 const LAG_LABEL_KEY: Record<LagBucket, string> = {
   lt1h: 'app_insights.lag_lt1h',
   '1h-6h': 'app_insights.lag_1h_6h',
@@ -50,22 +56,78 @@ type EventRow = { served: ServedCounts; events: FunnelEventCounts } & Pick<
   'health' | 'rollbackSamples'
 >;
 
-const ServedBreakdown = ({ served }: { served: ServedCounts }) => {
+interface FullReasons {
+  mismatch: number;
+  noPatch: number;
+}
+
+/** How a bundle was delivered: count and share per format, plus recent full-bundle reasons when recorded. */
+const DeliveryBreakdown = ({
+  served,
+  fullReasons,
+  reasonDays,
+}: {
+  served: ServedCounts;
+  fullReasons?: FullReasons;
+  reasonDays: number;
+}) => {
   const { t } = useTranslation();
-  const parts: Array<[string, number]> = [
-    [t('app_insights.served_hdiff'), served.hdiff],
-    [t('app_insights.served_pdiff'), served.pdiff],
-    [t('app_insights.served_full'), served.full],
-    [t('app_insights.served_full_pending'), served.fullPending],
-    [t('app_insights.served_exp'), served.exp],
+  const total = servedTotal(served);
+  const hinted = (label: string, hint: string) => (
+    <HeaderHint label={t(label)} hint={t(hint)} />
+  );
+  const parts: Array<[string, ReactNode, number]> = [
+    [
+      'hdiff',
+      hinted('app_insights.served_hdiff', 'app_insights.hdiff_hint'),
+      served.hdiff,
+    ],
+    [
+      'pdiff',
+      hinted('app_insights.served_pdiff', 'app_insights.pdiff_hint'),
+      served.pdiff,
+    ],
+    ['full', t('app_insights.served_full'), served.full],
+    ['fullPending', t('app_insights.served_full_pending'), served.fullPending],
+    ['exp', t('app_insights.served_exp'), served.exp],
   ];
+  const items = parts
+    .filter(([, , count]) => count > 0)
+    .map(([key, label, count]) => ({
+      key,
+      label,
+      count,
+      percent: total > 0 ? (count / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+  const reasons = [
+    fullReasons?.mismatch
+      ? t('app_insights.full_reason_mismatch', {
+          count: formatInteger(fullReasons.mismatch),
+        })
+      : null,
+    fullReasons?.noPatch
+      ? t('app_insights.full_reason_no_patch', {
+          count: formatInteger(fullReasons.noPatch),
+        })
+      : null,
+  ].filter(Boolean);
   return (
     <div>
-      {parts.map(([label, count]) => (
-        <div key={label}>
-          {label}: {formatInteger(count)}
+      <Question>{t('app_insights.delivery_title')}</Question>
+      {items.length > 0 ? (
+        <BarList items={items} />
+      ) : (
+        <EmptyState height="h-12">
+          {t('app_insights.no_observations')}
+        </EmptyState>
+      )}
+      {reasons.length > 0 && (
+        <div className="mt-2 text-xs text-gray-500">
+          {t('app_insights.full_reasons', { days: reasonDays })}
+          {reasons.join(' · ')}
         </div>
-      ))}
+      )}
     </div>
   );
 };
@@ -81,15 +143,18 @@ const useEventColumns = <T extends EventRow>(): ColumnsType<T> => {
   ];
   return [
     {
-      title: t('app_insights.col_served'),
+      title: (
+        <HeaderHint
+          label={t('app_insights.col_served')}
+          hint={t('app_insights.served_hint')}
+        />
+      ),
       key: 'offered',
       align: 'right',
       render: (_, row) => (
-        <Tooltip title={<ServedBreakdown served={row.served} />}>
-          <span className="tabular-nums underline decoration-dotted">
-            {formatInteger(servedTotal(row.served))}
-          </span>
-        </Tooltip>
+        <span className="tabular-nums">
+          {formatInteger(servedTotal(row.served))}
+        </span>
       ),
     },
     ...fields.map(([key, label]) => ({
@@ -99,10 +164,16 @@ const useEventColumns = <T extends EventRow>(): ColumnsType<T> => {
       render: (_: unknown, row: T) => formatInteger(row.events[key]),
     })),
     {
-      title: t('app_insights.col_health'),
+      title: (
+        <HeaderHint
+          label={t('app_insights.col_health')}
+          hint={t('app_insights.rollback_only')}
+        />
+      ),
       key: 'rollbackObservation',
+      align: 'right',
       render: (_, row) => (
-        <RollbackObservation
+        <RollbackShare
           health={row.health}
           samples={row.rollbackSamples}
           count={row.events.rollback}
@@ -159,7 +230,40 @@ const LagTable = ({
   );
 };
 
-export const VersionDetail = ({ row }: { row: FunnelRow }) => {
+/** Native package row detail: the events of each bundle within that package. */
+const PackageDetail = ({ row }: { row: PackageRow }) => {
+  const { t } = useTranslation();
+  const eventColumns = useEventColumns<PackageRow['versions'][number]>();
+  return (
+    <Table
+      size="small"
+      rowKey="hash"
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      dataSource={row.versions}
+      columns={[
+        {
+          title: t('app_insights.col_version'),
+          key: 'version',
+          render: (_, item) => (
+            <VersionLabel hash={item.hash} name={item.name} compact />
+          ),
+        },
+        ...eventColumns,
+      ]}
+    />
+  );
+};
+
+export const VersionDetail = ({
+  row,
+  fullReasons,
+  reasonDays = 14,
+}: {
+  row: FunnelRow;
+  fullReasons?: FullReasons;
+  reasonDays?: number;
+}) => {
   const { t } = useTranslation();
   const packageRows = useMemo(
     () =>
@@ -172,6 +276,11 @@ export const VersionDetail = ({ row }: { row: FunnelRow }) => {
   const packageColumns = useEventColumns<(typeof packageRows)[number]>();
   return (
     <div className="space-y-4">
+      <DeliveryBreakdown
+        served={row.served}
+        fullReasons={fullReasons}
+        reasonDays={reasonDays}
+      />
       <Question>{t('app_insights.by_package_title')}</Question>
       <Table
         size="small"
@@ -184,7 +293,7 @@ export const VersionDetail = ({ row }: { row: FunnelRow }) => {
           ...packageColumns,
         ]}
       />
-      {row.retained ? (
+      {row.retained && (
         <Card size="small" title={t('app_insights.retained_title')}>
           <Question>{t('app_insights.retained_scope')}</Question>
           <div className="grid gap-2 md:grid-cols-2">
@@ -210,52 +319,131 @@ export const VersionDetail = ({ row }: { row: FunnelRow }) => {
           </div>
           <Footnote>{t('app_insights.lag_footnote')}</Footnote>
         </Card>
-      ) : (
-        <Alert
-          type="info"
-          message={t('app_insights.retained_unavailable_package')}
-        />
       )}
     </div>
   );
 };
 
+/**
+ * The versions view runs from overall to detail: totals → per-bundle table
+ * (switchable to native packages) → gray release → (admins) HermesBase.
+ */
 export const VersionsPanel = ({
   appKey,
   days,
+  isAdmin,
 }: {
   appKey: string | undefined;
   days: number;
+  isAdmin: boolean;
 }) => {
   const { t } = useTranslation();
   const funnel = useAppVersionFunnel(appKey, days);
-  const [versionFilter, setVersionFilter] = useState(ALL);
-  const [packageFilter, setPackageFilter] = useState(ALL);
-  const allRows = useMemo(() => buildFunnelRows(funnel.data), [funnel.data]);
-  const rows = useMemo(
-    () =>
-      filterFunnelRows(
-        allRows,
-        versionFilter === ALL ? undefined : versionFilter,
-        packageFilter === ALL ? undefined : packageFilter,
-      ),
-    [allRows, versionFilter, packageFilter],
+  const rows = useMemo(() => buildFunnelRows(funnel.data), [funnel.data]);
+  // Full-bundle reasons live only in the per-day release data (kept 14 days); sum the readable days per bundle.
+  const { fullReasons, reasonDays } = useMemo(() => {
+    const map = new Map<string, FullReasons>();
+    const readable = (funnel.data?.releaseInsights?.days ?? []).filter(
+      (day) => day.status !== 'expired' && day.status !== 'unavailable',
+    );
+    for (const day of readable) {
+      for (const item of day.deliveries) {
+        const entry = map.get(item.hash) ?? { mismatch: 0, noPatch: 0 };
+        if (item.reason === 'bundle_mismatch_observed') {
+          entry.mismatch += item.count;
+        } else if (item.reason === 'no_patch_offered') {
+          entry.noPatch += item.count;
+        }
+        map.set(item.hash, entry);
+      }
+    }
+    return { fullReasons: map, reasonDays: readable.length };
+  }, [funnel.data]);
+  const traffic = useAppTraffic(appKey, days);
+  const [perspective, setPerspective] = useState<'version' | 'package'>(
+    'version',
   );
+  const packageRows = useMemo(
+    () =>
+      buildPackageRows(rows, summarizeTrafficResponse(traffic.data).packages),
+    [rows, traffic.data],
+  );
+  const packageEventColumns = useEventColumns<PackageRow>();
+  // The perspective switch sits in the first header cell; rows become bundles or native packages.
+  const perspectiveToggle = (
+    <div className="flex gap-5" role="tablist">
+      {(['version', 'package'] as const).map((value) => {
+        const active = perspective === value;
+        const label = t(
+          value === 'version'
+            ? 'app_insights.by_version'
+            : 'app_insights.by_package',
+        );
+        return (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => setPerspective(value)}
+            className={cn(
+              '-mb-2 cursor-pointer whitespace-nowrap border-0 border-b-2 border-solid bg-transparent px-0 pb-1.5 text-[15px]',
+              active
+                ? 'border-primary font-semibold text-primary'
+                : 'border-transparent font-normal text-gray-400 hover:text-gray-600',
+            )}
+          >
+            {active
+              ? t('app_insights.perspective_active', { name: label })
+              : label}
+          </button>
+        );
+      })}
+    </div>
+  );
+  const packageColumns: ColumnsType<PackageRow> = [
+    {
+      title: perspectiveToggle,
+      dataIndex: 'packageVersion',
+      fixed: 'left',
+      width: 300,
+    },
+    {
+      title: t('app_insights.requests'),
+      key: 'requests',
+      align: 'right',
+      render: (_, row) => (
+        <span className="tabular-nums">
+          {formatInteger(row.requests)}
+          {row.percent !== null && (
+            <span className="ml-1 text-xs text-gray-400">
+              {formatShare(row.percent)}
+            </span>
+          )}
+        </span>
+      ),
+    },
+    {
+      title: (
+        <HeaderHint
+          label={t('app_insights.col_peak_devices')}
+          hint={t('app_insights.peak_devices_hint')}
+        />
+      ),
+      dataIndex: 'peakDevices',
+      align: 'right',
+      render: observedInteger,
+    },
+    ...packageEventColumns,
+  ];
   const totals = versionTotals(funnel.data);
   const eventColumns = useEventColumns<FunnelRow>();
-  const packages = Array.from(
-    new Set(
-      allRows.flatMap((row) =>
-        row.byPackage.map((item) => item.packageVersion),
-      ),
-    ),
-  ).sort();
   const columns: ColumnsType<FunnelRow> = [
     {
-      title: t('app_insights.col_version'),
+      title: perspectiveToggle,
       key: 'version',
       fixed: 'left',
-      width: 220,
+      width: 300,
       render: (_, row) => <VersionLabel hash={row.hash} name={row.name} />,
     },
     ...eventColumns,
@@ -265,26 +453,15 @@ export const VersionsPanel = ({
       {!!funnel.error && <InsightsError error={funnel.error} />}
       <ObservationNotice
         window={funnel.data?.window}
-        timezone={funnel.data?.timezone}
         updatedAt={funnel.dataUpdatedAt}
         stale={!!funnel.error && !!funnel.data}
       />
-      <Question>
-        {t(
-          totals?.scope === 'all_observed'
-            ? 'app_insights.totals_all'
-            : 'app_insights.totals_returned',
-        )}
-      </Question>
       <Spin spinning={funnel.isLoading}>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-          <StatTile
-            label={t('app_insights.versions_in_window')}
-            value={formatInteger(totals?.versionCount)}
-          />
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           <StatTile
             label={t('app_insights.window_served')}
             value={formatInteger(totals?.offeredTargets)}
+            hint={t('app_insights.window_served_hint')}
           />
           <StatTile
             label={t('app_insights.window_rollbacks')}
@@ -309,66 +486,68 @@ export const VersionsPanel = ({
         <Alert
           type="info"
           showIcon
-          message={t('app_insights.truncated', { count: allRows.length })}
+          message={t('app_insights.truncated', { count: rows.length })}
         />
       )}
       <Card size="small" title={t('app_insights.funnel_table_title')}>
-        <div className="mb-3 flex flex-wrap gap-2">
-          <Select
-            value={versionFilter}
-            onChange={setVersionFilter}
-            showSearch
-            optionFilterProp="label"
-            className="w-64"
-            options={[
-              { value: ALL, label: t('app_insights.filter_all_versions') },
-              ...allRows.map((row) => ({
-                value: row.hash,
-                label: `${row.name ?? t('app_insights.version_deleted')} (${row.hash.slice(0, 8)})`,
-              })),
-            ]}
-          />
-          <Select
-            value={packageFilter}
-            onChange={setPackageFilter}
-            showSearch
-            optionFilterProp="label"
-            className="w-48"
-            options={[
-              { value: ALL, label: t('app_insights.filter_all_packages') },
-              ...packages.map((value) => ({ value, label: value })),
-            ]}
-          />
-        </div>
-        <Question>{t('app_insights.events_not_funnel')}</Question>
-        <Footnote>{t('app_insights.filtered_note')}</Footnote>
-        <Spin spinning={funnel.isLoading}>
-          {rows.length > 0 ? (
+        <Spin spinning={funnel.isLoading || traffic.isLoading}>
+          {perspective === 'package' ? (
+            <Table
+              size="small"
+              rowKey="packageVersion"
+              rowClassName="cursor-pointer"
+              dataSource={packageRows}
+              columns={packageColumns}
+              pagination={packageRows.length > 20 ? { pageSize: 20 } : false}
+              scroll={{ x: 'max-content' }}
+              locale={{ emptyText: t('app_insights.no_observations') }}
+              expandable={{
+                expandRowByClick: true,
+                rowExpandable: (row) => row.versions.length > 0,
+                expandedRowRender: (row) => <PackageDetail row={row} />,
+              }}
+            />
+          ) : (
             <Table
               size="small"
               rowKey="hash"
+              rowClassName="cursor-pointer"
               dataSource={rows}
               columns={columns}
               pagination={rows.length > 20 ? { pageSize: 20 } : false}
               scroll={{ x: 'max-content' }}
+              locale={{ emptyText: t('app_insights.no_observations') }}
               expandable={{
-                expandedRowRender: (row) => <VersionDetail row={row} />,
+                expandRowByClick: true,
+                expandedRowRender: (row) => (
+                  <VersionDetail
+                    row={row}
+                    fullReasons={fullReasons.get(row.hash)}
+                    reasonDays={reasonDays}
+                  />
+                ),
               }}
             />
-          ) : (
-            <EmptyState>
-              {funnel.isLoading
-                ? ''
-                : t(
-                    allRows.length
-                      ? 'app_insights.no_versions_match'
-                      : 'app_insights.no_observations',
-                  )}
-            </EmptyState>
           )}
         </Spin>
-        <Footnote>{t('app_insights.rollback_only')}</Footnote>
+        <Footnote>{t('app_insights.events_not_funnel')}</Footnote>
       </Card>
+      {appKey && (
+        <ReleaseInsightsPanel
+          appKey={appKey}
+          days={days}
+          isAdmin={isAdmin}
+          section="rollout"
+        />
+      )}
+      {appKey && (
+        <ReleaseInsightsPanel
+          appKey={appKey}
+          days={days}
+          isAdmin={isAdmin}
+          section="hermes"
+        />
+      )}
     </div>
   );
 };

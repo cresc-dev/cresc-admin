@@ -57,6 +57,8 @@ export interface AppTrafficDay {
   ipVersion: Record<string, number>;
   hosts: Record<string, number>;
   carriers: Record<string, number>;
+  /** Platform and system version such as "android 34"; older servers omit it. */
+  os?: Record<string, number>;
   packages: PackageTraffic[];
   refused?: RefusedPackage[];
   packageDevicesLimited?: boolean;

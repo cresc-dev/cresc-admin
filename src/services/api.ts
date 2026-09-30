@@ -191,8 +191,7 @@ export const api = {
     pwd: string;
     timezone: string;
     captchaToken?: string;
-  }) =>
-    request('post', '/user/register', params, { suppressErrorToast: true }),
+  }) => request('post', '/user/register', params, { suppressErrorToast: true }),
   resetPwd: (params: { token: string; newPwd: string }) =>
     request('post', '/user/resetpwd/reset', params),
   requestEmailChange: (params: { newEmail: string; pwd: string }) =>

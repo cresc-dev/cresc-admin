@@ -3,12 +3,16 @@ import { Button, Form, Input, message, Result } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
+import { useTurnstile } from '@/utils/turnstile';
 
 export default function SendEmail() {
   const { t } = useTranslation();
   const [sent, setSent] = useState<boolean>(false);
+  const captcha = useTurnstile('resetpwd');
   const { mutateAsync: sendEmail, isPending } = useMutation({
-    mutationFn: (email: string) => api.resetpwdSendMail({ email }),
+    mutationFn: (email: string) =>
+      api.resetpwdSendMail({ email, captchaToken: captcha.token }),
+    onSettled: () => captcha.reset(),
     onSuccess: () => {
       message.info(t('reset_password.send_success'));
     },
@@ -45,8 +49,15 @@ export default function SendEmail() {
           required
         />
       </Form.Item>
+      <Form.Item>{captcha.widget}</Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={isPending} block>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isPending}
+          disabled={!captcha.token}
+          block
+        >
           {t('reset_password.send_button')}
         </Button>
       </Form.Item>

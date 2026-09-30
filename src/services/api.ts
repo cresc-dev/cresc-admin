@@ -181,9 +181,9 @@ export const api = {
     request<ServerStatus>('get', '/status', undefined, {
       suppressErrorToast: true,
     }),
-  sendEmail: (params: { email: string }) =>
+  sendEmail: (params: { email: string; captchaToken?: string }) =>
     request('post', '/user/activate/sendmail', params),
-  resetpwdSendMail: (params: { email: string }) =>
+  resetpwdSendMail: (params: { email: string; captchaToken?: string }) =>
     request('post', '/user/resetpwd/sendmail', params),
   register: (params: { [key: string]: string }) =>
     request('post', '/user/register', params, { suppressErrorToast: true }),

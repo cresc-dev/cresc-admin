@@ -6,6 +6,7 @@ import { activationEmailResendCooldownStorageKey } from '@/constants/local-stora
 import { api } from '@/services/api';
 import { getUserEmail } from '@/services/auth';
 import { useLocalStorageCooldown } from '@/utils/hooks';
+import { useTurnstile } from '@/utils/turnstile';
 import { rootRouterPath, router } from '../router';
 
 export const Welcome = () => {
@@ -22,8 +23,11 @@ export const Welcome = () => {
       durationMs: 60_000,
     });
 
+  const captcha = useTurnstile('activate');
   const { mutate: sendEmail, isPending } = useMutation({
-    mutationFn: () => api.sendEmail({ email: getUserEmail() }),
+    mutationFn: () =>
+      api.sendEmail({ email: getUserEmail(), captchaToken: captcha.token }),
+    onSettled: () => captcha.reset(),
     onSuccess: () => {
       startCooldown();
       message.info(t('welcome.email_sent'));
@@ -47,16 +51,19 @@ export const Welcome = () => {
       }
       subTitle={t('welcome.no_email')}
       extra={
-        <Button
-          type="primary"
-          onClick={() => sendEmail()}
-          loading={isPending}
-          disabled={isCoolingDown}
-        >
-          {isCoolingDown
-            ? t('welcome.resend_countdown', { seconds: remainingSeconds })
-            : t('welcome.resend_button')}
-        </Button>
+        <>
+          <div style={{ marginBottom: 16 }}>{captcha.widget}</div>
+          <Button
+            type="primary"
+            onClick={() => sendEmail()}
+            loading={isPending}
+            disabled={isCoolingDown || !captcha.token}
+          >
+            {isCoolingDown
+              ? t('welcome.resend_countdown', { seconds: remainingSeconds })
+              : t('welcome.resend_button')}
+          </Button>
+        </>
       }
     />
   );

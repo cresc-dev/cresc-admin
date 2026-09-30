@@ -7,6 +7,7 @@ import { activationEmailResendCooldownStorageKey } from '@/constants/local-stora
 import { api } from '@/services/api';
 import { getUserEmail } from '@/services/auth';
 import { useLocalStorageCooldown } from '@/utils/hooks';
+import { useTurnstile } from '@/utils/turnstile';
 import { rootRouterPath, router } from '../router';
 
 export const Inactivated = () => {
@@ -23,8 +24,11 @@ export const Inactivated = () => {
       durationMs: 60_000,
     });
 
+  const captcha = useTurnstile('activate');
   const { mutate: sendEmail, isPending } = useMutation({
-    mutationFn: () => api.sendEmail({ email: getUserEmail() }),
+    mutationFn: () =>
+      api.sendEmail({ email: getUserEmail(), captchaToken: captcha.token }),
+    onSettled: () => captcha.reset(),
     onSuccess: () => {
       startCooldown();
       message.info(t('inactivated.email_sent'));
@@ -38,12 +42,15 @@ export const Inactivated = () => {
       title={t('inactivated.title')}
       subTitle={t('inactivated.no_email')}
       extra={[
+        <div key="captcha" style={{ marginBottom: 16 }}>
+          {captcha.widget}
+        </div>,
         <Button
           key="resend"
           type="primary"
           onClick={() => sendEmail()}
           loading={isPending}
-          disabled={isCoolingDown}
+          disabled={isCoolingDown || !captcha.token}
         >
           {isCoolingDown
             ? t('inactivated.resend_countdown', { seconds: remainingSeconds })

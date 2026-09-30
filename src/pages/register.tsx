@@ -8,6 +8,7 @@ import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
 import { RequestError } from '@/services/request';
 import { getBrowserTimezone } from '@/utils/timezone';
+import { useTurnstile } from '@/utils/turnstile';
 import { ReactComponent as Logo } from '../assets/logo.svg';
 import { rootRouterPath, router } from '../router';
 import { isPasswordValid } from '../utils/helper';
@@ -26,6 +27,7 @@ export const Register = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const password = Form.useWatch('pwd', form) || '';
   const agreed = Form.useWatch('agreed', form);
+  const captcha = useTurnstile('register');
 
   const passwordChecks = [
     {
@@ -54,6 +56,7 @@ export const Register = () => {
         name: values.name.trim(),
         pwd: await md5(values.pwd),
         timezone: getBrowserTimezone(),
+        captchaToken: captcha.token ?? '',
       });
       setUserEmail(values.email.trim());
       router.navigate(rootRouterPath.welcome);
@@ -72,6 +75,7 @@ export const Register = () => {
         error instanceof Error ? error.message : t('register.create_failed'),
       );
     } finally {
+      captcha.reset();
       setLoading(false);
     }
   }
@@ -229,13 +233,14 @@ export const Register = () => {
             </a>
           </Checkbox>
         </Form.Item>
+        <Form.Item>{captcha.widget}</Form.Item>
         <Form.Item style={style.submitRow}>
           <Button
             type="primary"
             htmlType="submit"
             size="large"
             loading={loading}
-            disabled={loading || !agreed}
+            disabled={loading || !agreed || !captcha.token}
             block
           >
             {t('register.create_button')}

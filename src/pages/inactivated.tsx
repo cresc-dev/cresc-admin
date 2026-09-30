@@ -42,15 +42,17 @@ export const Inactivated = () => {
       title={t('inactivated.title')}
       subTitle={t('inactivated.no_email')}
       extra={[
-        <div key="captcha" style={{ marginBottom: 16 }}>
-          {captcha.widget}
-        </div>,
+        captcha.widget && (
+          <div key="captcha" style={{ marginBottom: 16 }}>
+            {captcha.widget}
+          </div>
+        ),
         <Button
           key="resend"
           type="primary"
           onClick={() => sendEmail()}
           loading={isPending}
-          disabled={isCoolingDown || !captcha.token}
+          disabled={isCoolingDown || !captcha.ready}
         >
           {isCoolingDown
             ? t('inactivated.resend_countdown', { seconds: remainingSeconds })

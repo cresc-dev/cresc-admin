@@ -52,12 +52,14 @@ export const Welcome = () => {
       subTitle={t('welcome.no_email')}
       extra={
         <>
-          <div style={{ marginBottom: 16 }}>{captcha.widget}</div>
+          {captcha.widget && (
+            <div style={{ marginBottom: 16 }}>{captcha.widget}</div>
+          )}
           <Button
             type="primary"
             onClick={() => sendEmail()}
             loading={isPending}
-            disabled={isCoolingDown || !captcha.token}
+            disabled={isCoolingDown || !captcha.ready}
           >
             {isCoolingDown
               ? t('welcome.resend_countdown', { seconds: remainingSeconds })

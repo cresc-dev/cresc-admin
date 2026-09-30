@@ -56,7 +56,7 @@ export const Register = () => {
         name: values.name.trim(),
         pwd: await md5(values.pwd),
         timezone: getBrowserTimezone(),
-        captchaToken: captcha.token ?? '',
+        captchaToken: captcha.token,
       });
       setUserEmail(values.email.trim());
       router.navigate(rootRouterPath.welcome);
@@ -233,14 +233,14 @@ export const Register = () => {
             </a>
           </Checkbox>
         </Form.Item>
-        <Form.Item>{captcha.widget}</Form.Item>
+        {captcha.widget && <Form.Item>{captcha.widget}</Form.Item>}
         <Form.Item style={style.submitRow}>
           <Button
             type="primary"
             htmlType="submit"
             size="large"
             loading={loading}
-            disabled={loading || !agreed || !captcha.token}
+            disabled={loading || !agreed || !captcha.ready}
             block
           >
             {t('register.create_button')}

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Public by design: the matching secret lives only on the API, which redeems
-// each token with Cloudflare before registering or sending account mail.
-export const TURNSTILE_SITE_KEY =
-  process.env.PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAFJyCK2V9ge-PeCK';
+// Turnstile is off unless the build sets PUBLIC_TURNSTILE_SITE_KEY (the
+// cresc-admin auth widget is 0x4AAAAAAFJyCK2V9ge-PeCK). Turn it on only
+// together with TURNSTILE_SECRET on the API, which redeems each token.
+export const TURNSTILE_SITE_KEY = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
 export type TurnstileAction = 'register' | 'resetpwd' | 'activate';
 
@@ -52,8 +52,9 @@ function loadTurnstile(): Promise<TurnstileApi> {
 }
 
 /**
- * Renders a Turnstile widget for one protected action. Tokens are single-use:
- * call `reset` after every request that spent `token`, successful or not.
+ * Renders a Turnstile widget for one protected action. `ready` gates the
+ * submit button; it is always true while Turnstile is off. Tokens are
+ * single-use: call `reset` after every request that spent `token`.
  */
 export function useTurnstile(action: TurnstileAction) {
   const [token, setToken] = useState<string>();
@@ -61,6 +62,7 @@ export function useTurnstile(action: TurnstileAction) {
   const widgetId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
     let cancelled = false;
     loadTurnstile()
       .then((turnstile) => {
@@ -88,12 +90,12 @@ export function useTurnstile(action: TurnstileAction) {
     if (widgetId.current) window.turnstile?.reset(widgetId.current);
   }, []);
 
-  const widget = (
+  const widget = TURNSTILE_SITE_KEY ? (
     <div
       ref={containerRef}
       style={{ display: 'flex', justifyContent: 'center', minHeight: 65 }}
     />
-  );
+  ) : null;
 
-  return { token, reset, widget };
+  return { token, reset, widget, ready: !TURNSTILE_SITE_KEY || !!token };
 }

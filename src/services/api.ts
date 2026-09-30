@@ -185,7 +185,13 @@ export const api = {
     request('post', '/user/activate/sendmail', params),
   resetpwdSendMail: (params: { email: string; captchaToken?: string }) =>
     request('post', '/user/resetpwd/sendmail', params),
-  register: (params: { [key: string]: string }) =>
+  register: (params: {
+    email: string;
+    name: string;
+    pwd: string;
+    timezone: string;
+    captchaToken?: string;
+  }) =>
     request('post', '/user/register', params, { suppressErrorToast: true }),
   resetPwd: (params: { token: string; newPwd: string }) =>
     request('post', '/user/resetpwd/reset', params),

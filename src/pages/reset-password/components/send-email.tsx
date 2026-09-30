@@ -49,13 +49,13 @@ export default function SendEmail() {
           required
         />
       </Form.Item>
-      <Form.Item>{captcha.widget}</Form.Item>
+      {captcha.widget && <Form.Item>{captcha.widget}</Form.Item>}
       <Form.Item>
         <Button
           type="primary"
           htmlType="submit"
           loading={isPending}
-          disabled={!captcha.token}
+          disabled={!captcha.ready}
           block
         >
           {t('reset_password.send_button')}

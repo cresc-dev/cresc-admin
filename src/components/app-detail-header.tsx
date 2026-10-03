@@ -133,7 +133,8 @@ function AppDetailTab({
     <button
       aria-selected={active}
       className={cn(
-        'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-container px-6 py-3 font-medium text-base text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:text-blue-600 md:min-w-36 md:flex-none',
+        // Phones: icon above a one-line label so three tabs fit one row.
+        'flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-container px-1 py-2 font-medium text-[13px] text-slate-700 shadow-sm sm:px-2 sm:text-sm transition-colors hover:border-blue-300 hover:text-blue-600 md:min-w-36 md:flex-none md:flex-row md:gap-2 md:px-6 md:py-3 md:text-base',
         active
           ? 'border-blue-600! bg-blue-600! text-white! shadow-none hover:border-blue-600! hover:bg-blue-600! hover:text-white!'
           : undefined,
@@ -147,7 +148,7 @@ function AppDetailTab({
       type="button"
     >
       {icon}
-      <span>{label}</span>
+      <span className="max-w-full truncate">{label}</span>
     </button>
   );
 }

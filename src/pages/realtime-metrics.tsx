@@ -7,6 +7,7 @@ import { useAppSettingsModal } from '@/components/app-settings-modal';
 import { appViewPath, rootRouterPath, router } from '@/router';
 import { patchSearchParams, rememberRecentApp } from '@/utils/helper';
 import { useWorkspacePermissions } from '@/utils/hooks';
+import { useIsMobile } from '@/utils/responsive';
 import { useSelectedAppFromUrl } from '@/utils/selected-app';
 import { AudiencePanel } from './app-insights/audience-panel';
 import { FailuresPanel } from './app-insights/failures-panel';
@@ -40,6 +41,7 @@ export const Component = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { contextHolder, openAppSettings } = useAppSettingsModal();
   const { canManageApp } = useWorkspacePermissions();
+  const isMobile = useIsMobile();
   const {
     selectableApps,
     isAdmin,
@@ -98,15 +100,18 @@ export const Component = () => {
       />
       <Card className="insights-page">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
-          <Segmented
-            value={view}
-            onChange={(value) => setView(value as InsightView)}
-            options={INSIGHT_VIEWS.map((value) => ({
-              value,
-              label: t(VIEW_LABEL_KEY[value]),
-            }))}
-          />
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Five views can outgrow a phone screen: scroll sideways, never the page */}
+          <div className="insights-view-switch max-w-full overflow-x-auto">
+            <Segmented
+              value={view}
+              onChange={(value) => setView(value as InsightView)}
+              options={INSIGHT_VIEWS.map((value) => ({
+                value,
+                label: t(VIEW_LABEL_KEY[value]),
+              }))}
+            />
+          </div>
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
             {isAdmin && (
               <Input.Search
                 className="w-full sm:w-56"
@@ -134,6 +139,8 @@ export const Component = () => {
                 }
                 optionType="button"
                 buttonStyle="solid"
+                block={isMobile}
+                className="w-full md:w-auto"
               >
                 {INSIGHT_DAY_OPTIONS.map((value) => (
                   <Radio.Button key={value} value={value}>

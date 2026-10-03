@@ -119,6 +119,12 @@ a:hover {
   padding: 24px;
 }
 
+@media (max-width: 767px) {
+  .ant-layout-content {
+    padding: 12px;
+  }
+}
+
 .ant-layout-header .ant-menu {
   border-bottom: 0;
 }
@@ -156,5 +162,24 @@ a.ant-typography:hover .ant-typography {
     font-size: 15px;
     padding-top: 12px;
     padding-bottom: 12px;
+  }
+
+  .insights-view-switch {
+    scrollbar-width: none;
+  }
+
+  @media (max-width: 767px) {
+    .insights-page > .ant-card-body {
+      padding: 16px;
+    }
+
+    .insights-view-switch .ant-segmented-item-label {
+      padding-inline: 8px;
+    }
+
+    .insights-page .ant-radio-button-wrapper {
+      padding-inline: 4px;
+      white-space: nowrap;
+    }
   }
 }

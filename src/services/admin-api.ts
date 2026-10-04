@@ -12,6 +12,63 @@ export type WriteOperationDay = {
   values: Record<string, number>;
 };
 
+// GET /admin/system/storage: information_schema estimates plus the artifact
+// bucket summary (Cloud Monitoring for GCS, GetBucketStat for OSS). Each
+// section is available on its own.
+export type StorageUsageError =
+  | 'not_configured'
+  | 'access_denied'
+  | 'unavailable';
+
+export type StorageUsageTable = {
+  name: string;
+  rowsEstimate: number;
+  dataBytes: number;
+  indexBytes: number;
+  freeBytes: number;
+  totalBytes: number;
+};
+
+export type StorageUsageClass = {
+  class:
+    | 'standard'
+    | 'nearline'
+    | 'coldline'
+    | 'infrequentAccess'
+    | 'archive'
+    | 'coldArchive'
+    | 'deepColdArchive';
+  bytes: number;
+  realBytes: number;
+  objectCount: number;
+};
+
+export type StorageUsageSnapshot = {
+  generatedAt: string;
+  database: {
+    available: boolean;
+    error?: StorageUsageError;
+    schema?: string;
+    rowsEstimate: number;
+    dataBytes: number;
+    indexBytes: number;
+    freeBytes: number;
+    totalBytes: number;
+    tables: StorageUsageTable[];
+  };
+  oss: {
+    available: boolean;
+    error?: StorageUsageError;
+    provider?: 'gcs' | 'oss';
+    bucket?: string;
+    storageBytes: number;
+    objectCount: number;
+    multipartUploadCount: number;
+    statUpdatedAt: string | null;
+    classes: StorageUsageClass[];
+  };
+};
+
 export const adminApi = {
   // admin config
   getConfig: () =>
@@ -202,6 +259,10 @@ export const adminApi = {
       undefined,
       { suppressErrorToast: true },
     ),
+  getStorageUsage: () =>
+    request<StorageUsageSnapshot>('get', '/admin/system/storage', undefined, {
+      suppressErrorToast: true,
+    }),
   getWorkerTaskStats: (days = 7) =>
     request<{ data: WorkerTaskDaySummary[] }>(
       'get',

@@ -1,6 +1,6 @@
 import { Button, Form, type FormInstance, Input, Modal, Select } from 'antd';
 import type { ReactNode } from 'react';
-import type { AppOption } from '@/utils/app-options';
+import { APP_OPTION_SEARCH, type AppOption } from '@/utils/app-options';
 import { useModalWidth } from '@/utils/responsive';
 
 export interface TokenCreateModalProps<Values> {
@@ -94,6 +94,7 @@ export function TokenAppsFormItem({
         mode="multiple"
         allowClear
         placeholder={placeholder}
+        showSearch={APP_OPTION_SEARCH}
         options={options}
       />
     </Form.Item>

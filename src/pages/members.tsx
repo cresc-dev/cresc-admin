@@ -32,7 +32,7 @@ import {
   getWorkspaceAccountId,
   setWorkspaceAccountId,
 } from '@/services/workspace';
-import { useAppOptions } from '@/utils/app-options';
+import { APP_OPTION_SEARCH, useAppOptions } from '@/utils/app-options';
 import { useUserInfo } from '@/utils/hooks';
 import { memberKeys } from '@/utils/query-keys';
 import { useIsMobile } from '@/utils/responsive';
@@ -402,6 +402,7 @@ function MembersPage() {
               mode="multiple"
               allowClear
               placeholder={t('members.all_apps')}
+              showSearch={APP_OPTION_SEARCH}
               options={appOptions}
             />
           </Form.Item>

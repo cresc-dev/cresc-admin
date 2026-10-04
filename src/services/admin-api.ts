@@ -1,9 +1,10 @@
+import type { ConfigSchemaResult } from '@/pages/admin-config.logic';
 import {
   buildErrorLogQuery,
   type ErrorLogFilters,
   type ErrorLogPage,
 } from '@/pages/admin-error-logs.logic';
-import request from './request';
+import request, { type RequestOptions } from './request';
 
 export type WriteOperationDimension = 'path' | 'region' | 'client';
 
@@ -73,10 +74,17 @@ export const adminApi = {
   // admin config
   getConfig: () =>
     request<{ data?: Record<string, string> }>('get', `/admin/config`),
-  setConfig: (key: string, value: string) =>
-    request<{ key: string; value: string }>('post', '/admin/config', {
-      key,
-      value,
+  setConfig: (key: string, value: string, options?: RequestOptions) =>
+    request<{ key: string; value: string }>(
+      'post',
+      '/admin/config',
+      { key, value },
+      options,
+    ),
+  // 404 on servers that predate the schema endpoint; the page falls back then
+  getConfigSchema: () =>
+    request<ConfigSchemaResult>('get', '/admin/config/schema', undefined, {
+      suppressErrorToast: true,
     }),
   deleteConfig: (key: string) => request('delete', `/admin/config/${key}`),
   // admin user management

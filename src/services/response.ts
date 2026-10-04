@@ -9,6 +9,8 @@ export class RequestError extends Error {
   status?: number;
   /** The request layer already toasted this (or a 401 already triggered logout); callers need not report it again. */
   handled = false;
+  /** Parsed JSON error body, for callers that need structured details (e.g. validation errors). */
+  body?: unknown;
 
   constructor(message: string, status?: number) {
     super(message);
@@ -58,6 +60,7 @@ export async function handleResponse<T extends Record<any, any>>(
     json.message || `Request failed with status ${response.status}`,
     response.status,
   );
+  error.body = json;
   if (!requestOptions.suppressErrorToast && error.message) {
     message.error(error.message);
     error.handled = true;

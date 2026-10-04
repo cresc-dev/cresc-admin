@@ -139,6 +139,7 @@ export const adminKeys = {
       ? (['adminApps'] as const)
       : (['adminApps', searchQuery, page, pageSize] as const),
   config: () => ['adminConfig'] as const,
+  configSchema: () => ['adminConfigSchema'] as const,
   errorLogs: (filters: {
     source: string;
     severity: string;

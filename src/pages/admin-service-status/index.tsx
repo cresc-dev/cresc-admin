@@ -5,6 +5,7 @@ import { api } from '@/services/api';
 import { serviceStatusKeys } from '@/utils/query-keys';
 import { CloudRunPanel } from './cloudrun-panel';
 import { QuotaAlertsPanel } from './quota-alerts-panel';
+import { RedisStatusPanel } from './redis-status-panel';
 import { ServiceStatusPanel } from './status-panel';
 import { StorageUsagePanel } from './storage-usage-panel';
 import { UserAnalyticsPanel } from './user-analytics-panel';
@@ -40,6 +41,7 @@ export const Component = () => {
           <QuotaAlertsPanel />
           <CloudRunPanel />
           <WorkerStatsPanel />
+          <RedisStatusPanel />
           <StorageUsagePanel />
         </ServiceStatusPanel>
       </div>

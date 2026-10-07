@@ -392,6 +392,10 @@
     "export_failed": "Export failed:",
     "ip_prefix": "IP:",
     "apikey_prefix": "API Key:",
+    "apikey_placeholder": "All API Keys",
+    "col_actor": "Actor",
+    "actor_placeholder": "All actors",
+    "actor_member_tag": "Member",
     "start_date": "Start date",
     "end_date": "End date",
     "capped_notice": "Only the latest {{loaded}} of {{total}} logs in this date range are loaded. Narrow the date range to see older entries."

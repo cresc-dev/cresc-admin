@@ -392,6 +392,10 @@
     "export_failed": "导出失败：",
     "ip_prefix": "IP：",
     "apikey_prefix": "API Key：",
+    "apikey_placeholder": "全部 API Key",
+    "col_actor": "操作人",
+    "actor_placeholder": "全部操作人",
+    "actor_member_tag": "成员",
     "start_date": "开始日期",
     "end_date": "结束日期",
     "capped_notice": "该日期范围内共 {{total}} 条日志，仅载入最近 {{loaded}} 条；缩小日期范围可查看更早的记录。"

@@ -368,6 +368,11 @@ export const api = {
       );
       return res;
     }),
+  // Stripe Customer Portal: invoice history, billing details, payment method.
+  openBillingPortal: () =>
+    request<{ url: string }>('post', '/orders/portal', undefined, {
+      suppressErrorToast: true,
+    }),
   resumeSubscription: () =>
     request<{ message: string }>('post', '/orders/resume').then((res) => {
       queryClient.setQueryData<User>(['userInfo'], (user) =>

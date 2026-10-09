@@ -9,7 +9,11 @@ import { PRICING_LINK } from '../../constants/links';
 import { quotas } from '../../constants/quotas';
 import { EmailChangeButton, PasswordChangeButton } from './account-security';
 import { subscriptionControlState } from './billing';
-import { CancelResumeButton, UpgradeDropdown } from './purchase-controls';
+import {
+  BillingPortalButton,
+  CancelResumeButton,
+  UpgradeDropdown,
+} from './purchase-controls';
 import { QuotaDetailsPanel } from './quota-details';
 import { buildQuotaUsageRows, getMaxCount } from './quota-usage';
 import { TimezoneSetting } from './timezone-setting';
@@ -164,6 +168,9 @@ function UserPanel() {
               <CancelResumeButton cancelAtPeriodEnd={pendingCancellation} />
             )}
           </div>
+        </Descriptions.Item>
+        <Descriptions.Item label={t('user.billing_portal')}>
+          <BillingPortalButton />
         </Descriptions.Item>
         <Descriptions.Item label={t('user.quota_details')}>
           <QuotaDetailsPanel

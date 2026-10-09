@@ -4,6 +4,7 @@ import { Button, Dropdown, Modal, message, Popconfirm } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
+import { RequestError } from '@/services/request';
 import { products, quotas } from '../../constants/quotas';
 import { calculateUpgradePreview, purchase } from './billing';
 
@@ -64,6 +65,35 @@ export const CancelResumeButton = ({
         {t('user.cancel_button')}
       </Button>
     </Popconfirm>
+  );
+};
+
+export const BillingPortalButton = () => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <Button
+      type="link"
+      loading={loading}
+      className="self-start px-0"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const { url } = await api.openBillingPortal();
+          window.location.href = url;
+        } catch (error) {
+          if (error instanceof RequestError && error.status === 404) {
+            message.info(t('user.billing_portal_empty'));
+          } else if (!(error as { handled?: boolean }).handled) {
+            message.error(t('user.billing_portal_failed'));
+          }
+          setLoading(false);
+        }
+      }}
+    >
+      {t('user.billing_portal_button')}
+    </Button>
   );
 };
 

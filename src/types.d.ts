@@ -197,6 +197,8 @@ interface Version {
   /** Hermes delta-mode chain (reported by react-native-update-cli ≥ 2.23) */
   bytecodeVersion?: number;
   baseVersionId?: number;
+  /** base package/version hash; without baseVersionId it names a native package */
+  baseHash?: string;
   bundleHash?: string;
   /**
    * Result of the CLI's Hermes base equivalence check:

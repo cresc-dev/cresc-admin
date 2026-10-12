@@ -8,9 +8,11 @@ import {
 import { queryClient } from '@/utils/queryClient';
 import { api } from './api';
 import {
-  removeAppFromListCache,
+  type AppListCache,
+  type ListCache,
+  removeItemsFromList,
   updateAppDetailCache,
-  updateAppInListCache,
+  updateItemInList,
 } from './mutation-cache';
 
 type UpdateAppParams = Omit<App, 'appKey' | 'checkCount' | 'id' | 'platform'>;
@@ -21,11 +23,13 @@ type UpdatePackageParams = {
   versionId?: number | null;
 };
 
+type VersionListCache = ListCache<Version> & { count?: number };
+
 // --- cache updaters (single place that knows the cache shapes) ---
 
 const removeAppFromList = (appId: number) => {
-  queryClient.setQueryData(appKeys.list(), (old?: { data?: App[] }) =>
-    removeAppFromListCache(old, appId),
+  queryClient.setQueryData(appKeys.list(), (old?: AppListCache) =>
+    removeItemsFromList(old, [appId]),
   );
   queryClient.removeQueries({ queryKey: appKeys.detail(appId), exact: true });
 };
@@ -34,8 +38,8 @@ const applyAppUpdate = (appId: number, params: UpdateAppParams) => {
   queryClient.setQueryData(appKeys.detail(appId), (old: App | undefined) =>
     updateAppDetailCache(old, params),
   );
-  queryClient.setQueryData(appKeys.list(), (old?: { data?: App[] }) =>
-    updateAppInListCache(old, appId, params),
+  queryClient.setQueryData(appKeys.list(), (old?: AppListCache) =>
+    updateItemInList(old, appId, params),
   );
 };
 
@@ -49,15 +53,7 @@ const applyPackageUpdate = (
 ) => {
   queryClient.setQueryData(
     packageKeys.byApp(appId),
-    (old?: { data: Package[] }) =>
-      old
-        ? {
-            ...old,
-            data: old.data?.map((item) =>
-              item.id === packageId ? { ...item, ...params } : item,
-            ),
-          }
-        : old,
+    (old?: ListCache<Package>) => updateItemInList(old, packageId, params),
   );
   if (params.versionId !== undefined) {
     queryClient.invalidateQueries({ queryKey: versionKeys.byApp(appId) });
@@ -66,16 +62,9 @@ const applyPackageUpdate = (
 };
 
 const removePackagesFromList = (appId: number, packageIds: number[]) => {
-  const packageIdSet = new Set(packageIds);
   queryClient.setQueryData(
     packageKeys.byApp(appId),
-    (old?: { data: Package[] }) =>
-      old
-        ? {
-            ...old,
-            data: old.data?.filter((item) => !packageIdSet.has(item.id)),
-          }
-        : old,
+    (old?: ListCache<Package>) => removeItemsFromList(old, packageIds),
   );
 };
 
@@ -86,15 +75,7 @@ const applyVersionUpdate = (
 ) => {
   queryClient.setQueriesData(
     { queryKey: versionKeys.byApp(appId) },
-    (old?: { data: Version[]; count?: number }) =>
-      old
-        ? {
-            ...old,
-            data: old.data?.map((item) =>
-              item.id === versionId ? { ...item, ...params } : item,
-            ),
-          }
-        : undefined,
+    (old?: VersionListCache) => updateItemInList(old, versionId, params),
   );
 };
 
@@ -103,17 +84,20 @@ const removeVersionsFromList = (
   versionIds: number[],
   deletedCount: number,
 ) => {
-  const versionIdSet = new Set(versionIds);
   queryClient.setQueriesData(
     { queryKey: versionKeys.byApp(appId) },
-    (old?: { data: Version[]; count?: number }) =>
-      old
+    (old?: VersionListCache) => {
+      const next = removeItemsFromList(old, versionIds);
+      return next
         ? {
-            ...old,
-            data: old.data?.filter((item) => !versionIdSet.has(item.id)),
-            count: Math.max((old.count ?? old.data.length) - deletedCount, 0),
+            ...next,
+            count: Math.max(
+              (next.count ?? old?.data?.length ?? 0) - deletedCount,
+              0,
+            ),
           }
-        : undefined,
+        : next;
+    },
   );
 };
 
@@ -129,13 +113,7 @@ const invalidateBindings = (appId: number) => {
 const removeBindingFromList = (appId: number, bindingId: number) => {
   queryClient.setQueriesData(
     { queryKey: bindingKeys.byApp(appId) },
-    (old?: { data: Binding[] }) =>
-      old
-        ? {
-            ...old,
-            data: old.data?.filter((item) => item.id !== bindingId),
-          }
-        : undefined,
+    (old?: ListCache<Binding>) => removeItemsFromList(old, [bindingId]),
   );
   invalidateDiffStatus(appId);
 };

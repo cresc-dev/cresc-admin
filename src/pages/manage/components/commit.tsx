@@ -2,6 +2,7 @@ import { Modal } from 'antd';
 import dayjs from 'dayjs';
 import gitUrlParse from 'git-url-parse';
 import { useTranslation } from 'react-i18next';
+import { DATE_TIME_SECONDS_FORMAT } from '@/utils/format';
 
 export const CommitModal = ({
   open,
@@ -61,7 +62,7 @@ export const CommitModal = ({
                 {t('commit.time')}
               </span>
               <span className="text-[var(--ant-color-text)]">
-                {time.fromNow()}（{time.format('YYYY-MM-DD HH:mm:ss')}）
+                {time.fromNow()}（{time.format(DATE_TIME_SECONDS_FORMAT)}）
               </span>
             </div>
           )}

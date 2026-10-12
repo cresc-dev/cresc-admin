@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { RequestError } from '@/services/request';
+import { formatInteger } from '@/utils/format';
 import { cn } from '@/utils/helper';
 import { metricsKeys } from '@/utils/query-keys';
 import { parseFailureReason, shortHash } from './logic';
@@ -69,14 +70,6 @@ export const InsightsError = ({ error }: { error: unknown }) => {
     />
   );
 };
-
-export const formatInteger = (value: number | null | undefined) =>
-  Number.isFinite(value) ? Math.round(value as number).toLocaleString() : '-';
-
-export const formatPercent = (ratio: number | null | undefined, digits = 1) =>
-  Number.isFinite(ratio)
-    ? `${((ratio as number) * 100).toFixed(digits)}%`
-    : '-';
 
 export const formatShare = (percent: number) => `${percent.toFixed(1)}%`;
 

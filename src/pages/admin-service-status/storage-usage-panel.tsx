@@ -2,19 +2,21 @@ import { DatabaseOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Space, Statistic, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import {
   adminApi,
   type StorageUsageClass,
   type StorageUsageError,
 } from '@/services/admin-api';
+import {
+  formatBytes,
+  formatCount,
+  formatDateTime,
+  formatPercent,
+} from '@/utils/format';
 import { serviceStatusKeys } from '@/utils/query-keys';
-import { formatCount } from './metrics';
 import {
   buildTableRows,
-  formatShare,
-  formatStorageBytes,
   type StorageTableRow,
 } from './storage-usage-panel.logic';
 
@@ -53,9 +55,6 @@ const CLASS_KEYS: Record<StorageUsageClass['class'], string> = {
   nearline: 'storage_usage.class_nearline',
   standard: 'storage_usage.class_standard',
 };
-
-const formatTime = (value: string | null | undefined) =>
-  value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-';
 
 export const StorageUsagePanel = () => {
   const { t } = useTranslation();
@@ -105,35 +104,35 @@ export const StorageUsagePanel = () => {
     {
       align: 'right',
       dataIndex: 'dataBytes',
-      render: (value: number) => formatStorageBytes(value),
+      render: (value: number) => formatBytes(value),
       title: t('storage_usage.col_data'),
       width: 110,
     },
     {
       align: 'right',
       dataIndex: 'indexBytes',
-      render: (value: number) => formatStorageBytes(value),
+      render: (value: number) => formatBytes(value),
       title: t('storage_usage.col_index'),
       width: 110,
     },
     {
       align: 'right',
       dataIndex: 'freeBytes',
-      render: (value: number) => formatStorageBytes(value),
+      render: (value: number) => formatBytes(value),
       title: t('storage_usage.col_free'),
       width: 110,
     },
     {
       align: 'right',
       dataIndex: 'totalBytes',
-      render: (value: number) => formatStorageBytes(value),
+      render: (value: number) => formatBytes(value),
       title: t('storage_usage.col_total'),
       width: 110,
     },
     {
       align: 'right',
       dataIndex: 'share',
-      render: (value: number) => formatShare(value, 1),
+      render: (value: number) => formatPercent(value),
       title: t('storage_usage.col_share'),
       width: 90,
     },
@@ -146,7 +145,7 @@ export const StorageUsagePanel = () => {
         usage && (
           <Text type="secondary">
             {t('storage_usage.generated_at', {
-              time: formatTime(usage.generatedAt),
+              time: formatDateTime(usage.generatedAt),
             })}
           </Text>
         )
@@ -172,12 +171,12 @@ export const StorageUsagePanel = () => {
             <>
               <Statistic
                 title={t('storage_usage.database_total')}
-                value={formatStorageBytes(database.totalBytes)}
+                value={formatBytes(database.totalBytes)}
               />
               <Text type="secondary">
                 {t('storage_usage.database_breakdown', {
-                  data: formatStorageBytes(database.dataBytes),
-                  index: formatStorageBytes(database.indexBytes),
+                  data: formatBytes(database.dataBytes),
+                  index: formatBytes(database.indexBytes),
                   rows: formatCount(database.rowsEstimate),
                 })}
               </Text>
@@ -185,7 +184,7 @@ export const StorageUsagePanel = () => {
                 <div>
                   <Text type="secondary">
                     {t('storage_usage.database_free', {
-                      free: formatStorageBytes(database.freeBytes),
+                      free: formatBytes(database.freeBytes),
                     })}
                   </Text>
                 </div>
@@ -207,7 +206,7 @@ export const StorageUsagePanel = () => {
             <>
               <Statistic
                 title={t('storage_usage.oss_total')}
-                value={formatStorageBytes(oss.storageBytes)}
+                value={formatBytes(oss.storageBytes)}
               />
               <Text type="secondary">
                 {t('storage_usage.oss_objects', {
@@ -215,18 +214,17 @@ export const StorageUsagePanel = () => {
                 })}
                 {' · '}
                 {t(`storage_usage.stat_updated_${provider}`, {
-                  time: formatTime(oss.statUpdatedAt),
+                  time: formatDateTime(oss.statUpdatedAt),
                 })}
               </Text>
               <div className="mt-2">
                 <Space size={4} wrap>
                   {oss.classes.map((item) => (
                     <Tag key={item.class}>
-                      {t(CLASS_KEYS[item.class])}{' '}
-                      {formatStorageBytes(item.bytes)}
+                      {t(CLASS_KEYS[item.class])} {formatBytes(item.bytes)}
                       {item.realBytes !== item.bytes &&
                         t('storage_usage.real_bytes', {
-                          size: formatStorageBytes(item.realBytes),
+                          size: formatBytes(item.realBytes),
                         })}
                       {' · '}
                       {formatCount(item.objectCount)}

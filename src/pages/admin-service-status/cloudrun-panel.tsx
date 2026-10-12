@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '@/services/admin-api';
+import { formatDateTime, formatPercent } from '@/utils/format';
 import { serviceStatusKeys } from '@/utils/query-keys';
 
 const { Text } = Typography;
@@ -54,9 +55,7 @@ const MetricsRow = ({
     <Text type="secondary">
       {t('cloudrun.metrics_5xx')}:{' '}
       <Text strong type={metrics.errorRate5xx ? 'danger' : undefined}>
-        {metrics.errorRate5xx === null
-          ? '-'
-          : `${(metrics.errorRate5xx * 100).toFixed(1)}%`}
+        {formatPercent(metrics.errorRate5xx)}
       </Text>
     </Text>
     <Text type="secondary">
@@ -130,9 +129,7 @@ const StatusCard = ({
         </Descriptions.Item>
       )}
       <Descriptions.Item label={t('cloudrun.updated')}>
-        {svc.updateTime
-          ? dayjs(svc.updateTime).format('YYYY-MM-DD HH:mm')
-          : '-'}
+        {formatDateTime(svc.updateTime)}
       </Descriptions.Item>
     </Descriptions>
     {svc.kind === 'service' && (

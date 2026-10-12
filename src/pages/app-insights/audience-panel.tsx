@@ -1,6 +1,7 @@
 import { Card, Segmented, Spin } from 'antd';
 import { type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PLATFORM_LABELS } from '@/components/platform-icon';
 import { RealtimeGeoPanel } from '../realtime-metrics-geo';
 import { type RankedItem, summarizeTrafficResponse } from './logic';
 import { ObservationNotice } from './observation-ui';
@@ -13,11 +14,10 @@ import {
   useAppTraffic,
 } from './shared';
 
+// Device-reported OS labels spell HarmonyOS as harmonyos, unlike the app platform's harmony
 const PLATFORM_LABEL: Record<string, string> = {
-  android: 'Android',
-  ios: 'iOS',
-  harmony: 'HarmonyOS',
-  harmonyos: 'HarmonyOS',
+  ...PLATFORM_LABELS,
+  harmonyos: PLATFORM_LABELS.harmony,
 };
 
 /** "android 14" → "Android 14"; unknown labels are kept as they are. */

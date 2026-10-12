@@ -3,6 +3,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { UAParser } from 'ua-parser-js';
 import type { CsvValue } from '@/utils/csv';
+import { formatDateTime } from '@/utils/format';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -368,7 +369,7 @@ export const buildAuditCsvRow = (
   const { browser, os } = getUserAgentSummary(log.userAgent);
 
   return [
-    dayjs(log.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+    formatDateTime(log.createdAt, { seconds: true }),
     getActionLabel(actionMap, log.method, log.path),
     log.method.toUpperCase(),
     log.path,

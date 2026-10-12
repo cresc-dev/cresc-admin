@@ -2,11 +2,7 @@ import { Alert, Card, Select, Spin, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  observationBytes,
-  observationNumber,
-  observationPercent,
-} from './release-insights-format';
+import { formatBytes, formatCount, formatPercent } from '@/utils/format';
 import type {
   ArtifactInsight,
   ReleaseVersionInsight,
@@ -86,7 +82,10 @@ export const ReleaseInsightsPanel = ({
     insights?.days.find((item) => item.date === selectedDate) ??
     insights?.days[0];
   const number = (value: number | null | undefined) =>
-    observationNumber(value, text.missing);
+    formatCount(value, text.missing);
+  // Zero bytes means not measured, not a free patch, so it also shows as missing
+  const bytes = (value: number | null) =>
+    value && value > 0 ? formatBytes(value, text.missing) : text.missing;
   const status = (value: string) => (
     <Tag>
       {value === 'observed'
@@ -125,7 +124,7 @@ export const ReleaseInsightsPanel = ({
         <span className="whitespace-nowrap tabular-nums">
           {row.rollout == null ? text.missing : `${row.rollout}%`}
           <span className="mx-1 text-gray-400">/</span>
-          {observationPercent(row.hitRate, text.missing)}
+          {formatPercent(row.hitRate, 1, text.missing)}
         </span>
       ),
     },
@@ -145,17 +144,17 @@ export const ReleaseInsightsPanel = ({
     {
       title: text.patch,
       dataIndex: 'artifactBytes',
-      render: (value: number | null) => observationBytes(value, text.missing),
+      render: bytes,
     },
     {
       title: text.full,
       dataIndex: 'fullBytes',
-      render: (value: number | null) => observationBytes(value, text.missing),
+      render: bytes,
     },
     {
       title: text.reduction,
       dataIndex: 'reduction',
-      render: (value: number | null) => observationPercent(value, text.missing),
+      render: (value: number | null) => formatPercent(value, 1, text.missing),
     },
     { title: text.observedAt, dataIndex: 'observedAt' },
   ];

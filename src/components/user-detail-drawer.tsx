@@ -10,11 +10,11 @@ import {
   Spin,
   Table,
 } from 'antd';
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { rootRouterPath } from '@/router';
 import { adminApi } from '@/services/admin-api';
+import { formatDateTime } from '@/utils/format';
 
 // Collapse panels mount their children on first expansion, so package data is fetched lazily.
 const AppPackagesTable = ({ appId }: { appId: number }) => {
@@ -172,16 +172,12 @@ export const UserDetailDrawer = ({
                 label={translate('admin_users.col_tier_expires', 'Expiry')}
                 span={2}
               >
-                {detail.user.tierExpiresAt
-                  ? dayjs(detail.user.tierExpiresAt).format('YYYY-MM-DD HH:mm')
-                  : '-'}
+                {formatDateTime(detail.user.tierExpiresAt)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate('admin_users.col_created', 'Registered At')}
               >
-                {detail.user.createdAt
-                  ? dayjs(detail.user.createdAt).format('YYYY-MM-DD HH:mm')
-                  : '-'}
+                {formatDateTime(detail.user.createdAt)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate(
@@ -189,11 +185,7 @@ export const UserDetailDrawer = ({
                   'Last Operation',
                 )}
               >
-                {detail.activity?.lastOperationAt
-                  ? dayjs(detail.activity.lastOperationAt).format(
-                      'YYYY-MM-DD HH:mm',
-                    )
-                  : '-'}
+                {formatDateTime(detail.activity?.lastOperationAt)}
               </Descriptions.Item>
               <Descriptions.Item
                 label={translate(
@@ -202,11 +194,7 @@ export const UserDetailDrawer = ({
                 )}
                 span={2}
               >
-                {detail.activity?.dormantMarkedAt
-                  ? dayjs(detail.activity.dormantMarkedAt).format(
-                      'YYYY-MM-DD HH:mm',
-                    )
-                  : '-'}
+                {formatDateTime(detail.activity?.dormantMarkedAt)}
               </Descriptions.Item>
             </Descriptions>
 

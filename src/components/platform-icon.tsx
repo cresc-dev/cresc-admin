@@ -5,6 +5,17 @@ import {
 } from '@ant-design/icons';
 import { cn } from '@/utils/helper';
 
+export const PLATFORM_LABELS: Record<App['platform'], string> = {
+  ios: 'iOS',
+  android: 'Android',
+  harmony: 'HarmonyOS',
+};
+
+/** Platform options for table filters and selects, in PLATFORM_LABELS order. */
+export const PLATFORM_OPTIONS = Object.entries(PLATFORM_LABELS).map(
+  ([value, label]) => ({ value, label }),
+);
+
 export default function PlatformIcon({
   platform,
   className,

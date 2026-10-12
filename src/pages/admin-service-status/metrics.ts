@@ -136,21 +136,6 @@ export function sumCounters(
   }, 0);
 }
 
-export function formatBytes(value: number | undefined) {
-  if (!Number.isFinite(value)) {
-    return '-';
-  }
-  const mb = (value as number) / 1024 / 1024;
-  if (mb >= 1024) {
-    return `${(mb / 1024).toFixed(2)} GB`;
-  }
-  return `${mb.toFixed(1)} MB`;
-}
-
-export function formatCount(value: number | undefined) {
-  return Number.isFinite(value) ? (value as number).toLocaleString() : '-';
-}
-
 export function formatMs(value: number | null | undefined) {
   if (value === Number.POSITIVE_INFINITY) {
     return `>${DEFAULT_DURATION_BUCKETS_MS.at(-1)! / 1000}s`;
@@ -162,13 +147,6 @@ export function formatMs(value: number | null | undefined) {
     return `${((value as number) / 1000).toFixed(2)}s`;
   }
   return `${(value as number).toFixed(0)}ms`;
-}
-
-export function formatPercent(value: number | undefined) {
-  if (!Number.isFinite(value)) {
-    return '-';
-  }
-  return `${((value as number) * 100).toFixed(2)}%`;
 }
 
 export function formatUptime(seconds: number | undefined) {

@@ -73,7 +73,8 @@
     "activating": "正在激活您的账号...",
     "success": "激活成功",
     "redirecting": "正在跳转到登录页...",
-    "go_login": "前往登录"
+    "go_login": "前往登录",
+    "link_invalid": "激活链接无效，请重新打开邮件中的链接"
   },
   "inactivated": {
     "email_sent": "激活邮件已发送，请检查收件箱。",
@@ -214,9 +215,7 @@
   },
   "api_tokens": {
     "create_success": "API Key 创建成功",
-    "create_failed": "创建失败",
     "revoke_success": "API Key 已吊销",
-    "revoke_failed": "吊销失败",
     "col_id": "ID",
     "col_name": "名称",
     "col_token": "API Key",
@@ -308,7 +307,6 @@
     "exp_days": "{{count}} 天",
     "create_button": "创建",
     "create_success": "MCP 令牌创建成功",
-    "create_failed": "创建失败",
     "created_title": "令牌创建成功",
     "created_ok": "我已保存",
     "created_warning": "令牌只显示这一次，请立即复制保存。",
@@ -331,7 +329,6 @@
     "revoke_title": "确定撤销此令牌？",
     "revoke_desc": "撤销后使用该令牌的客户端会立即断开。",
     "revoke_success": "令牌已撤销",
-    "revoke_failed": "撤销失败",
     "yes": "确定",
     "no": "取消"
   },
@@ -412,7 +409,6 @@
     "package_prefix": "Package：",
     "bundle": "Bundle",
     "package": "Package",
-    "checks_tooltip": "{{count}} 次检查",
     "time": "时间",
     "select_app": "选择应用",
     "title": "数据分析",
@@ -425,9 +421,7 @@
     "please_select_app": "请选择一个应用",
     "total_requests": "总次数",
     "category_count": "分类计数",
-    "current_dimension": "当前维度：",
     "no_top_data": "暂无前 10 数据",
-    "no_data_available": "暂无数据",
     "current_dimension_label": "当前维度：{{dimension}}",
     "no_data": "暂无数据",
     "tooltip_count": "{{count}} 次",
@@ -462,7 +456,6 @@
     "requests": "请求数",
     "refusal_blocked": "客户端的构建时间和已上传的原生包对不上，这些设备收不到更新。请确认线上安装包和上传的原生包是同一次构建。",
     "refusal_unknown_package": "这些客户端的原生包版本没有上传过，收不到更新。请检查 App Key 和原生包版本号。",
-    "refused_packages": "涉及原生包版本：",
     "refused_packages_more": "还有 {{count}} 个版本",
     "refused_packages_unattributed": "另有 {{count}} 次无法区分原生包版本。",
     "daily_title": "每日趋势",
@@ -482,7 +475,6 @@
     "versions_glance_title": "最活跃的版本",
     "versions_glance_question": "按下发次数和客户端上报量排序。",
     "view_all_versions": "查看全部版本 →",
-    "no_versions": "该时间范围内没有版本数据",
     "window_served": "下发总次数",
     "window_served_hint": "含增量、整包与灰度",
     "window_rollbacks": "回滚总次数",
@@ -662,9 +654,6 @@
   "admin_metrics": {
     "mode_requests": "请求",
     "mode_users": "用户",
-    "prefix_rn": "rn",
-    "prefix_os": "os",
-    "prefix_rnu": "rnu",
     "title": "全局指标",
     "description": "各页签按需读取；请求概览的时间范围、指标模式和分类前缀会写入 URL。",
     "tab_requests": "客户请求概览",
@@ -924,17 +913,7 @@
     "open_menu": "打开菜单",
     "menu": "菜单",
     "select_app": "选择应用",
-    "app_list": "应用列表",
-    "apps_count": "{{count}} 个应用",
-    "placement_left": "左侧",
-    "placement_right": "右侧",
-    "placement_hide": "隐藏",
-    "search_apps": "搜索应用",
-    "no_matching_apps": "没有匹配的应用",
     "paused": "已暂停",
-    "app_settings": "应用设置",
-    "expand_app_list": "展开应用列表",
-    "collapse_app_list": "收起应用列表",
     "members": "团队",
     "mcp_connections": "MCP 服务"
   },
@@ -989,9 +968,7 @@
     "section_unknown_error": "未知渲染错误",
     "retry_section": "重试组件",
     "chart_error": "图表渲染异常",
-    "line_chart_error": "折线图渲染异常",
-    "pie_chart_error": "饼图渲染异常",
-    "dual_axes_chart_error": "双轴图表渲染异常"
+    "line_chart_error": "折线图渲染异常"
   },
   "daily_check_quota": {
     "tier": "方案：",
@@ -1002,17 +979,7 @@
     "over_quota": "超出配额：",
     "avg_remaining": "7 天平均剩余：",
     "expires_date": "到期 {{date}}",
-    "renews_date": "续费 {{date}}",
-    "quota_not_available": "今日检查配额尚不可用，该配额由该账号下所有应用共享。",
-    "quota_exhausted": "今日检查配额已用尽。请升级方案或等待每日重置。",
-    "quota_low": "今日检查配额偏低，请关注发布和高客户端流量。",
-    "quota_healthy": "今日检查配额充足。",
-    "title": "每日检查配额",
-    "description": "客户端检查 OTA 更新时使用。该配额由该账号下所有应用共享，每日重置。",
-    "status_exhausted": "已用尽",
-    "status_low": "偏低",
-    "status_healthy": "充足",
-    "hint": "默认隐藏精确数字。将鼠标悬停在进度条上可查看剩余配额、方案限制和 7 天平均值。"
+    "renews_date": "续费 {{date}}"
   },
   "footer": {
     "copyright": "cresc.dev © {{year}} CHARMLOT PTE. LTD."
@@ -1058,7 +1025,6 @@
   "commit": {
     "title": "最近提交",
     "description": "需要 cli v1.42.0+ 版本上传，并使用 git 管理代码以查看提交记录",
-    "title_with_commit": "最近提交",
     "author": "作者：",
     "time": "时间：",
     "summary": "摘要："
@@ -1094,7 +1060,6 @@
     "change_added": "新增",
     "change_removed": "移除",
     "change_changed": "变更",
-    "col_dependencies": "依赖",
     "no_dep_changes": "没有匹配当前筛选条件的依赖变更。",
     "dep_changes_title": "检测到依赖变更，继续发布？",
     "publish_anyway": "仍然发布",
@@ -1129,31 +1094,10 @@
     "confirm_button": "确认执行",
     "cancel": "取消"
   },
-  "setting_modal": {
-    "app_id": "应用 ID",
-    "app_key": "App Key",
-    "app_name": "应用名称",
-    "download_url": "原生包下载地址（已安装原生包过期时使用）",
-    "hot_updates": "启用热更新",
-    "enabled": "已启用",
-    "paused": "已暂停",
-    "delete_app": "删除应用",
-    "delete_confirm": "删除后应用将无法恢复。",
-    "delete_ok": "删除应用",
-    "delete_button": "删除",
-    "delete_title": "确认删除该应用",
-    "delete_desc": "此操作不可逆！删除应用将清除该应用下所有的更新包版本、依赖及配置历史。",
-    "delete_permanent": "确认永久删除"
-  },
   "common": {
     "cancel": "取消",
     "delete": "删除",
-    "save": "保存",
     "edit": "编辑",
-    "yes": "是",
-    "no": "否",
-    "loading": "加载中...",
-    "copied": "已复制",
     "none": "无",
     "copy_failed": "复制失败，请手动复制"
   },
@@ -1221,7 +1165,6 @@
     "range_3d": "近3天",
     "range_7d": "近7天",
     "sdk_requirement_title": "健康度数据仅支持 SDK v10.47.0 及以上版本",
-    "sdk_requirement_description": "v10.47.0 是首个上报热更新生命周期事件的版本；更早版本的设备不会出现在启动成功率、下载失败率和回滚率统计中。",
     "window_hint": "实时数据保留 7 天",
     "no_data": "暂无数据",
     "error_title": "JavaScript 报错",
@@ -1421,7 +1364,6 @@
     "quota_kind_usage_drop": "用量骤降",
     "quota_kind_usage_spike": "用量暴涨",
     "quota_col_user": "用户",
-    "quota_col_tier": "套餐",
     "quota_col_usage": "昨日用量/配额",
     "quota_col_trend": "7日均值(近/前)",
     "vh_title": "版本健康总览(近 7 天,跨应用)",

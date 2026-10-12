@@ -12,7 +12,7 @@ function buildLoginUrl(loginFrom?: string | null) {
   return `${rootRouterPath.login}?loginFrom=${encodeURIComponent(loginFrom)}`;
 }
 
-export const OAuthCallback = () => {
+const OAuthCallback = () => {
   const { t } = useTranslation();
   const { search } = useLocation();
   const [error, setError] = useState<string | null>(null);

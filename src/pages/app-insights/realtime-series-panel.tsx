@@ -140,7 +140,6 @@ export const RealtimeSeriesPanel = ({
   appKey,
 }: {
   appKey: string | undefined;
-  isAdmin: boolean;
 }) => {
   const { t } = useTranslation();
   const { isDark } = useThemeMode();

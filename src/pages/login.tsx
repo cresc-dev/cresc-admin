@@ -12,7 +12,7 @@ interface LoginFormValues {
   password: string;
 }
 
-export const Login = () => {
+const Login = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [oauthProvider, setOauthProvider] = useState<OAuthProvider | null>(

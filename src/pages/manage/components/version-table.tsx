@@ -52,7 +52,7 @@ const JsonEditor = lazy(() => import('./json-editor'));
 // Same key as in the ManageContext days, so deep links users already saved survive
 const deepLinkStorageKey = (appId: number) => `${appId}_deeplink`;
 
-export const TestQrCodeModal = ({
+const TestQrCodeModal = ({
   open,
   onClose,
   name,

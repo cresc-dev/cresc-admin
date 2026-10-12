@@ -84,7 +84,7 @@ export const getUA = (userAgent: string) => {
   );
 };
 
-export const AuditLogs = () => {
+const AuditLogs = () => {
   const { t } = useTranslation();
   const statusFilterOptions = getStatusFilterOptions(t);
   const tableState = useUrlTableState({ searchParam: 'query' });

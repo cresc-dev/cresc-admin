@@ -11,7 +11,7 @@ export const ERROR_LOG_SEVERITIES = ['ERROR', 'WARNING'] as const;
 export type ErrorLogSeverity = (typeof ERROR_LOG_SEVERITIES)[number];
 
 export const ERROR_LOG_HOURS = [1, 6, 24, 72, 168] as const;
-export const DEFAULT_ERROR_LOG_HOURS = 24;
+const DEFAULT_ERROR_LOG_HOURS = 24;
 
 export type ErrorLogEntry = {
   insertId: string;

@@ -52,7 +52,7 @@ export function useAppWorkspaceList(): {
   };
 }
 
-export function AppDrawer({
+function AppDrawer({
   apps,
   collapsed,
   currentAppId,

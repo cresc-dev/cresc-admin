@@ -18,7 +18,7 @@ export interface AppGeoResponse {
 
 // Fetch the full 30 days once; switching the range only re-sums on the client.
 export const GEO_FETCH_DAYS = 30;
-export const GEO_TOP_LIMIT = 12;
+const GEO_TOP_LIMIT = 12;
 
 // Literal the server writes when it cannot resolve a region
 // (normalizeCountry); translated separately in the UI.

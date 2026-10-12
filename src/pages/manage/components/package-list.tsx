@@ -1,5 +1,3 @@
-// import { useDrag } from "react-dnd";
-
 import {
   BarcodeOutlined,
   ClockCircleOutlined,
@@ -537,7 +535,6 @@ const Item = ({
   const hasMetricWarning =
     warnings.timestamps.length > 0 || warnings.hashes.length > 0;
   return (
-    // const [_, drag] = useDrag(() => ({ item, type: "package" }));
     <div className="bg-container my-0 [&_li]:!px-0">
       <List.Item className="p-2">
         <List.Item.Meta

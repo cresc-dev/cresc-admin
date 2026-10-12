@@ -1,4 +1,4 @@
-import type { Area, Column, DualAxes, Line, Pie } from '@ant-design/plots';
+import type { Column, Line } from '@ant-design/plots';
 import {
   type ComponentProps,
   type ComponentType,
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { SectionErrorBoundary } from './section-error-boundary';
 import { ChartSkeleton } from './skeletons';
 
-type ChartComponentType = 'Area' | 'Line' | 'Pie' | 'DualAxes' | 'Column';
+type ChartComponentType = 'Line' | 'Column';
 
 // Import from @ant-design/plots only, and pick each chart's export with a
 // static property name: @ant-design/charts is just a shell that does
@@ -21,21 +21,9 @@ const chartLoaders: Record<
   ChartComponentType,
   () => Promise<{ default: ComponentType<any> }>
 > = {
-  Area: () =>
-    import('@ant-design/plots').then((m) => ({
-      default: m.Area as ComponentType<any>,
-    })),
   Line: () =>
     import('@ant-design/plots').then((m) => ({
       default: m.Line as ComponentType<any>,
-    })),
-  Pie: () =>
-    import('@ant-design/plots').then((m) => ({
-      default: m.Pie as ComponentType<any>,
-    })),
-  DualAxes: () =>
-    import('@ant-design/plots').then((m) => ({
-      default: m.DualAxes as ComponentType<any>,
     })),
   Column: () =>
     import('@ant-design/plots').then((m) => ({
@@ -82,21 +70,6 @@ function AsyncChartWrapper<T extends ChartComponentType>({
   );
 }
 
-export function AsyncArea({
-  height,
-  ...props
-}: ComponentProps<typeof Area> & { height?: number }) {
-  const { t } = useTranslation();
-  return (
-    <AsyncChartWrapper
-      chartType="Area"
-      errorTitle={t('error_boundary.chart_error')}
-      height={height}
-      chartProps={{ ...props, height }}
-    />
-  );
-}
-
 export function AsyncLine({
   height,
   ...props
@@ -106,36 +79,6 @@ export function AsyncLine({
     <AsyncChartWrapper
       chartType="Line"
       errorTitle={t('error_boundary.line_chart_error')}
-      height={height}
-      chartProps={{ ...props, height }}
-    />
-  );
-}
-
-export function AsyncPie({
-  height,
-  ...props
-}: ComponentProps<typeof Pie> & { height?: number }) {
-  const { t } = useTranslation();
-  return (
-    <AsyncChartWrapper
-      chartType="Pie"
-      errorTitle={t('error_boundary.pie_chart_error')}
-      height={height}
-      chartProps={{ ...props, height }}
-    />
-  );
-}
-
-export function AsyncDualAxes({
-  height,
-  ...props
-}: ComponentProps<typeof DualAxes> & { height?: number }) {
-  const { t } = useTranslation();
-  return (
-    <AsyncChartWrapper
-      chartType="DualAxes"
-      errorTitle={t('error_boundary.dual_axes_chart_error')}
       height={height}
       chartProps={{ ...props, height }}
     />

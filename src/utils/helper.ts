@@ -9,7 +9,7 @@ export function cn(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export const ping = async (url: string, signal?: AbortSignal) => {
+const ping = async (url: string, signal?: AbortSignal) => {
   let pingFinished = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -195,14 +195,7 @@ export const getManageAppDrawerCollapsed = () => {
     return false;
   }
 
-  const stored = safeStorage.get(MANAGE_APP_DRAWER_COLLAPSED_STORAGE_KEY);
-  if (stored === '1') {
-    return true;
-  }
-  if (stored === '0') {
-    return false;
-  }
-  return false;
+  return safeStorage.get(MANAGE_APP_DRAWER_COLLAPSED_STORAGE_KEY) === '1';
 };
 
 export const setManageAppDrawerCollapsed = (collapsed: boolean) => {
@@ -265,7 +258,7 @@ export function parseDepVersion(raw?: string): [number, number, number] | null {
   return [Number(matched[1]), Number(matched[2]), Number(matched[3])];
 }
 
-export function compareDepVersions(
+function compareDepVersions(
   a: [number, number, number],
   b: [number, number, number],
 ) {

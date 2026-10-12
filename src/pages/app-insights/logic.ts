@@ -73,7 +73,7 @@ export const insightToday = (
   return localToday(new Date(now));
 };
 
-export const validCount = (value: unknown): value is number =>
+const validCount = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
 const countOf = (value: unknown): number => (validCount(value) ? value : 0);
@@ -88,7 +88,7 @@ export const observationCount = (
 
 /** A legacy zero UUID count may mean missing/expired collection, not zero
  * devices. An explicit observed zero is valid and participates in the mean. */
-export const deviceObservationCount = (
+const deviceObservationCount = (
   value: number | null | undefined,
   status?: ObservationStatus,
 ): number | null =>
@@ -164,12 +164,9 @@ export interface TrafficSummary {
   peakDau: number | null;
   averageDau: number | null;
   hit: Record<HitOutcome, number>;
-  refusedPercent: number;
-  updatePercent: number;
   /** Each of the last 7 days' 24-hour split, oldest first; days are never summed. */
   hourlyDays: HourlyDay[];
   ipVersion: RankedItem[];
-  hosts: RankedItem[];
   /** Platform (first word of the os label) and system version (full label). */
   platforms: RankedItem[];
   osVersions: RankedItem[];
@@ -280,7 +277,6 @@ export const summarizeTraffic = (
   const hit = emptyHit();
   const hourlyDays: HourlyDay[] = [];
   const ipVersion: Record<string, number> = {};
-  const hosts: Record<string, number> = {};
   const platforms: Record<string, number> = {};
   const osVersions: Record<string, number> = {};
   let hasClientInfo = false;
@@ -329,7 +325,6 @@ export const summarizeTraffic = (
     });
     hourlyDays.push({ date: day.date, hourly });
     addCounts(ipVersion, day.ipVersion);
-    addCounts(hosts, day.hosts);
     if (day.os) hasClientInfo = true;
     for (const [label, count] of Object.entries(day.os ?? {})) {
       if (validCount(count) && count > 0) {
@@ -414,13 +409,10 @@ export const summarizeTraffic = (
     averageDau: dauSampleDays > 0 ? completedDau / dauSampleDays : null,
     peakDau,
     hit,
-    refusedPercent: percentOf(hit.blocked + hit.unknown_package, requests),
-    updatePercent: percentOf(hit.hdiff + hit.pdiff + hit.full, requests),
     hourlyDays: hourlyDays
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-HOURLY_DAYS),
     ipVersion: rankCounts(ipVersion),
-    hosts: rankCounts(hosts),
     platforms: rankCounts(platforms),
     osVersions: rankCounts(osVersions),
     hasClientInfo,
@@ -476,7 +468,6 @@ export const servedTotal = (served: ServedCounts | undefined) =>
 
 // Legacy enum identifiers for shared key mappings; rollback reports ONLY.
 export type FunnelHealth = 'healthy' | 'warning' | 'critical' | null;
-export { MIN_EVENT_SAMPLES };
 
 export interface FunnelRates {
   downloadSuccessRate: number | null;
@@ -810,7 +801,6 @@ export interface BreakdownSummary {
   totalDays: number;
   availableDays: number;
   unavailableDays: number;
-  legacyDays: number;
   failures: number;
   reasons: ReasonRow[];
   os: DimensionRow[];
@@ -834,9 +824,7 @@ export const summarizeBreakdown = (
   let failures = 0;
   let availableDays = 0;
   let unavailableDays = 0;
-  let legacyDays = 0;
   for (const day of days ?? []) {
-    if (day.status === undefined) legacyDays += 1;
     const legacyHasReports = [
       ...(day.byReason ?? []),
       ...(day.byOS ?? []),
@@ -900,7 +888,6 @@ export const summarizeBreakdown = (
     totalDays: days?.length ?? 0,
     availableDays,
     unavailableDays,
-    legacyDays,
     failures,
     reasons: Array.from(reasons, ([reason, entry]) => ({
       reason,
@@ -918,7 +905,7 @@ export const summarizeBreakdown = (
   };
 };
 
-export const KNOWN_FAILURE_REASONS = [
+const KNOWN_FAILURE_REASONS = [
   'empty',
   'crc_mismatch',
   'patch_apply',

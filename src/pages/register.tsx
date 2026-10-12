@@ -21,7 +21,7 @@ interface RegisterFormValues {
   agreed: boolean;
 }
 
-export const Register = () => {
+const Register = () => {
   const { t } = useTranslation();
   const [form] = Form.useForm<RegisterFormValues>();
   const [loading, setLoading] = useState<boolean>(false);

@@ -210,22 +210,6 @@ interface Version {
   hermesBaseDetail?: string;
 }
 
-interface AppDetail extends App {
-  appKey: string;
-  appSecret: string;
-  downloadUrl?: string;
-}
-
-interface ContentProps {
-  app: App;
-}
-
-interface VersionConfig {
-  rollout?: {
-    [packageVersion: string]: number | null;
-  };
-}
-
 type BindingType = 'full' | 'exp';
 
 interface Binding {

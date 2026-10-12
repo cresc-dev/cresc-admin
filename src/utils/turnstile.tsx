@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // Turnstile is off unless the build sets PUBLIC_TURNSTILE_SITE_KEY (the
 // cresc-admin auth widget is 0x4AAAAAAFJyCK2V9ge-PeCK). Turn it on only
 // together with TURNSTILE_SECRET on the API, which redeems each token.
-export const TURNSTILE_SITE_KEY = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const TURNSTILE_SITE_KEY = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
 export type TurnstileAction = 'register' | 'resetpwd' | 'activate';
 

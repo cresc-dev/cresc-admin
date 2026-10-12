@@ -9,13 +9,7 @@ import { RealtimeSeriesPanel } from './realtime-series-panel';
 import { EmptyState, InsightsError, Question, useAppTraffic } from './shared';
 
 /** Live requests and the hourly split; both have their own time range, independent of the page's day range. */
-export const TrafficPanel = ({
-  appKey,
-  isAdmin,
-}: {
-  appKey: string | undefined;
-  isAdmin: boolean;
-}) => {
+export const TrafficPanel = ({ appKey }: { appKey: string | undefined }) => {
   const { t } = useTranslation();
   const { isDark } = useThemeMode();
   const traffic = useAppTraffic(appKey, HOURLY_DAYS);
@@ -36,7 +30,7 @@ export const TrafficPanel = ({
     insightToday(Date.now(), traffic.data?.timezone);
   return (
     <div className="space-y-4">
-      <RealtimeSeriesPanel appKey={appKey} isAdmin={isAdmin} />
+      <RealtimeSeriesPanel appKey={appKey} />
       {!!traffic.error && <InsightsError error={traffic.error} />}
       <ObservationNotice
         window={traffic.data?.window}

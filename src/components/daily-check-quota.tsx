@@ -1,15 +1,9 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert, Progress, Tag, Tooltip, Typography } from 'antd';
+import { Progress, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { quotas } from '@/constants/quotas';
 import { useUserInfo } from '@/utils/hooks';
-
-const { Text } = Typography;
-
-interface DailyCheckQuotaProps {
-  variant: 'account';
-}
 
 const useDailyCheckQuotaState = () => {
   const { t } = useTranslation();
@@ -166,73 +160,4 @@ export function DailyCheckQuotaUserTrigger({
   }
 
   return <Tooltip title={quotaState.tooltip}>{content}</Tooltip>;
-}
-
-export default function DailyCheckQuota(_props: DailyCheckQuotaProps) {
-  const { t } = useTranslation();
-  const quotaState = useDailyCheckQuotaState();
-  const { user } = quotaState;
-  if (!user) {
-    return null;
-  }
-
-  if (!quotaState.hasData) {
-    return (
-      <Text type="secondary">{t('daily_check_quota.quota_not_available')}</Text>
-    );
-  }
-
-  const message = quotaState.isExceeded
-    ? t('daily_check_quota.quota_exhausted')
-    : quotaState.isLow
-      ? t('daily_check_quota.quota_low')
-      : t('daily_check_quota.quota_healthy');
-
-  return (
-    <div className="space-y-3">
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <div className="font-medium">{t('daily_check_quota.title')}</div>
-            <div className="text-gray-500 text-sm">
-              {t('daily_check_quota.description')}
-            </div>
-          </div>
-          <Tag
-            color={
-              quotaState.isExceeded
-                ? 'red'
-                : quotaState.isLow
-                  ? 'orange'
-                  : 'green'
-            }
-          >
-            {quotaState.isExceeded
-              ? t('daily_check_quota.status_exhausted')
-              : quotaState.isLow
-                ? t('daily_check_quota.status_low')
-                : t('daily_check_quota.status_healthy')}
-          </Tag>
-        </div>
-        <Tooltip title={quotaState.tooltip}>
-          <Progress
-            percent={quotaState.percent}
-            showInfo={false}
-            status={quotaState.status}
-            strokeLinecap="round"
-          />
-        </Tooltip>
-        <div className="mt-2 text-gray-500 text-xs">
-          {t('daily_check_quota.hint')}
-        </div>
-      </div>
-      {(quotaState.isExceeded || quotaState.isLow) && (
-        <Alert
-          showIcon
-          type={quotaState.isExceeded ? 'error' : 'warning'}
-          message={message}
-        />
-      )}
-    </div>
-  );
 }

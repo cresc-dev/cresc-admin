@@ -1,8 +1,6 @@
-import { PullRequestOutlined } from '@ant-design/icons';
-import { Button, Modal } from 'antd';
+import { Modal } from 'antd';
 import dayjs from 'dayjs';
 import gitUrlParse from 'git-url-parse';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const CommitModal = ({
@@ -97,19 +95,5 @@ export const CommitModal = ({
         </div>
       )}
     </Modal>
-  );
-};
-
-export const Commit = ({ commit }: { commit?: Commit }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Button
-        type="link"
-        icon={<PullRequestOutlined />}
-        onClick={() => setOpen(true)}
-      />
-      <CommitModal open={open} onClose={() => setOpen(false)} commit={commit} />
-    </>
   );
 };

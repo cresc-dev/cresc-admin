@@ -7,7 +7,7 @@ import type { ThemeConfig } from 'antd';
  * tokens; Tailwind consumes the emitted CSS variables (--ant-color-*) through
  * the @theme mapping in index.css.
  */
-export const BRAND_PRIMARY = '#1677ff';
+const BRAND_PRIMARY = '#1677ff';
 
 export const themeConfig: ThemeConfig = {
   // Enable CSS variable mode so antd outputs --ant-color-primary etc. for

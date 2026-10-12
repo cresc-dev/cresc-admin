@@ -73,7 +73,8 @@
     "activating": "Activating your account...",
     "success": "Activation successful",
     "redirecting": "Redirecting to log in...",
-    "go_login": "Go to log in"
+    "go_login": "Go to log in",
+    "link_invalid": "This activation link is invalid. Please open the link from your email again."
   },
   "inactivated": {
     "email_sent": "Activation email sent. Please check your inbox.",
@@ -214,9 +215,7 @@
   },
   "api_tokens": {
     "create_success": "API Key created successfully",
-    "create_failed": "Failed to create",
     "revoke_success": "API Key revoked",
-    "revoke_failed": "Failed to revoke",
     "col_id": "ID",
     "col_name": "Name",
     "col_token": "API Key",
@@ -308,7 +307,6 @@
     "exp_days": "{{count}} days",
     "create_button": "Create",
     "create_success": "MCP token created",
-    "create_failed": "Creation failed",
     "created_title": "Token created",
     "created_ok": "Saved it",
     "created_warning": "This token is shown only once — copy it now.",
@@ -331,7 +329,6 @@
     "revoke_title": "Revoke this token?",
     "revoke_desc": "Clients using it disconnect immediately.",
     "revoke_success": "API Key revoked",
-    "revoke_failed": "Revocation failed",
     "yes": "Yes",
     "no": "No"
   },
@@ -412,7 +409,6 @@
     "package_prefix": "Package:",
     "bundle": "Bundle",
     "package": "Package",
-    "checks_tooltip": "{{count}} checks",
     "time": "Time",
     "select_app": "Select an app",
     "title": "Analytics",
@@ -425,9 +421,7 @@
     "please_select_app": "Please select an app",
     "total_requests": "Total Requests",
     "category_count": "Category Count",
-    "current_dimension": "Current Dimension:",
     "no_top_data": "No top 10 data",
-    "no_data_available": "No data available",
     "current_dimension_label": "Current dimension: {{dimension}}",
     "no_data": "No data available",
     "tooltip_count": "{{count}} checks",
@@ -462,7 +456,6 @@
     "requests": "Requests",
     "refusal_blocked": "The client build time doesn't match the uploaded native package, so these devices get no updates. Make sure the released app and the uploaded native package come from the same build.",
     "refusal_unknown_package": "These clients run a native package version that was never uploaded, so they get no updates. Check the App Key and native package version.",
-    "refused_packages": "Native package versions:",
     "refused_packages_more": "and {{count}} more",
     "refused_packages_unattributed": "{{count}} more could not be matched to a native package version.",
     "daily_title": "Daily trend",
@@ -482,7 +475,6 @@
     "versions_glance_title": "Most active versions",
     "versions_glance_question": "Ranked by deliveries and client reports.",
     "view_all_versions": "All versions →",
-    "no_versions": "No version data in this range",
     "window_served": "Total deliveries",
     "window_served_hint": "Diffs, full bundles and canaries",
     "window_rollbacks": "Total rollbacks",
@@ -662,9 +654,6 @@
   "admin_metrics": {
     "mode_requests": "Requests",
     "mode_users": "Users",
-    "prefix_rn": "rn",
-    "prefix_os": "os",
-    "prefix_rnu": "rnu",
     "title": "Global Metrics",
     "description": "Tabs load on demand; request range, mode, and prefix stay in the URL.",
     "tab_requests": "Customer Requests",
@@ -924,17 +913,7 @@
     "open_menu": "Open menu",
     "menu": "Menu",
     "select_app": "Select app",
-    "app_list": "App List",
-    "apps_count": "{{count}} apps",
-    "placement_left": "Left",
-    "placement_right": "Right",
-    "placement_hide": "Hide",
-    "search_apps": "Search apps",
-    "no_matching_apps": "No matching apps",
     "paused": "Paused",
-    "app_settings": "App Settings",
-    "expand_app_list": "Expand app list",
-    "collapse_app_list": "Collapse app list",
     "members": "Team",
     "mcp_connections": "MCP Server"
   },
@@ -989,9 +968,7 @@
     "section_unknown_error": "Unknown render error",
     "retry_section": "Retry section",
     "chart_error": "Chart failed to render",
-    "line_chart_error": "Line chart failed to render",
-    "pie_chart_error": "Pie chart failed to render",
-    "dual_axes_chart_error": "Dual-axis chart failed to render"
+    "line_chart_error": "Line chart failed to render"
   },
   "daily_check_quota": {
     "tier": "Tier:",
@@ -1002,17 +979,7 @@
     "over_quota": "Over quota:",
     "avg_remaining": "7-day average remaining:",
     "expires_date": "Expires {{date}}",
-    "renews_date": "Renews {{date}}",
-    "quota_not_available": "Today's check quota is not available yet. It is shared by all apps under this account.",
-    "quota_exhausted": "Today's check quota is exhausted. Upgrade your plan or wait for the daily reset.",
-    "quota_low": "Today's check quota is running low. Keep an eye on releases and high client traffic.",
-    "quota_healthy": "Today's check quota is healthy.",
-    "title": "Daily check quota",
-    "description": "Used when clients check for OTA updates. The quota is shared by all apps in this account and resets daily.",
-    "status_exhausted": "Exhausted",
-    "status_low": "Low",
-    "status_healthy": "Healthy",
-    "hint": "Exact numbers are hidden by default. Hover over the bar to see the remaining quota, plan limit, and 7-day average."
+    "renews_date": "Renews {{date}}"
   },
   "footer": {
     "copyright": "cresc.dev © {{year}} CHARMLOT PTE. LTD."
@@ -1058,7 +1025,6 @@
   "commit": {
     "title": "Recent Commit",
     "description": "Require cli v1.42.0+ version to upload, and use git to manage code to view commit records",
-    "title_with_commit": "Recent Commit",
     "author": "Author:",
     "time": "Time:",
     "summary": "Summary:"
@@ -1094,7 +1060,6 @@
     "change_added": "Added",
     "change_removed": "Removed",
     "change_changed": "Changed",
-    "col_dependencies": "Dependencies",
     "no_dep_changes": "No dependency changes match the current filters.",
     "dep_changes_title": "Dependency changes detected. Continue publishing?",
     "publish_anyway": "Publish anyway",
@@ -1129,31 +1094,10 @@
     "confirm_button": "Confirm Action",
     "cancel": "Cancel"
   },
-  "setting_modal": {
-    "app_id": "App ID",
-    "app_key": "App Key",
-    "app_name": "App Name",
-    "download_url": "Native Package Download URL (used when the installed native package is expired)",
-    "hot_updates": "Enable Hot Updates",
-    "enabled": "Enabled",
-    "paused": "Paused",
-    "delete_app": "Delete App",
-    "delete_confirm": "This app cannot be recovered after deletion.",
-    "delete_ok": "Delete App",
-    "delete_button": "Delete",
-    "delete_title": "Confirm App Deletion",
-    "delete_desc": "This action cannot be undone! Deleting this app will permanently purge all package versions, dependencies, and configuration history.",
-    "delete_permanent": "Permanently Delete App"
-  },
   "common": {
     "cancel": "Cancel",
     "delete": "Delete",
-    "save": "Save",
     "edit": "Edit",
-    "yes": "Yes",
-    "no": "No",
-    "loading": "Loading...",
-    "copied": "Copied",
     "none": "None",
     "copy_failed": "Copy failed, please copy manually"
   },
@@ -1221,7 +1165,6 @@
     "range_3d": "Last 3 days",
     "range_7d": "Last 7 days",
     "sdk_requirement_title": "Health data requires SDK v10.47.0+",
-    "sdk_requirement_description": "v10.47.0 is the first SDK release that reports OTA lifecycle events. Devices on earlier versions are excluded from startup success, download failure, and rollback rates.",
     "window_hint": "Real-time data retained for 7 days",
     "no_data": "No data available",
     "error_title": "JavaScript error issues",
@@ -1421,7 +1364,6 @@
     "quota_kind_usage_drop": "Usage drop",
     "quota_kind_usage_spike": "Usage spike",
     "quota_col_user": "User",
-    "quota_col_tier": "Tier",
     "quota_col_usage": "Yesterday / quota",
     "quota_col_trend": "7d avg (recent/prev)",
     "vh_title": "Version health (7 days, all apps)",

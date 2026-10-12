@@ -229,7 +229,7 @@ const ManageDashBoard = () => {
   );
 };
 
-export const Manage = () => {
+const Manage = () => {
   const { t } = useTranslation();
   const params = useParams<{ id?: string }>();
   const id = Number(params.id!);

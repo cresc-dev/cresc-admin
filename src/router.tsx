@@ -42,7 +42,7 @@ export const rootRouterPath = {
 export const appViewPath = (path: string, appKey?: string | null) =>
   appKey ? `${path}?${new URLSearchParams({ appKey })}` : path;
 
-export const needAuthLoader = ({ request }: { request: Request }) => {
+const needAuthLoader = ({ request }: { request: Request }) => {
   if (!hasSession()) {
     const { pathname, search } = new URL(request.url);
     const target = getUnauthenticatedRedirect(pathname, search);
@@ -51,7 +51,7 @@ export const needAuthLoader = ({ request }: { request: Request }) => {
   return null;
 };
 
-export const publicOnlyLoader = ({ request }: { request: Request }) => {
+const publicOnlyLoader = ({ request }: { request: Request }) => {
   if (!hasSession()) {
     return null;
   }

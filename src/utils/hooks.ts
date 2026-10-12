@@ -439,14 +439,14 @@ export const usePackageMetricWarnings = ({
 };
 
 /** Audit logs are retained for 180 days; fetch from that lower bound by default */
-export const AUDIT_LOG_RETENTION_DAYS = 180;
+const AUDIT_LOG_RETENTION_DAYS = 180;
 
 /**
  * How many rows to ask the server for at once. The server has its own cap
  * (100 in the Go version); the response decides how many actually arrive and
  * the page compares total with the row count to detect truncation.
  */
-export const AUDIT_LOG_FETCH_LIMIT = 1000;
+const AUDIT_LOG_FETCH_LIMIT = 1000;
 
 /**
  * Audit logs: the date range is filtered server-side, while keyword / action /

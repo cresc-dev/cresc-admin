@@ -5,6 +5,7 @@
     "": {
       "name": "cresc-admin",
       "dependencies": {
+        "@ant-design/cssinjs": "^2.1.2",
         "@ant-design/icons": "^6.3.2",
         "@ant-design/plots": "^2.6.8",
         "@ant-design/v5-patch-for-react-19": "^1.0.3",

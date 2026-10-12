@@ -10,7 +10,7 @@ import { useLocalStorageCooldown } from '@/utils/hooks';
 import { useTurnstile } from '@/utils/turnstile';
 import { rootRouterPath, router } from '../router';
 
-export const Inactivated = () => {
+const Inactivated = () => {
   const { t } = useTranslation();
   useEffect(() => {
     if (!getUserEmail()) {

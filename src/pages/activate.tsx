@@ -8,7 +8,7 @@ import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { clearSession } from '@/services/request';
 
-export const Activate = () => {
+const Activate = () => {
   const { t } = useTranslation();
   const { search } = useLocation();
   const token = new URLSearchParams(search).get('code') || '';
@@ -27,6 +27,9 @@ export const Activate = () => {
     router.navigate(rootRouterPath.user, { replace: true });
   }, [isSuccess]);
 
+  if (!token) {
+    return <Result status="error" title={t('activate.link_invalid')} />;
+  }
   if (error) {
     return <Result status="error" title={error.message} />;
   }

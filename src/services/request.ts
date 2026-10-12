@@ -1,5 +1,4 @@
 import { message } from 'antd';
-import { getVersionHealthDevMock } from '@/services/version-health-dev-mock';
 import { getCustomBaseUrl } from '@/utils/endpoint';
 import { FEATURES } from '@/utils/features';
 import { testUrls } from '@/utils/helper';
@@ -13,7 +12,6 @@ import { getWorkspaceAccountId } from './workspace';
 // importers (auth, router, hooks, tests) keep working unchanged.
 export {
   clearSession,
-  getToken,
   hasSession,
   markCookieSession,
   setToken,
@@ -58,6 +56,11 @@ export default async function request<T extends Record<any, any>>(
   requestOptions: RequestOptions = {},
 ) {
   if (FEATURES.versionHealthMock) {
+    // Dynamic import: versionHealthMock is always false in production builds,
+    // so the mock data stays out of the main bundle.
+    const { getVersionHealthDevMock } = await import(
+      '@/services/version-health-dev-mock'
+    );
     const mock = getVersionHealthDevMock(method, path);
     if (mock !== null) {
       return mock as unknown as T;

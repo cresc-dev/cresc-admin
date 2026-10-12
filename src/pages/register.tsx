@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
-import { RequestError } from '@/services/request';
+import { RequestError } from '@/services/response';
 import {
   confirmPasswordRule,
   passwordFormatRule,

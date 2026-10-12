@@ -4,7 +4,7 @@ import { Button, Dropdown, Modal, message, Popconfirm } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
-import { RequestError } from '@/services/request';
+import { RequestError } from '@/services/response';
 import { products, quotas } from '../../constants/quotas';
 import { calculateUpgradePreview, purchase } from './billing';
 

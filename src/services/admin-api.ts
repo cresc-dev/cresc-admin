@@ -4,7 +4,8 @@ import {
   type ErrorLogFilters,
   type ErrorLogPage,
 } from '@/pages/admin-error-logs.logic';
-import request, { type RequestOptions } from './request';
+import request from './request';
+import type { RequestOptions } from './response';
 
 export type WriteOperationDimension = 'path' | 'region' | 'client';
 

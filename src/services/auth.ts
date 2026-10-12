@@ -3,13 +3,13 @@ import { message } from 'antd';
 import { md5 } from 'hash-wasm';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
+import { RequestError } from '@/services/response';
 import {
   clearSession,
   markCookieSession,
-  RequestError,
   setToken,
   usesCookieSession,
-} from '@/services/request';
+} from '@/services/session';
 import { resolveLoginRedirect } from '@/utils/safe-redirect';
 import { clearWorkspace } from './workspace';
 

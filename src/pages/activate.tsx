@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
-import { clearSession } from '@/services/request';
+import { clearSession } from '@/services/session';
 
 const Activate = () => {
   const { t } = useTranslation();

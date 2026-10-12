@@ -4,7 +4,7 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/services/api';
-import { hasSession } from '@/services/request';
+import { hasSession } from '@/services/session';
 import { getWorkspaceAccountId } from '@/services/workspace';
 import { findActiveWorkspace } from '@/utils/active-workspace';
 import {

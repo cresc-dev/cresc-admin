@@ -21,28 +21,11 @@ global.StorageEvent = win.StorageEvent as any;
 mock.module('@/services/api', () => ({
   api: {},
 }));
-class MockRequestError extends Error {
-  status?: number;
-  constructor(message: string, status?: number) {
-    super(message);
-    this.name = 'RequestError';
-    this.status = status;
-  }
-}
-
-const mockSetToken = mock(() => {});
-const mockMarkCookieSession = mock(() => {});
-const mockClearSession = mock(() => {});
-
+// request probes the API lines on load, so tests get an empty stand-in;
+// session and the error types come from the real modules
 mock.module('@/services/request', () => ({
-  getToken: () => '',
-  hasSession: () => false,
-  usesCookieSession: () => false,
-  setToken: mockSetToken,
-  markCookieSession: mockMarkCookieSession,
-  clearSession: mockClearSession,
-  RequestError: MockRequestError,
   default: {},
+  resolveApiBaseUrl: async () => '',
 }));
 mock.module('@/assets/logo-h.svg', () => ({
   default: 'logo',

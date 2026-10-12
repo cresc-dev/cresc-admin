@@ -20,12 +20,6 @@ import { useIsMobile } from '@/utils/responsive';
 import { useStoredPreference } from '@/utils/stored-preference';
 import PlatformIcon from './platform-icon';
 
-// Kept for old import paths; the app list data and types live in utils/app-workspace
-export {
-  type AppDrawerItem,
-  useAppWorkspaceList,
-} from '@/utils/app-workspace';
-
 function AppDrawer({
   apps,
   collapsed,

@@ -6,6 +6,7 @@ import {
   CHUNK_ERROR_RELOAD_KEY,
   shouldReloadChunkError,
 } from '@/utils/chunk-recovery';
+import { safeSessionStorage } from '@/utils/storage';
 
 interface ChunkError extends Error {
   __webpack_chunkName?: string;
@@ -39,15 +40,15 @@ export function ErrorBoundary() {
     }
 
     const currentVersion = process.env.PUBLIC_UI_VERSION || 'unknown';
-    const attemptedVersion = window.sessionStorage.getItem(
-      CHUNK_ERROR_RELOAD_KEY,
-    );
+    const attemptedVersion = safeSessionStorage.get(CHUNK_ERROR_RELOAD_KEY);
+    // Without a stored "already retried" marker, do not auto-reload; otherwise
+    // unavailable storage would reload forever
     if (
       process.env.NODE_ENV === 'production' &&
       !isLocalHost() &&
-      shouldReloadChunkError(attemptedVersion, currentVersion)
+      shouldReloadChunkError(attemptedVersion, currentVersion) &&
+      safeSessionStorage.set(CHUNK_ERROR_RELOAD_KEY, currentVersion)
     ) {
-      window.sessionStorage.setItem(CHUNK_ERROR_RELOAD_KEY, currentVersion);
       window.location.reload();
     }
   }, [isChunkError]);

@@ -1,26 +1,12 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-
-// cresc has no DOM test setup; a minimal localStorage stub (installed before
-// the module under test is imported) lets us assert persistence behavior.
-const store = new Map<string, string>();
-(globalThis as { localStorage?: unknown }).localStorage = {
-  getItem: (key: string) => store.get(key) ?? null,
-  setItem: (key: string, value: string) => {
-    store.set(key, value);
-  },
-  removeItem: (key: string) => {
-    store.delete(key);
-  },
-};
-
-const {
+import {
   clearSession,
   getToken,
   hasSession,
   markCookieSession,
   setToken,
   usesCookieSession,
-} = await import('./session');
+} from './session';
 
 describe('session', () => {
   beforeEach(() => {

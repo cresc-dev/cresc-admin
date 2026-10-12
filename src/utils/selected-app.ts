@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  type AppDrawerItem,
-  useAppWorkspaceList,
-} from '@/components/app-drawer';
-import { patchSearchParams, rememberRecentApp } from '@/utils/helper';
+import { rememberRecentApp } from '@/utils/app-preferences';
+import { type AppDrawerItem, useAppWorkspaceList } from '@/utils/app-workspace';
+import { patchSearchParams } from '@/utils/helper';
 
 /**
  * App selection driven by the ?appKey in the URL, shared by the metrics and

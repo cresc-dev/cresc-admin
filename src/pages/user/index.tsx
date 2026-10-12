@@ -1,10 +1,11 @@
 import { LogoutOutlined } from '@ant-design/icons';
 import { useQueries } from '@tanstack/react-query';
-import { Button, Descriptions, Grid, message, Spin } from 'antd';
+import { Button, Descriptions, message, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
 import { logout } from '@/services/auth';
 import { useAppList, useUserInfo } from '@/utils/hooks';
+import { useIsMobile } from '@/utils/responsive';
 import { PRICING_LINK } from '../../constants/links';
 import { quotas } from '../../constants/quotas';
 import { EmailChangeButton, PasswordChangeButton } from './account-security';
@@ -22,8 +23,7 @@ function UserPanel() {
   const { t } = useTranslation();
   const { user, displayExpireDay, displayRemainingDays } = useUserInfo();
   const { apps } = useAppList();
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = useIsMobile();
   const appList = apps ?? [];
   const versionCountQueries = useQueries({
     queries: appList.map((app) => ({

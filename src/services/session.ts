@@ -10,19 +10,16 @@
  * works unchanged before, during, and after the server-side switch.
  */
 
+import { safeStorage } from '@/utils/storage';
+
 const TOKEN_KEY = 'token';
 const AUTH_MODE_KEY = 'authMode';
 const COOKIE_MODE = 'cookie';
 
-let _token: string | null = null;
-let _cookieSession = false;
-
-try {
-  _token = localStorage.getItem(TOKEN_KEY);
-  _cookieSession = localStorage.getItem(AUTH_MODE_KEY) === COOKIE_MODE;
-} catch {
-  // storage unavailable (private mode); session stays in-memory only
-}
+// With storage unavailable (private mode etc.) safeStorage reads null and
+// writes fail silently, so the session stays in memory only
+let _token: string | null = safeStorage.get(TOKEN_KEY);
+let _cookieSession = safeStorage.get(AUTH_MODE_KEY) === COOKIE_MODE;
 
 export const getToken = () => _token;
 
@@ -34,33 +31,21 @@ export const hasSession = () => !!_token || _cookieSession;
 export const setToken = (token: string) => {
   _token = token;
   _cookieSession = false;
-  try {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.removeItem(AUTH_MODE_KEY);
-  } catch {
-    // in-memory only
-  }
+  safeStorage.set(TOKEN_KEY, token);
+  safeStorage.remove(AUTH_MODE_KEY);
 };
 
 /** Record that the server established an httpOnly cookie session. */
 export const markCookieSession = () => {
   _cookieSession = true;
   _token = null;
-  try {
-    localStorage.setItem(AUTH_MODE_KEY, COOKIE_MODE);
-    localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    // in-memory only
-  }
+  safeStorage.set(AUTH_MODE_KEY, COOKIE_MODE);
+  safeStorage.remove(TOKEN_KEY);
 };
 
 export const clearSession = () => {
   _token = null;
   _cookieSession = false;
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(AUTH_MODE_KEY);
-  } catch {
-    // in-memory only
-  }
+  safeStorage.remove(TOKEN_KEY);
+  safeStorage.remove(AUTH_MODE_KEY);
 };

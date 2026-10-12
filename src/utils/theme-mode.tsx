@@ -6,18 +6,15 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { safeStorage } from '@/utils/storage';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
 
 const STORAGE_KEY = 'themeMode';
 
 const getStoredMode = (): ThemeMode => {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    return value === 'light' || value === 'dark' ? value : 'auto';
-  } catch {
-    return 'auto';
-  }
+  const value = safeStorage.get(STORAGE_KEY);
+  return value === 'light' || value === 'dark' ? value : 'auto';
 };
 
 const getSystemPrefersDark = () =>
@@ -68,14 +65,12 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
       mode,
       setMode: (next: ThemeMode) => {
         setModeState(next);
-        try {
-          if (next === 'auto') {
-            localStorage.removeItem(STORAGE_KEY);
-          } else {
-            localStorage.setItem(STORAGE_KEY, next);
-          }
-        } catch {
-          // storage unavailable (private mode); theme still applies in-memory
+        // With storage unavailable (private mode etc.) the write fails
+        // silently and the theme still applies in memory
+        if (next === 'auto') {
+          safeStorage.remove(STORAGE_KEY);
+        } else {
+          safeStorage.set(STORAGE_KEY, next);
         }
       },
     }),

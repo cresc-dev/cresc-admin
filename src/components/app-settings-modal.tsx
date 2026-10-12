@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Button,
   Form,
-  Grid,
   Input,
   Modal,
   message,
@@ -16,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { rootRouterPath, router } from '@/router';
 import { api } from '@/services/api';
 import { useDeleteApp, useUpdateApp } from '@/services/mutations';
+import { useModalWidth } from '@/utils/responsive';
 
 export interface AppSettingsTarget {
   id: number;
@@ -34,7 +34,7 @@ export function useAppSettingsModal() {
   const { t } = useTranslation();
   const [modal, contextHolder] = Modal.useModal();
   const [form] = Form.useForm<AppSettingsFormValues>();
-  const screens = Grid.useBreakpoint();
+  const modalWidth = useModalWidth(520);
   const updateApp = useUpdateApp();
 
   const openAppSettings = (app: AppSettingsTarget) => {
@@ -45,7 +45,7 @@ export function useAppSettingsModal() {
       icon: null,
       closable: true,
       maskClosable: true,
-      width: !screens.md ? 'calc(100vw - 32px)' : 520,
+      width: modalWidth,
       content: (
         <AppSettingsModalContent appId={app.id} form={form} initialApp={app} />
       ),

@@ -1,14 +1,14 @@
-import { Grid, Layout } from 'antd';
+import { Layout } from 'antd';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useUserInfo } from '@/utils/hooks';
+import { useIsMobile } from '@/utils/responsive';
 import Footer from './footer';
 import TopNavigation from './top-navigation';
 
 const MainLayout = () => {
   const { user } = useUserInfo();
   const location = useLocation();
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = useIsMobile();
   const isLoginPage = location.pathname === '/login';
   const usesPublicChrome = [
     '/activate',

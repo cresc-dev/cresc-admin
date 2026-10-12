@@ -2,10 +2,7 @@ import {
   BarcodeOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
-  EditOutlined,
   ExclamationCircleFilled,
-  JavaScriptOutlined,
-  PullRequestOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -15,7 +12,6 @@ import {
   Form,
   Input,
   List,
-  type MenuProps,
   Modal,
   message,
   Popover,
@@ -40,7 +36,9 @@ import {
 } from '@/utils/hooks';
 import { useManageContext } from '../hooks/useManageContext';
 import { CommitModal } from './commit';
+import { confirmDelete } from './confirm-delete';
 import { DepsModal } from './deps-table';
+import { buildNameCellMenu } from './name-cell-menu';
 
 const PackageList = ({
   dataSource,
@@ -107,11 +105,15 @@ const PackageList = ({
               danger
               icon={<DeleteOutlined />}
               onClick={() =>
-                removeSelectedPackages(
-                  selectedPackages,
-                  appId,
-                  deletePackages.mutateAsync,
-                  () => {
+                confirmDelete({
+                  title: t('package_list.batch_delete_title'),
+                  warning: t('package_list.batch_delete_warning'),
+                  names: selectedPackages,
+                  onOk: async () => {
+                    await deletePackages.mutateAsync({
+                      appId,
+                      packageIds: selectedPackages.map((item) => item.id),
+                    });
                     setSelectedPackageIds((prev) =>
                       prev.filter(
                         (id) =>
@@ -119,7 +121,7 @@ const PackageList = ({
                       ),
                     );
                   },
-                )
+                })
               }
             >
               {t('package_list.delete_button')}
@@ -147,68 +149,6 @@ const PackageList = ({
   );
 };
 export default PackageList;
-
-function removeSelectedPackages(
-  items: Package[],
-  appId: number,
-  deletePackages: (variables: {
-    appId: number;
-    packageIds: number[];
-  }) => Promise<unknown>,
-  onSuccess: () => void,
-) {
-  if (items.length === 0) {
-    return;
-  }
-  Modal.confirm({
-    title: i18n.t('package_list.batch_delete_title'),
-    content: (
-      <div>
-        <Typography.Paragraph type="danger">
-          {i18n.t('package_list.batch_delete_warning')}
-        </Typography.Paragraph>
-        <div className="max-h-48 overflow-y-auto">
-          {items.map((item) => (
-            <div key={item.id}>{item.name}</div>
-          ))}
-        </div>
-      </div>
-    ),
-    maskClosable: true,
-    okButtonProps: { danger: true },
-    async onOk() {
-      await deletePackages({
-        appId,
-        packageIds: items.map((item) => item.id),
-      });
-      onSuccess();
-    },
-  });
-}
-
-function remove(
-  item: Package,
-  appId: number,
-  deletePackage: (variables: {
-    appId: number;
-    packageId: number;
-  }) => Promise<unknown>,
-) {
-  Modal.confirm({
-    title: i18n.t('package_list.single_delete_title', { name: item.name }),
-    content: (
-      <Typography.Paragraph type="danger">
-        {i18n.t('package_list.single_delete_warning')}
-      </Typography.Paragraph>
-    ),
-    maskClosable: true,
-    keyboard: true,
-    okButtonProps: { danger: true },
-    async onOk() {
-      await deletePackage({ appId, packageId: item.id });
-    },
-  });
-}
 
 const EditPackageModal = ({
   item,
@@ -397,59 +337,19 @@ const PackageNameCell = ({
         }
       : null;
 
-  const menuItems: MenuProps['items'] = [
-    {
-      type: 'group',
-      label: (
-        <span className="font-semibold text-xs text-[var(--ant-color-text)] max-w-[240px] truncate block">
-          {item.name}
-        </span>
-      ),
-    },
-    {
-      type: 'divider',
-    },
-    ...(canPublish
-      ? [
-          {
-            key: 'edit',
-            icon: <EditOutlined />,
-            label: t('common.edit'),
-          },
-        ]
-      : []),
-    {
-      key: 'deps',
-      icon: <JavaScriptOutlined />,
-      label: t('deps_table.js_deps_heading'),
-    },
-    {
-      key: 'commit',
-      icon: <PullRequestOutlined />,
-      label: t('commit.title'),
-    },
-    ...(infoItem
+  const menuItems = buildNameCellMenu({
+    name: item.name,
+    canPublish,
+    t,
+    extra: infoItem
       ? [
           {
             type: 'divider' as const,
           },
           infoItem,
         ]
-      : []),
-    ...(canPublish
-      ? [
-          {
-            type: 'divider' as const,
-          },
-          {
-            key: 'delete',
-            icon: <DeleteOutlined />,
-            label: t('common.delete'),
-            danger: true,
-          },
-        ]
-      : []),
-  ];
+      : [],
+  });
 
   return (
     <div className="flex-1 min-w-0">
@@ -553,7 +453,17 @@ const Item = ({
                     canPublish={canPublish}
                     onEdit={() => setEditing(true)}
                     onDelete={() =>
-                      remove(item, appId, deletePackage.mutateAsync)
+                      confirmDelete({
+                        title: t('package_list.single_delete_title', {
+                          name: item.name,
+                        }),
+                        warning: t('package_list.single_delete_warning'),
+                        onOk: () =>
+                          deletePackage.mutateAsync({
+                            appId,
+                            packageId: item.id,
+                          }),
+                      })
                     }
                   />
                   {hasMetricWarning && realtimeMetricsPath && (

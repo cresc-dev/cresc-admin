@@ -18,8 +18,8 @@ import { AppDetailHeader } from '@/components/app-detail-header';
 import { AppDrawerLayout, useAppWorkspaceList } from '@/components/app-drawer';
 import { useAppSettingsModal } from '@/components/app-settings-modal';
 import { appViewPath, rootRouterPath, router } from '@/router';
-import { rememberRecentApp } from '@/utils/helper';
 import { useApp, useWorkspacePermissions } from '@/utils/hooks';
+import { openManageApp } from '@/utils/open-manage-app';
 import PackageList from './components/package-list';
 import VersionTable from './components/version-table';
 import { ManageProvider, useManageContext } from './hooks/useManageContext';
@@ -277,10 +277,7 @@ const Manage = () => {
       apps={appList ?? []}
       currentAppId={id}
       isLoading={isAppListLoading}
-      onSelect={(selectedApp) => {
-        rememberRecentApp(selectedApp.id);
-        router.navigate(rootRouterPath.versions(String(selectedApp.id)));
-      }}
+      onSelect={(selectedApp) => openManageApp(selectedApp.id)}
       onSettings={canManageApp ? openAppSettings : undefined}
     >
       {content}

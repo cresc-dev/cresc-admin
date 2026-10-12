@@ -7,11 +7,14 @@ import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
 import { RequestError } from '@/services/request';
+import {
+  confirmPasswordRule,
+  passwordFormatRule,
+} from '@/utils/password-rules';
 import { getBrowserTimezone } from '@/utils/timezone';
 import { useTurnstile } from '@/utils/turnstile';
 import { ReactComponent as Logo } from '../assets/logo.svg';
 import { rootRouterPath, router } from '../router';
-import { isPasswordValid } from '../utils/helper';
 
 interface RegisterFormValues {
   name: string;
@@ -167,13 +170,7 @@ const Register = () => {
           }
           rules={[
             { required: true, message: t('register.password_required') },
-            () => ({
-              async validator(_, value: string) {
-                if (value && !isPasswordValid(value)) {
-                  throw Error(t('register.password_rules'));
-                }
-              },
-            }),
+            passwordFormatRule(t('register.password_rules')),
           ]}
         >
           <Input
@@ -194,12 +191,10 @@ const Register = () => {
               required: true,
               message: t('register.confirm_password_required'),
             },
-            ({ getFieldValue }) => ({
-              async validator(_, value: string) {
-                if (value && getFieldValue('pwd') !== value) {
-                  throw Error(t('register.password_mismatch'));
-                }
-              },
+            confirmPasswordRule({
+              field: 'pwd',
+              message: t('register.password_mismatch'),
+              allowEmpty: true,
             }),
           ]}
         >

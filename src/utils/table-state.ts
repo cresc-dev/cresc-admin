@@ -31,6 +31,15 @@ export const parseOptionalPositiveInt = (value: string | null) => {
   return value && Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
 };
 
+/** Enum values in the URL may be hand-edited; anything outside the whitelist counts as no filter */
+export const pickAllowed = <T extends string>(
+  value: string | null,
+  allowed: readonly T[],
+): T | undefined =>
+  value && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : undefined;
+
 /** A mobile screen fits fewer rows, so the default page is smaller */
 export const getDefaultPageSize = (isMobile: boolean) => (isMobile ? 10 : 20);
 

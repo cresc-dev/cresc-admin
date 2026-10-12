@@ -136,6 +136,45 @@ export function sumCounters(
   }, 0);
 }
 
+export type ServiceCounters = {
+  totalRequests: number;
+  totalErrors: number;
+  l1Hits: number;
+  redisHits: number;
+  staleHits: number;
+  handlerMisses: number;
+  redisFallbacks: number;
+  redisShortCircuits: number;
+  redisCircuitOpens: number;
+  /** Cache hit rate (0-1); 0 when there was no cache access */
+  cacheHitRate: number;
+};
+
+/** Raw counter totals from a node snapshot, shared by the summary cards. */
+export function computeServiceCounters(
+  snapshot?: InternalMetricsResponse,
+): ServiceCounters {
+  const counters = snapshot?.counters;
+  const l1Hits = sumCounters(counters, 'cache.l1.hit');
+  const redisHits = sumCounters(counters, 'cache.redis.hit');
+  const staleHits = sumCounters(counters, 'cache.stale.hit');
+  const handlerMisses = sumCounters(counters, 'cache.handler.miss');
+  const cacheServed = l1Hits + redisHits + staleHits;
+  const cacheTotal = cacheServed + handlerMisses;
+  return {
+    totalRequests: sumCounters(counters, 'api.request.total'),
+    totalErrors: sumCounters(counters, 'api.request.error'),
+    l1Hits,
+    redisHits,
+    staleHits,
+    handlerMisses,
+    redisFallbacks: sumCounters(counters, 'redis.operation.fallback'),
+    redisShortCircuits: sumCounters(counters, 'redis.operation.short_circuit'),
+    redisCircuitOpens: sumCounters(counters, 'redis.circuit.open'),
+    cacheHitRate: cacheTotal > 0 ? cacheServed / cacheTotal : 0,
+  };
+}
+
 export function formatMs(value: number | null | undefined) {
   if (value === Number.POSITIVE_INFINITY) {
     return `>${DEFAULT_DURATION_BUCKETS_MS.at(-1)! / 1000}s`;

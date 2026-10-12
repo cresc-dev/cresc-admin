@@ -1,3 +1,5 @@
+import { findActiveWorkspace } from '@/utils/active-workspace';
+
 /** Permission derivation for the members page: acting as the account owner, or as a member of someone else's workspace */
 
 export type MemberPermissions = {
@@ -13,13 +15,7 @@ export function getMemberPermissions(
   workspaces: Workspace[],
   workspaceAccountId: number | null,
 ): MemberPermissions {
-  const currentMembership = workspaceAccountId
-    ? workspaces.find(
-        (workspace) =>
-          workspace.account.id === workspaceAccountId &&
-          workspace.status === 'active',
-      )
-    : undefined;
+  const currentMembership = findActiveWorkspace(workspaces, workspaceAccountId);
   return {
     currentMembership,
     canManage: !workspaceAccountId || currentMembership?.role === 'admin',
@@ -34,3 +30,21 @@ export function canManageMember(
 ) {
   return canManage && (isOwner || role !== 'admin');
 }
+
+// Assignable roles; the order is the dropdown order
+export const ASSIGNABLE_ROLES: readonly MemberRole[] = [
+  'admin',
+  'developer',
+  'viewer',
+];
+
+/** Role dropdown options; only the owner can appoint admins */
+export const getRoleOptions = (
+  isOwner: boolean,
+  getLabel: (role: MemberRole) => string,
+) =>
+  ASSIGNABLE_ROLES.map((role) => ({
+    label: getLabel(role),
+    value: role,
+    disabled: role === 'admin' && !isOwner,
+  }));

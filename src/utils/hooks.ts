@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/services/api';
 import { hasSession } from '@/services/request';
 import { getWorkspaceAccountId } from '@/services/workspace';
+import { findActiveWorkspace } from '@/utils/active-workspace';
 import {
   auditKeys,
   memberKeys,
@@ -505,13 +506,7 @@ export const useWorkspacePermissions = () => {
     enabled: !!workspaceAccountId && hasSession(),
     staleTime: 60_000,
   });
-  const role = workspaceAccountId
-    ? data?.data?.find(
-        (workspace) =>
-          workspace.account.id === workspaceAccountId &&
-          workspace.status === 'active',
-      )?.role
-    : undefined;
+  const role = findActiveWorkspace(data?.data, workspaceAccountId)?.role;
   const isOwner = !workspaceAccountId;
   return {
     /** owner 本人或工作空间角色;加载中为 undefined */

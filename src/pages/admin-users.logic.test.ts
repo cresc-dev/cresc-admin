@@ -8,10 +8,13 @@ import {
   getExtendedTierExpiry,
   getInitialQuotaValue,
   parseQuotaInput,
+  parseTierFilter,
+  parseUserStatusFilter,
   SORTABLE_COLUMNS,
   statusMeta,
   tierLabelMap,
   tierOptions,
+  USER_STATUS_VALUES,
 } from './admin-users.logic';
 
 const t = (key: string) => key;
@@ -54,6 +57,22 @@ describe('table config', () => {
     expect(tierLabelMap.get('ultra')).toBe('Ultra');
     expect(tierLabelMap.get('unknown')).toBeUndefined();
     expect(expiryShortcutDays).toEqual([7, 30, 365]);
+  });
+});
+
+describe('URL filter parsing', () => {
+  test('status filter only accepts known statuses', () => {
+    expect(USER_STATUS_VALUES).toEqual(['normal', 'unverified', 'dormant']);
+    expect(parseUserStatusFilter('dormant')).toBe('dormant');
+    expect(parseUserStatusFilter('deleted')).toBeUndefined();
+    expect(parseUserStatusFilter(null)).toBeUndefined();
+  });
+
+  test('tier filter only accepts known tiers', () => {
+    expect(parseTierFilter('ultra')).toBe('ultra');
+    expect(parseTierFilter('custom')).toBe('custom');
+    expect(parseTierFilter('gold')).toBeUndefined();
+    expect(parseTierFilter('')).toBeUndefined();
   });
 });
 

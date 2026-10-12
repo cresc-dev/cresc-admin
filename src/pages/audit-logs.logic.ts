@@ -269,6 +269,46 @@ export const matchesDateRange = (
   return true;
 };
 
+export type AuditFilters = {
+  /** Action key from getActionKey */
+  action?: string;
+  status: AuditStatusFilter;
+  /** API key suffix */
+  apiToken?: string;
+  /** Actor id */
+  actor?: string;
+  /** Keyword; the caller lowercases it first */
+  query: string;
+  dateRange: AuditDateRange;
+};
+
+/** Local filtering for the list: a log is kept only when every condition matches */
+export const matchesAuditFilters = (
+  log: AuditLog,
+  filters: AuditFilters,
+  actionMap: ActionMap,
+) => {
+  if (filters.action && getActionKey(log.method, log.path) !== filters.action) {
+    return false;
+  }
+  if (!matchesStatusFilter(log.statusCode, filters.status)) {
+    return false;
+  }
+  if (!matchesApiToken(log, filters.apiToken)) {
+    return false;
+  }
+  if (!matchesActor(log, filters.actor)) {
+    return false;
+  }
+  if (
+    filters.query &&
+    !buildSearchText(actionMap, log).includes(filters.query)
+  ) {
+    return false;
+  }
+  return matchesDateRange(log.createdAt, filters.dateRange);
+};
+
 /**
  * disabledDate for the RangePicker: no future days and nothing older than 180
  * days; once one end is picked, the other must fall within 180 days of it.
@@ -341,7 +381,7 @@ export const getDateRangePatch = (
   };
 };
 
-/** UA summary for export: the CLI only has a version, browsers split into browser / OS columns */
+/** UA summary (shared by the list and the export): the CLI only has a version, browsers split into browser / OS columns */
 export const getUserAgentSummary = (userAgent?: string) => {
   let browserInfo = '-';
   let osInfo = '-';

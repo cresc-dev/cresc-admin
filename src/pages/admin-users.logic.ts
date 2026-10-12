@@ -1,6 +1,7 @@
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { quotas } from '@/constants/quotas';
+import { pickAllowed } from '@/utils/table-state';
 
 /** Pure logic for the admin users page: table URL config, status display, quota JSON parsing and expiry shortcuts */
 
@@ -13,6 +14,18 @@ export const tierOptions = [
   { value: 'ultra', label: 'Ultra' },
   { value: 'custom', label: 'Custom' },
 ];
+
+// Status filter values; the order is the header filter menu's order
+export const USER_STATUS_VALUES = ['normal', 'unverified', 'dormant'] as const;
+
+export const TIER_VALUES = tierOptions.map((option) => option.value);
+
+// URL filter values may be hand-edited; unknown values are not sent to the API
+export const parseUserStatusFilter = (value: string | null) =>
+  pickAllowed(value, USER_STATUS_VALUES);
+
+export const parseTierFilter = (value: string | null) =>
+  pickAllowed(value, TIER_VALUES);
 
 export const tierLabelMap = new Map(
   tierOptions.map((option) => [option.value, option.label]),

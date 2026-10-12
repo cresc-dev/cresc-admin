@@ -25,7 +25,6 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useTranslation } from 'react-i18next';
-import { UAParser } from 'ua-parser-js';
 import { downloadCsv } from '@/utils/csv';
 import { DATE_TIME_SECONDS_FORMAT, formatDateTime } from '@/utils/format';
 import { patchSearchParams } from '@/utils/helper';
@@ -37,9 +36,8 @@ import {
 } from '@/utils/table-state';
 import {
   AUDIT_CSV_HEADER,
+  type AuditFilters,
   buildAuditCsvRow,
-  buildSearchText,
-  getActionKey,
   getActionLabel,
   getActionMap,
   getActionOptions,
@@ -50,12 +48,10 @@ import {
   getDateRangePatch,
   getPreviewData,
   getStatusFilterOptions,
+  getUserAgentSummary,
   isAuditDateDisabled,
   isMemberAction,
-  matchesActor,
-  matchesApiToken,
-  matchesDateRange,
-  matchesStatusFilter,
+  matchesAuditFilters,
   parseDateRange,
   parseStatusFilter,
 } from './audit-logs.logic';
@@ -67,21 +63,14 @@ dayjs.extend(relativeTime);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-export const getUA = (userAgent: string) => {
-  if (userAgent.startsWith('react-native-update-cli')) {
-    return <div>cli {userAgent.split('/')[1]}</div>;
-  }
-
-  const { browser, os } = UAParser(userAgent);
+// The CLI shows one version line; browsers show browser / OS lines
+const UserAgentLines = ({ userAgent }: { userAgent: string }) => {
+  const { browser, os } = getUserAgentSummary(userAgent);
   return (
-    <>
-      <div>
-        {browser.name} {browser.version}
-      </div>
-      <div>
-        {os.name} {os.version}
-      </div>
-    </>
+    <div>
+      <div>{browser}</div>
+      {os !== '-' && <div>{os}</div>}
+    </div>
   );
 };
 
@@ -99,7 +88,6 @@ const AuditLogs = () => {
     handleTableChange,
   } = tableState;
 
-  const query = searchQuery.toLowerCase();
   const selectedAction = searchParams.get('action') ?? undefined;
   const selectedApiToken = searchParams.get('apiKey') ?? undefined;
   const selectedActor = searchParams.get('actor') ?? undefined;
@@ -120,32 +108,17 @@ const AuditLogs = () => {
   const apiTokenOptions = getApiTokenOptions(auditLogs, selectedApiToken);
   const actorOptions = getActorOptions(auditLogs, selectedActor);
 
-  const filteredAuditLogs = auditLogs.filter((log) => {
-    if (
-      selectedAction &&
-      getActionKey(log.method, log.path) !== selectedAction
-    ) {
-      return false;
-    }
-
-    if (!matchesStatusFilter(log.statusCode, statusFilter)) {
-      return false;
-    }
-
-    if (!matchesApiToken(log, selectedApiToken)) {
-      return false;
-    }
-
-    if (!matchesActor(log, selectedActor)) {
-      return false;
-    }
-
-    if (query && !buildSearchText(actionMap, log).includes(query)) {
-      return false;
-    }
-
-    return matchesDateRange(log.createdAt, dateRange);
-  });
+  const filters: AuditFilters = {
+    action: selectedAction,
+    status: statusFilter,
+    apiToken: selectedApiToken,
+    actor: selectedActor,
+    query: searchQuery.toLowerCase(),
+    dateRange,
+  };
+  const filteredAuditLogs = auditLogs.filter((log) =>
+    matchesAuditFilters(log, filters, actionMap),
+  );
 
   usePageClamp(
     tableState,
@@ -312,7 +285,7 @@ const AuditLogs = () => {
 
         return (
           <div>
-            {userAgent && <div>{getUA(userAgent)}</div>}
+            {userAgent && <UserAgentLines userAgent={userAgent} />}
             {record.ip && (
               <div className="mt-1 text-xs text-gray-500">
                 {t('audit_logs.ip_prefix')} {record.ip}

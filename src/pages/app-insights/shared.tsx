@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Tooltip, Typography } from 'antd';
+import { Alert, Spin, Tooltip, Typography } from 'antd';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/services/api';
@@ -7,7 +7,9 @@ import { RequestError } from '@/services/request';
 import { formatInteger } from '@/utils/format';
 import { cn } from '@/utils/helper';
 import { metricsKeys } from '@/utils/query-keys';
-import { parseFailureReason, shortHash } from './logic';
+import { useThemeMode } from '@/utils/theme-mode';
+import { parseFailureReason } from './breakdown.logic';
+import { shortHash } from './logic';
 import type { HitOutcome } from './types';
 
 const { Text } = Typography;
@@ -159,6 +161,47 @@ export const EmptyState = ({
     {children}
   </div>
 );
+
+/**
+ * Spinner while loading; empty state when there is no data (no text while
+ * loading, so "no data" does not flash first). Defaults to the
+ * "no observations" copy when emptyText is not given.
+ */
+export const LoadingOrEmpty = ({
+  loading,
+  empty,
+  emptyText,
+  children,
+}: {
+  loading: boolean;
+  empty: boolean;
+  emptyText?: ReactNode;
+  children: ReactNode;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <Spin spinning={loading}>
+      {empty ? (
+        <EmptyState>
+          {loading ? '' : (emptyText ?? t('app_insights.no_observations'))}
+        </EmptyState>
+      ) : (
+        children
+      )}
+    </Spin>
+  );
+};
+
+const NO_AXIS_TITLES = { x: { title: false }, y: { title: false } };
+
+/** Shared theme and axes for column charts: follows dark mode, no axis titles. */
+export const useColumnChartBase = () => {
+  const { isDark } = useThemeMode();
+  return {
+    theme: isDark ? 'classicDark' : 'classic',
+    axis: NO_AXIS_TITLES,
+  };
+};
 
 export interface BarListItem {
   key: string;

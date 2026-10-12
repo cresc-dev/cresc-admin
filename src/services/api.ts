@@ -3,7 +3,6 @@ import type {
   AppTrafficResponse,
   VersionFunnelResponse,
 } from '@/pages/app-insights/types';
-import type { AppGeoResponse } from '@/pages/realtime-metrics-geo.logic';
 import { queryClient } from '@/utils/queryClient';
 import request from './request';
 
@@ -25,6 +24,22 @@ type UpsertBindingsParams = { appId: number } & (
       bindings: BindingRequest[];
     }
 );
+
+// Region breakdown: the server accumulates the completed update checks of each
+// app per calendar day of the time zone the request names (the browser's);
+// today's entry keeps growing live.
+export interface AppGeoDay {
+  date: string;
+  requests: number;
+  regions: Record<string, number>;
+}
+
+export interface AppGeoResponse {
+  timezone: string;
+  days: AppGeoDay[];
+  retentionDays: number;
+  regionResolver: boolean;
+}
 
 export type InternalMetricCounter = {
   labels: Record<string, string>;

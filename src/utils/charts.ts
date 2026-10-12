@@ -161,3 +161,20 @@ export function getRangePresets(
   }
   return presets;
 }
+
+/**
+ * The "past N hours/days" window of a preset key (e.g. range=7d in an entry
+ * link), ending at now; unknown keys return undefined and the caller picks
+ * the default window.
+ */
+export function getRangePresetWindow(
+  key: string | null | undefined,
+  now: Dayjs = dayjs(),
+): [Dayjs, Dayjs] | undefined {
+  const preset = RANGE_PRESET_DURATIONS.find(
+    ([presetKey]) => presetKey === key,
+  );
+  if (!preset) return undefined;
+  const [, amount, unit] = preset;
+  return [now.subtract(amount, unit), now];
+}

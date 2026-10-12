@@ -3,8 +3,9 @@ import { cleanup, render, screen } from '@testing-library/react';
 import i18n from '@/i18n';
 import en from '@/i18n/locales/en.json';
 import { localToday } from '@/utils/timezone';
-import { insightToday, summarizeTrafficResponse } from './logic';
+import { insightToday } from './logic';
 import { ObservationNotice } from './observation-ui';
+import { summarizeTrafficResponse } from './traffic.logic';
 import type {
   AppTrafficDay,
   AppTrafficResponse,

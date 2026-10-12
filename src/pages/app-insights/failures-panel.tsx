@@ -9,18 +9,18 @@ import {
   highestFailureDimension,
   type ReasonRow,
   summarizeBreakdown,
-} from './logic';
+} from './breakdown.logic';
 import {
   BreakdownAvailability,
   ObservationNotice,
   ReportShare,
 } from './observation-ui';
 import {
-  EmptyState,
   Footnote,
   formatShare,
   HeaderHint,
   InsightsError,
+  LoadingOrEmpty,
   Question,
   StatTile,
   useAppEventBreakdown,
@@ -264,22 +264,20 @@ export const FailuresPanel = ({
         </div>
       </Spin>
       <Card size="small" title={t('app_insights.reasons_title')}>
-        <Spin spinning={breakdown.isLoading}>
-          {summary.reasons.length > 0 ? (
-            <Table
-              size="small"
-              rowKey="reason"
-              dataSource={summary.reasons}
-              columns={reasonColumns}
-              pagination={
-                summary.reasons.length > 10 ? { pageSize: 10 } : false
-              }
-              scroll={{ x: 'max-content' }}
-            />
-          ) : (
-            <EmptyState>{breakdown.isLoading ? '' : emptyText}</EmptyState>
-          )}
-        </Spin>
+        <LoadingOrEmpty
+          loading={breakdown.isLoading}
+          empty={summary.reasons.length === 0}
+          emptyText={emptyText}
+        >
+          <Table
+            size="small"
+            rowKey="reason"
+            dataSource={summary.reasons}
+            columns={reasonColumns}
+            pagination={summary.reasons.length > 10 ? { pageSize: 10 } : false}
+            scroll={{ x: 'max-content' }}
+          />
+        </LoadingOrEmpty>
         <Footnote>{t('app_insights.reasons_footnote')}</Footnote>
       </Card>
       <Card size="small" title={t('app_insights.os_title')}>

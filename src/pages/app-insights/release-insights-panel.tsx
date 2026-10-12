@@ -27,8 +27,8 @@ export const ReleaseInsightsPanel = ({
    * compile while the release itself is fine.
    */
   isAdmin?: boolean;
-  /** Render only one card; omit to render all of them in order. */
-  section?: ReleaseSection;
+  /** Which card to render: the versions page places the two cards apart. */
+  section: ReleaseSection;
 }) => {
   const { t } = useTranslation();
   const text = {
@@ -211,23 +211,22 @@ export const ReleaseInsightsPanel = ({
     />
   );
   const available = !!insights && insights.status !== 'unavailable';
-  const dateSelect = (name: ReleaseSection) =>
-    available && (
-      <span className="flex items-center gap-2 text-sm font-normal">
-        <label htmlFor={`${dateSelectID}-${name}`}>{text.day}</label>
-        <Select
-          id={`${dateSelectID}-${name}`}
-          size="small"
-          value={day?.date}
-          onChange={setSelectedDate}
-          options={insights.days.map((item) => ({
-            value: item.date,
-            label: item.date,
-          }))}
-          className="w-36"
-        />
-      </span>
-    );
+  const dateSelect = available && (
+    <span className="flex items-center gap-2 text-sm font-normal">
+      <label htmlFor={dateSelectID}>{text.day}</label>
+      <Select
+        id={dateSelectID}
+        size="small"
+        value={day?.date}
+        onChange={setSelectedDate}
+        options={insights.days.map((item) => ({
+          value: item.date,
+          label: item.date,
+        }))}
+        className="w-36"
+      />
+    </span>
+  );
   const dayNotice = (
     <>
       {day && (day.limited || day.status === 'partial') && (
@@ -243,65 +242,62 @@ export const ReleaseInsightsPanel = ({
   );
   const dayReadable =
     day?.status !== 'expired' && day?.status !== 'unavailable';
-  const show = (name: ReleaseSection) => !section || section === name;
-  // Older server or unavailable data: show the notice once, in the first card's place.
+  // Older server or unavailable data: show the notice once, in the gray card's place.
   if (!available) {
-    return show('rollout') ? (
+    return section === 'rollout' ? (
       <Card size="small" title={text.title}>
         <Spin spinning={query.isLoading}>{unavailableMessage}</Spin>
       </Card>
     ) : null;
   }
+  if (section === 'hermes') {
+    return isAdmin ? (
+      <Card size="small" title={text.hermes}>
+        <div className="flex flex-col gap-3">
+          <p className="m-0 text-sm text-gray-500">{text.distinction}</p>
+          <Table
+            rowKey="hash"
+            dataSource={insights.versions}
+            columns={versionColumns}
+            scroll={{ x: 950 }}
+            size="small"
+            pagination={{ pageSize: 10 }}
+            expandable={{
+              expandedRowRender: (row) => (
+                <Table
+                  rowKey="key"
+                  dataSource={row.artifacts}
+                  columns={artifactColumns}
+                  size="small"
+                  scroll={{ x: 1000 }}
+                  pagination={{ pageSize: 10 }}
+                  locale={{ emptyText: text.empty }}
+                />
+              ),
+            }}
+          />
+        </div>
+      </Card>
+    ) : null;
+  }
   return (
-    <>
-      {show('rollout') && (
-        <Card size="small" title={text.gray} extra={dateSelect('rollout')}>
-          <div className="flex flex-col gap-3">
-            <p className="m-0 text-sm text-gray-500">{text.grayQuestion}</p>
-            {dayNotice}
-            {dayReadable && (
-              <Table
-                rowKey="id"
-                dataSource={day?.cohorts ?? []}
-                columns={rolloutColumns}
-                scroll={{ x: 1200 }}
-                size="small"
-                pagination={false}
-                locale={{ emptyText: text.noGray }}
-              />
-            )}
-            <p className="m-0 text-xs text-gray-400">{text.inference}</p>
-          </div>
-        </Card>
-      )}
-      {show('hermes') && isAdmin && (
-        <Card size="small" title={text.hermes}>
-          <div className="flex flex-col gap-3">
-            <p className="m-0 text-sm text-gray-500">{text.distinction}</p>
-            <Table
-              rowKey="hash"
-              dataSource={insights.versions}
-              columns={versionColumns}
-              scroll={{ x: 950 }}
-              size="small"
-              pagination={{ pageSize: 10 }}
-              expandable={{
-                expandedRowRender: (row) => (
-                  <Table
-                    rowKey="key"
-                    dataSource={row.artifacts}
-                    columns={artifactColumns}
-                    size="small"
-                    scroll={{ x: 1000 }}
-                    pagination={{ pageSize: 10 }}
-                    locale={{ emptyText: text.empty }}
-                  />
-                ),
-              }}
-            />
-          </div>
-        </Card>
-      )}
-    </>
+    <Card size="small" title={text.gray} extra={dateSelect}>
+      <div className="flex flex-col gap-3">
+        <p className="m-0 text-sm text-gray-500">{text.grayQuestion}</p>
+        {dayNotice}
+        {dayReadable && (
+          <Table
+            rowKey="id"
+            dataSource={day?.cohorts ?? []}
+            columns={rolloutColumns}
+            scroll={{ x: 1200 }}
+            size="small"
+            pagination={false}
+            locale={{ emptyText: text.noGray }}
+          />
+        )}
+        <p className="m-0 text-xs text-gray-400">{text.inference}</p>
+      </div>
+    </Card>
   );
 };

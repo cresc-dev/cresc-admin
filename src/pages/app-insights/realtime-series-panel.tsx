@@ -1,14 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, DatePicker, Radio, Spin } from 'antd';
 import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { AsyncLine } from '@/components/lazy-chart';
 import { RANGE_PRESET_LABEL_KEY } from '@/constants/i18n-keys';
 import { api } from '@/services/api';
-import { buildTimeSeriesLineConfig, getRangePresets } from '@/utils/charts';
+import {
+  buildTimeSeriesLineConfig,
+  getRangePresets,
+  getRangePresetWindow,
+} from '@/utils/charts';
 import { patchSearchParams } from '@/utils/helper';
 import {
   aggregateSeries,
@@ -45,6 +48,13 @@ interface FormattedCategory {
 const CATEGORY_SEPARATOR = '';
 
 const isTotalPoint = (point: ChartDataPoint) => Boolean(point.isTotal);
+
+/** Native package legend label: a trailing 64-hex fingerprint is cut to its first 8 chars for readability. */
+const packageLabel = (value: string, t: (key: string) => string) =>
+  `${t('realtime_metrics.package_prefix')} ${value.replace(
+    /([0-9a-f]{64})$/,
+    (hash) => `${hash.slice(0, 8)}…`,
+  )}`;
 
 const formatCategory = (
   rawCategory: string,
@@ -83,10 +93,7 @@ const formatCategory = (
       // with the buildTime composite (new clients report the fingerprint
       // instead); truncate the 64-hex tail for legend readability.
       return {
-        label: `${t('realtime_metrics.package_prefix')} ${value.replace(
-          /([0-9a-f]{64})$/,
-          (h) => `${h.slice(0, 8)}…`,
-        )}`,
+        label: packageLabel(value, t),
         attribute: 'packageVersion_buildTime',
         isTotal: false,
       };
@@ -149,16 +156,11 @@ export const RealtimeSeriesPanel = ({
   // The entry link may pick the window (the native-package timestamp warning
   // is computed over 7 days, so arriving from it needs the same window to show
   // the matching data); defaults to the last 24 hours.
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => {
-    const rangeHours: Record<string, number> = {
-      '1h': 1,
-      '6h': 6,
-      '24h': 24,
-      '7d': 24 * 7,
-    };
-    const hours = rangeHours[searchParams.get('range') ?? ''] ?? 24;
-    return [dayjs().subtract(hours, 'hour'), dayjs()];
-  });
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(
+    () =>
+      getRangePresetWindow(searchParams.get('range')) ??
+      getRangePresetWindow('24h')!,
+  );
   const legendValuesRef = useRef<string[]>([]);
   const selectedAttribute: MetricAttribute =
     searchParams.get('attribute') === 'packageVersion_buildTime'
@@ -242,19 +244,15 @@ export const RealtimeSeriesPanel = ({
   // cutoff — they are usually low-volume and would otherwise be hidden.
   const focusLabels = useMemo(() => {
     const focusParam = searchParams.get('focus') ?? '';
-    return focusParam
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean)
-      .map(
-        (value) =>
-          // hash-warning focus values carry the full 64-hex fingerprint;
-          // apply the same truncation as the legend labels so they match
-          `${t('realtime_metrics.package_prefix')} ${value.replace(
-            /([0-9a-f]{64})$/,
-            (h) => `${h.slice(0, 8)}…`,
-          )}`,
-      );
+    return (
+      focusParam
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        // hash-warning focus values carry the full 64-hex fingerprint; build
+        // them with the same function as the legend labels so they match
+        .map((value) => packageLabel(value, t))
+    );
   }, [searchParams, t]);
 
   const { defaultLegendValues, colorDomain } = useMemo(

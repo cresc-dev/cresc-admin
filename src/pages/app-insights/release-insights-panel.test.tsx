@@ -26,9 +26,21 @@ function show(releaseInsights?: ReleaseInsights, isAdmin = false) {
     versions: [],
     releaseInsights,
   });
+  // Same as the versions page: the two cards render separately
   render(
     <QueryClientProvider client={client}>
-      <ReleaseInsightsPanel appKey="app" days={3} isAdmin={isAdmin} />
+      <ReleaseInsightsPanel
+        appKey="app"
+        days={3}
+        isAdmin={isAdmin}
+        section="rollout"
+      />
+      <ReleaseInsightsPanel
+        appKey="app"
+        days={3}
+        isAdmin={isAdmin}
+        section="hermes"
+      />
     </QueryClientProvider>,
   );
   return client;

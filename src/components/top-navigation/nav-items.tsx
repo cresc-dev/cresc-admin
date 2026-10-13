@@ -214,5 +214,8 @@ export function getSelectedKeys(pathname: string) {
   if (pathname === rootRouterPath.adminErrorLogs) {
     return ['admin-error-logs'];
   }
+  if (pathname === rootRouterPath.adminCustomOrders) {
+    return ['admin-custom-orders'];
+  }
   return [];
 }

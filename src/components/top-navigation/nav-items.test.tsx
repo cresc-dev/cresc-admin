@@ -19,6 +19,7 @@ mock.module('@/router', () => ({
     adminMetrics: '/admin-metrics',
     adminServiceStatus: '/admin-service-status',
     adminErrorLogs: '/admin-error-logs',
+    adminCustomOrders: '/admin-custom-orders',
     apiTokens: '/api-tokens',
     mcpConnections: '/mcp-connections',
     members: '/members',
@@ -51,6 +52,7 @@ describe('getSelectedKeys', () => {
       ['/admin-metrics', 'admin-metrics'],
       ['/admin-service-status', 'admin-service-status'],
       ['/admin-error-logs', 'admin-error-logs'],
+      ['/admin-custom-orders', 'admin-custom-orders'],
     ];
     for (const [pathname, key] of cases) {
       expect(getSelectedKeys(pathname)).toEqual([key]);

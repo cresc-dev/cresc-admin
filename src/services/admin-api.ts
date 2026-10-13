@@ -138,7 +138,41 @@ export type RedisStatusSnapshot = {
   };
 };
 
+export type CustomOrderStatus = 'pending' | 'done' | 'cancelled';
+
+export type CustomOrder = {
+  orderNo: string;
+  subject: string;
+  amount: string;
+  currency: string;
+  note: string;
+  status: CustomOrderStatus;
+  payUrl: string;
+  createdBy: number | null;
+  thirdOrderNo: string;
+  payerEmail: string;
+  payTime: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export const adminApi = {
+  // 自定义收款链接：任意金额/商品说明的 Stripe 一次性付款
+  listCustomOrders: (params: { limit: number; offset: number }) =>
+    request<{ data: CustomOrder[]; count: number }>(
+      'get',
+      `/admin/custom-orders?limit=${params.limit}&offset=${params.offset}`,
+    ),
+  createCustomOrder: (input: {
+    amount: string;
+    subject: string;
+    note?: string;
+  }) => request<CustomOrder>('post', '/admin/custom-orders', input),
+  cancelCustomOrder: (orderNo: string) =>
+    request<CustomOrder>(
+      'post',
+      `/admin/custom-orders/${encodeURIComponent(orderNo)}/cancel`,
+    ),
   // admin config
   getConfig: () =>
     request<{ data?: Record<string, string> }>('get', `/admin/config`),

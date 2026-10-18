@@ -31,7 +31,7 @@ export function getExternalItems(t: (key: string) => string): MenuItems {
       key: 'issues',
       icon: <CommentOutlined />,
       label: (
-        <ExtLink href="https://github.com/reactnativecn/react-native-pushy/issues">
+        <ExtLink href="https://github.com/reactnativecn/react-native-update/issues">
           {t('nav.support')}
         </ExtLink>
       ),

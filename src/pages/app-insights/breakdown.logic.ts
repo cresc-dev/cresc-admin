@@ -1,6 +1,10 @@
 import { MIN_EVENT_SAMPLES } from '@/constants/metric-thresholds';
 import { percentOf, validCount } from './logic';
-import type { AppEventBreakdownDay, ClientEventType } from './types';
+import type {
+  AppEventBreakdownDay,
+  AppFailureDevicesResponse,
+  ClientEventType,
+} from './types';
 
 // Failure diagnosis: client event reports split by reason and system.
 
@@ -210,3 +214,48 @@ export const parseFailureReason = (
   KNOWN_FAILURE_REASONS.includes(reason as KnownFailureReason)
     ? { kind: 'known', reason: reason as KnownFailureReason }
     : { kind: 'other' };
+
+export interface OSDevices {
+  failures: number | null;
+  rollbacks: number | null;
+}
+export interface FailureDeviceLookup {
+  failures: number | null;
+  rollbacks: number | null;
+  os: Map<string, OSDevices>;
+  reasons: Map<string, number | null>;
+}
+
+// Device counts are window-wide unions from the server and cannot be added
+// up: reasons the panel folds into "other" keep a count only when a single
+// server label lands there.
+export const failureDeviceLookup = (
+  response: AppFailureDevicesResponse | undefined,
+): FailureDeviceLookup => {
+  const reasons = new Map<string, number | null>();
+  for (const item of response?.byReason ?? []) {
+    const parsed = parseFailureReason(item.reason);
+    const reason = parsed.kind === 'known' ? parsed.reason : 'other';
+    reasons.set(
+      reason,
+      reasons.has(reason) ? null : validDevices(item.devices),
+    );
+  }
+  return {
+    failures: validDevices(response?.failures),
+    rollbacks: validDevices(response?.rollbacks),
+    os: new Map(
+      (response?.byOS ?? []).map((item) => [
+        item.os,
+        {
+          failures: validDevices(item.failures),
+          rollbacks: validDevices(item.rollbacks),
+        },
+      ]),
+    ),
+    reasons,
+  };
+};
+
+const validDevices = (value: number | null | undefined) =>
+  validCount(value) && value > 0 ? value : null;

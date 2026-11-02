@@ -1,6 +1,8 @@
 import {
   AppstoreOutlined,
   LeftOutlined,
+  PushpinFilled,
+  PushpinOutlined,
   RightOutlined,
   SearchOutlined,
   SettingOutlined,
@@ -13,6 +15,9 @@ import {
   type ManageAppDrawerPlacement,
   manageAppDrawerCollapsedPreference,
   manageAppDrawerPlacementPreference,
+  movePinnedApp,
+  togglePinnedApp,
+  usePinnedAppIds,
 } from '@/utils/app-preferences';
 import type { AppDrawerItem } from '@/utils/app-workspace';
 import { cn, filterAppsByQuery } from '@/utils/helper';
@@ -46,6 +51,8 @@ function AppDrawer({
   const [query, setQuery] = useState('');
   const { t } = useTranslation();
   const filteredApps = filterAppsByQuery(apps, query);
+  const pinnedAppIds = usePinnedAppIds();
+  const [draggingAppId, setDraggingAppId] = useState<number | null>(null);
 
   const ToggleIcon = collapsed
     ? placement === 'right'
@@ -154,17 +161,35 @@ function AppDrawer({
               ))}
             </div>
           ) : filteredApps.length > 0 ? (
-            <div className="space-y-1.5">
+            <ul
+              className="m-0 list-none space-y-1.5 p-0"
+              // Gaps between rows must accept the drop too, or releasing there animates a snap-back
+              onDragOver={(event) => {
+                if (draggingAppId !== null) {
+                  event.preventDefault();
+                }
+              }}
+              onDrop={(event) => event.preventDefault()}
+            >
               {filteredApps.map((app) => (
                 <AppDrawerRow
                   app={app}
                   isActive={isActive(app)}
+                  isDragging={draggingAppId === app.id}
+                  isPinned={pinnedAppIds.includes(app.id)}
                   key={app.id}
+                  onDragEnd={() => setDraggingAppId(null)}
+                  onDragEnter={() => {
+                    if (draggingAppId !== null) {
+                      movePinnedApp(draggingAppId, app.id);
+                    }
+                  }}
+                  onDragStart={() => setDraggingAppId(app.id)}
                   onSelect={onSelect}
                   onSettings={onSettings}
                 />
               ))}
-            </div>
+            </ul>
           ) : (
             !isLoading && (
               <Empty
@@ -279,22 +304,43 @@ function AppIconButton({
 function AppDrawerRow({
   app,
   isActive,
+  isDragging,
+  isPinned,
+  onDragEnd,
+  onDragEnter,
+  onDragStart,
   onSelect,
   onSettings,
 }: {
   app: AppDrawerItem;
   isActive: boolean;
+  isDragging: boolean;
+  isPinned: boolean;
+  onDragEnd: () => void;
+  onDragEnter: () => void;
+  onDragStart: () => void;
   onSelect: (app: AppDrawerItem) => void;
   onSettings?: (app: AppDrawerItem) => void;
 }) {
   const { t } = useTranslation();
   return (
-    <div
+    <li
       aria-current={isActive ? 'page' : undefined}
       className={cn(
         'group relative flex w-full cursor-pointer items-center rounded-lg border-0 bg-transparent text-left transition-colors hover:bg-slate-50',
         isActive ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' : undefined,
+        isDragging ? 'opacity-50' : undefined,
       )}
+      draggable={isPinned}
+      onDragEnd={onDragEnd}
+      onDragEnter={onDragEnter}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = 'move';
+        // Firefox won't start a drag without data
+        event.dataTransfer.setData('text/plain', app.name);
+        onDragStart();
+      }}
+      title={isPinned ? t('app_drawer.drag_to_sort') : undefined}
     >
       {isActive && (
         <span className="absolute top-1/2 left-2 h-2 w-2 -translate-y-1/2 rounded-full bg-blue-600" />
@@ -331,11 +377,27 @@ function AppDrawerRow({
           </span>
         </span>
       </button>
+      {/* Zero width until hovered or focused so unpinned rows keep room for the name */}
+      <button
+        aria-label={t(isPinned ? 'app_drawer.unpin_app' : 'app_drawer.pin_app')}
+        aria-pressed={isPinned}
+        className={cn(
+          'flex h-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border-0 bg-transparent p-0 transition-all last:mr-2 hover:bg-container/80 hover:text-blue-600 focus-visible:w-7 focus-visible:opacity-100',
+          isPinned
+            ? 'w-7 text-blue-600'
+            : 'w-0 text-slate-400 opacity-0 group-hover:w-7 group-hover:opacity-100',
+        )}
+        onClick={() => togglePinnedApp(app.id)}
+        title={t(isPinned ? 'app_drawer.unpin_app' : 'app_drawer.pin_app')}
+        type="button"
+      >
+        {isPinned ? <PushpinFilled /> : <PushpinOutlined />}
+      </button>
       {onSettings && (
         <button
           aria-label={`${app.name} - ${t('app_drawer.app_settings')}`}
           className={cn(
-            'mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-slate-400 opacity-0 transition-all hover:bg-container/80 hover:text-blue-600 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100',
+            'flex h-8 w-0 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border-0 bg-transparent p-0 text-slate-400 opacity-0 transition-all hover:bg-container/80 hover:text-blue-600 focus-visible:mr-2 focus-visible:w-8 focus-visible:opacity-100 group-hover:mr-2 group-hover:w-8 group-hover:opacity-100',
             isActive ? 'text-blue-600 hover:bg-blue-50' : undefined,
           )}
           onClick={() => onSettings(app)}
@@ -345,7 +407,7 @@ function AppDrawerRow({
           <SettingOutlined />
         </button>
       )}
-    </div>
+    </li>
   );
 }
 

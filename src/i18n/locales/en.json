@@ -935,6 +935,8 @@
     "login_button": "Log in"
   },
   "nav": {
+    "pin_app": "Pin to top",
+    "unpin_app": "Unpin",
     "support": "Support",
     "language": "Language",
     "theme": "Theme",
@@ -965,6 +967,9 @@
     "custom_orders": "Payment Links"
   },
   "app_drawer": {
+    "drag_to_sort": "Drag to reorder pinned apps",
+    "pin_app": "Pin to top",
+    "unpin_app": "Unpin",
     "expand": "Expand app list",
     "collapse": "Collapse app list",
     "app_list": "App List",

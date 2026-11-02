@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { sortAppsByPinned, usePinnedAppIds } from '@/utils/app-preferences';
 import { useAppList, useUserInfo } from '@/utils/hooks';
 
 // Shared app-selection data: the manage page drawer, the top app switcher and
@@ -23,7 +25,11 @@ export function useAppWorkspaceList(): {
   const { user } = useUserInfo();
   const isAdmin = user?.admin === true;
 
-  const apps: AppDrawerItem[] = userApps ?? [];
+  const pinnedAppIds = usePinnedAppIds();
+  const apps: AppDrawerItem[] = useMemo(
+    () => sortAppsByPinned(userApps ?? [], pinnedAppIds),
+    [userApps, pinnedAppIds],
+  );
   return {
     apps,
     isAdmin,

@@ -935,6 +935,8 @@
     "login_button": "登录"
   },
   "nav": {
+    "pin_app": "置顶",
+    "unpin_app": "取消置顶",
     "support": "支持",
     "language": "语言",
     "theme": "主题",
@@ -965,6 +967,9 @@
     "custom_orders": "收款链接"
   },
   "app_drawer": {
+    "drag_to_sort": "拖动可调整置顶顺序",
+    "pin_app": "置顶",
+    "unpin_app": "取消置顶",
     "expand": "展开应用列表",
     "collapse": "收起应用列表",
     "app_list": "应用列表",

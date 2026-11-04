@@ -186,8 +186,13 @@ export const api = {
         suppressErrorToast: true,
       },
     ),
-  activate: (params: { token: string }) =>
-    request('post', '/user/activate', params),
+  activate: (params: { token: string; pwd?: string }) =>
+    request<{ userId: number; alreadyActive?: boolean }>(
+      'post',
+      '/user/activate',
+      params,
+      { suppressErrorToast: true },
+    ),
   me: () => request<User>('get', '/user/me'),
   updateProfile: (params: { timezone: string }) =>
     request<{ timezone: string }>('post', '/user/profile', params),

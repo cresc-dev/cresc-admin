@@ -74,7 +74,15 @@
     "success": "Activation successful",
     "redirecting": "Redirecting to log in...",
     "go_login": "Go to log in",
-    "link_invalid": "This activation link is invalid. Please open the link from your email again."
+    "link_invalid": "This activation link is invalid. Please open the link from your email again.",
+    "set_password_title": "Set your password",
+    "set_password_hint": "Now that your email is verified, choose a password. The one entered at registration will stop working. If you did not sign up, close this page.",
+    "password_placeholder": "Enter a password",
+    "confirm_placeholder": "Enter the password again",
+    "password_mismatch": "The passwords do not match",
+    "submit_button": "Set password and activate",
+    "already_active": "This account is already active. Log in with your existing password.",
+    "password_rules": "Password must include uppercase and lowercase letters, at least 1 number, and be 6-16 characters long"
   },
   "inactivated": {
     "email_sent": "Activation email sent. Please check your inbox.",

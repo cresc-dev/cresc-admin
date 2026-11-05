@@ -1,5 +1,4 @@
 import { Button, Checkbox, Form, Input, message } from 'antd';
-import { md5 } from 'hash-wasm';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +6,6 @@ import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { setUserEmail } from '@/services/auth';
 import { RequestError } from '@/services/response';
-import {
-  confirmPasswordRule,
-  passwordFormatRule,
-} from '@/utils/password-rules';
 import { getBrowserTimezone } from '@/utils/timezone';
 import { useTurnstile } from '@/utils/turnstile';
 import { ReactComponent as Logo } from '../assets/logo.svg';
@@ -19,8 +14,6 @@ import { rootRouterPath, router } from '../router';
 interface RegisterFormValues {
   name: string;
   email: string;
-  pwd: string;
-  pwd2: string;
   agreed: boolean;
 }
 
@@ -28,27 +21,8 @@ const Register = () => {
   const { t } = useTranslation();
   const [form] = Form.useForm<RegisterFormValues>();
   const [loading, setLoading] = useState<boolean>(false);
-  const password = Form.useWatch('pwd', form) || '';
   const agreed = Form.useWatch('agreed', form);
   const captcha = useTurnstile('register');
-
-  const passwordChecks = [
-    {
-      key: 'length',
-      label: t('register.password_check_length'),
-      passed: password.length >= 6 && password.length <= 16,
-    },
-    {
-      key: 'letters',
-      label: t('register.password_check_case'),
-      passed: /[a-z]/.test(password) && /[A-Z]/.test(password),
-    },
-    {
-      key: 'number',
-      label: t('register.password_check_number'),
-      passed: /\d/.test(password),
-    },
-  ];
 
   async function submit(values: RegisterFormValues) {
     form.setFields([{ name: 'email', errors: [] }]);
@@ -57,7 +31,6 @@ const Register = () => {
       await api.register({
         email: values.email.trim(),
         name: values.name.trim(),
-        pwd: await md5(values.pwd),
         timezone: getBrowserTimezone(),
         captchaToken: captcha.token,
       });
@@ -141,68 +114,6 @@ const Register = () => {
             size="large"
             type="email"
             autoComplete="email"
-          />
-        </Form.Item>
-        <Form.Item
-          label={t('register.password')}
-          hasFeedback
-          name="pwd"
-          validateTrigger="onBlur"
-          extra={
-            <div style={style.passwordChecklist}>
-              {passwordChecks.map((item) => (
-                <div
-                  key={item.key}
-                  style={{
-                    ...style.passwordCheckItem,
-                    color: password
-                      ? item.passed
-                        ? '#0f766e'
-                        : '#6b7280'
-                      : '#94a3b8',
-                  }}
-                >
-                  <span>{item.passed ? '[x]' : '[ ]'}</span>
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-          }
-          rules={[
-            { required: true, message: t('register.password_required') },
-            passwordFormatRule(t('register.password_rules')),
-          ]}
-        >
-          <Input
-            type="password"
-            placeholder={t('register.password_placeholder')}
-            size="large"
-            autoComplete="new-password"
-          />
-        </Form.Item>
-        <Form.Item
-          label={t('register.confirm_password')}
-          hasFeedback
-          name="pwd2"
-          dependencies={['pwd']}
-          validateTrigger="onBlur"
-          rules={[
-            {
-              required: true,
-              message: t('register.confirm_password_required'),
-            },
-            confirmPasswordRule({
-              field: 'pwd',
-              message: t('register.password_mismatch'),
-              allowEmpty: true,
-            }),
-          ]}
-        >
-          <Input
-            type="password"
-            placeholder={t('register.confirm_password_placeholder')}
-            size="large"
-            autoComplete="new-password"
           />
         </Form.Item>
         <Form.Item
@@ -333,17 +244,6 @@ const style: Record<string, CSSProperties> = {
     color: '#475569',
     fontSize: 13,
     lineHeight: 1.6,
-  },
-  passwordChecklist: {
-    display: 'grid',
-    gap: 4,
-    marginTop: 4,
-  },
-  passwordCheckItem: {
-    display: 'flex',
-    gap: 8,
-    fontSize: 12,
-    lineHeight: 1.5,
   },
   submitRow: {
     marginTop: 8,

@@ -209,7 +209,6 @@ export const api = {
   register: (params: {
     email: string;
     name: string;
-    pwd: string;
     timezone: string;
     captchaToken?: string;
   }) => request('post', '/user/register', params, { suppressErrorToast: true }),

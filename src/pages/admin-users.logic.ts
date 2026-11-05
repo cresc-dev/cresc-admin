@@ -16,7 +16,24 @@ export const tierOptions = [
 ];
 
 // Status filter values; the order is the header filter menu's order
-export const USER_STATUS_VALUES = ['normal', 'unverified', 'dormant'] as const;
+export const USER_STATUS_VALUES = [
+  'normal',
+  'unverified',
+  'dormant',
+  'suspended',
+] as const;
+
+// Statuses the edit form offers: a suspension only moves through its own actions
+// and an account cannot return to unverified, so those two appear only for an
+// account already there.
+export const editableStatusValues = (status: string | null | undefined) => {
+  if (status === 'suspended') {
+    return ['suspended'] as const;
+  }
+  return status === 'unverified'
+    ? (['normal', 'unverified', 'dormant'] as const)
+    : (['normal', 'dormant'] as const);
+};
 
 export const TIER_VALUES = tierOptions.map((option) => option.value);
 
@@ -49,8 +66,12 @@ export const statusMeta = (
   t: (key: string) => string,
   suspended = false,
 ) => {
-  if (suspended) {
-    return { cls: 'text-red-500', label: t('admin_users.status_suspended') };
+  if (suspended || status === 'suspended') {
+    return {
+      badge: 'error' as const,
+      cls: 'text-red-500',
+      label: t('admin_users.status_suspended'),
+    };
   }
   if (status === 'unverified') {
     return {

@@ -12,6 +12,7 @@ import {
 } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { statusMeta } from '@/pages/admin-users.logic';
 import { rootRouterPath } from '@/router';
 import { adminApi } from '@/services/admin-api';
 import { formatDateTime } from '@/utils/format';
@@ -145,21 +146,18 @@ export const UserDetailDrawer = ({
               >
                 <Badge
                   status={
-                    detail.user.status === 'normal'
-                      ? 'success'
-                      : detail.user.status === 'dormant'
-                        ? 'default'
-                        : 'warning'
+                    statusMeta(
+                      detail.user.status,
+                      (key) => translate(key, key),
+                      detail.user.suspended,
+                    ).badge
                   }
                   text={
-                    detail.user.status === 'normal'
-                      ? translate('admin_users.status_normal', 'Normal')
-                      : detail.user.status === 'dormant'
-                        ? translate('admin_users.status_dormant', 'Dormant')
-                        : translate(
-                            'admin_users.status_unverified',
-                            'Unverified',
-                          )
+                    statusMeta(
+                      detail.user.status,
+                      (key) => translate(key, key),
+                      detail.user.suspended,
+                    ).label
                   }
                 />
               </Descriptions.Item>

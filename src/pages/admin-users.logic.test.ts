@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { quotas } from '@/constants/quotas';
 import {
   defaultPremiumQuotaText,
+  editableStatusValues,
   expiryShortcutDays,
   FILTER_KEYS,
   getExtendedTierExpiry,
@@ -62,7 +63,12 @@ describe('table config', () => {
 
 describe('URL filter parsing', () => {
   test('status filter only accepts known statuses', () => {
-    expect(USER_STATUS_VALUES).toEqual(['normal', 'unverified', 'dormant']);
+    expect(USER_STATUS_VALUES).toEqual([
+      'normal',
+      'unverified',
+      'dormant',
+      'suspended',
+    ]);
     expect(parseUserStatusFilter('dormant')).toBe('dormant');
     expect(parseUserStatusFilter('deleted')).toBeUndefined();
     expect(parseUserStatusFilter(null)).toBeUndefined();
@@ -78,11 +84,24 @@ describe('URL filter parsing', () => {
 
 describe('statusMeta', () => {
   test('a suspended account reads as suspended whatever its status', () => {
-    for (const status of ['unverified', 'normal', null] as const) {
+    for (const status of ['suspended', 'unverified', 'normal', null] as const) {
       expect(statusMeta(status, t, true)).toEqual({
+        badge: 'error',
         cls: 'text-red-500',
         label: 'admin_users.status_suspended',
       });
+    }
+  });
+
+  test('a form only offers suspended and unverified to accounts already there', () => {
+    expect(editableStatusValues('suspended')).toEqual(['suspended']);
+    expect(editableStatusValues('unverified')).toEqual([
+      'normal',
+      'unverified',
+      'dormant',
+    ]);
+    for (const status of ['normal', 'dormant', null] as const) {
+      expect(editableStatusValues(status)).toEqual(['normal', 'dormant']);
     }
   });
 

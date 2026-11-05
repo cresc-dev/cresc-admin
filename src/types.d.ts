@@ -76,7 +76,7 @@ interface AdminUser {
   id: number;
   email: string;
   name: string;
-  status: 'normal' | 'unverified' | 'dormant' | null;
+  status: 'normal' | 'unverified' | 'dormant' | 'suspended' | null;
   suspended?: boolean;
   tier: string;
   tierExpiresAt?: string | null;

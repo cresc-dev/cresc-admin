@@ -21,7 +21,7 @@ import {
   TokenCreateModal,
 } from '@/components/token-create-modal';
 import { API_TOKEN_SCOPE_DESC_KEY } from '@/constants/i18n-keys';
-import { API_REFERENCE_LINK } from '@/constants/links';
+import { API_TOKEN_DOC } from '@/constants/links';
 import { API_TOKEN_SCOPES } from '@/constants/token-scopes';
 import { api } from '@/services/api';
 import { useAppOptions } from '@/utils/app-options';
@@ -173,7 +173,7 @@ function ApiTokensPage() {
           <div className="text-lg font-semibold">{t('api_tokens.title')}</div>
           <Paragraph type="secondary" className="mb-0 mt-1">
             {t('api_tokens.description_prefix')}{' '}
-            <a target="_blank" href={API_REFERENCE_LINK} rel="noopener">
+            <a target="_blank" href={API_TOKEN_DOC} rel="noopener">
               {t('api_tokens.cresc_api')}
             </a>
             {t('api_tokens.description_suffix')}

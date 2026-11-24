@@ -1150,7 +1150,28 @@
     "generating_tip": "Incremental patches are being generated for the bound native packages.",
     "done": "Patches ready",
     "failed": "{{num}} patch(es) failed",
-    "failed_tip": "Some incremental patches failed to generate. Affected users will fall back to full bundle downloads; updates still work."
+    "failed_tip": "Some incremental patches failed to generate. Affected users will download the full bundle instead; older clients that do not report their build time will not receive this update.",
+    "failed_reason_item": "Native package {{name}}: {{reason}}",
+    "failed_reason_package_fallback": "#{{id}}",
+    "failed_reason_more": "{{num}} more native package(s) not shown.",
+    "reason": {
+      "not_generated": "Generation had not started more than 1 minute after binding; the patch task may never have been queued or was lost.",
+      "entry_bytes_sized": "A single file in the package (usually the JS bundle) is {{actual}} uncompressed, over the {{limit}} limit. If it is the JS bundle, enable Hermes bytecode or slim it down.",
+      "entry_bytes_limit": "A single file in the package (usually the JS bundle) exceeds the {{limit}} uncompressed limit. If it is the JS bundle, enable Hermes bytecode or slim it down.",
+      "entry_bytes": "A single file in the package (usually the JS bundle) exceeds the uncompressed size limit. Enable Hermes bytecode or slim down the bundle.",
+      "archive_bytes_sized": "The package is {{actual}} uncompressed in total, over the {{limit}} limit. Reduce the bundled assets.",
+      "archive_bytes_limit": "The package exceeds the {{limit}} total uncompressed limit. Reduce the bundled assets.",
+      "archive_bytes": "The package exceeds the total uncompressed size limit. Reduce the bundled assets.",
+      "archive_structure": "The package exceeds the limit on file count, directory depth or compression ratio. Reduce the bundled assets.",
+      "source_missing": "The native package file is missing, so no patch can be generated.",
+      "target_missing": "The OTA bundle file is missing, so no patch can be generated.",
+      "target_deleted": "The OTA bundle has been deleted, so no patch can be generated.",
+      "source_and_target_missing": "Both the native package and OTA bundle files are missing, so no patch can be generated.",
+      "attempts_exhausted": "Generation still failed after several retries.",
+      "server_error": "Server-side processing error ({{kind}}). Contact us if it keeps happening.",
+      "unrecorded": "No failure reason was recorded.",
+      "unknown": "Unknown reason ({{kind}})"
+    }
   },
   "dangerous_modal": {
     "warning_title": "High-Risk Action",

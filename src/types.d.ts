@@ -231,10 +231,28 @@ interface Binding {
 
 type DiffPairStatus = 'pending' | 'done' | 'failed';
 
+/** Why a patch failed to generate; only sent by the server when status === 'failed' */
+interface DiffFailure {
+  /** Stable label such as archive_entry_bytes or source_missing; may be absent or unknown on old data */
+  kind: string;
+  /** Redacted English error summary (long numbers replaced with <num>); may be absent */
+  detail?: string;
+  /** Size limit in bytes when a size budget was exceeded */
+  limitBytes?: number;
+  /** Actual size in bytes when a size budget was exceeded; absent if detected mid-read */
+  actualBytes?: number;
+}
+
 interface BindingDiffStatus {
   packageId: number;
   versionId: number;
   status: DiffPairStatus;
+  failure?: DiffFailure;
+}
+
+interface VersionDiffFailureItem {
+  packageId: number;
+  failure?: DiffFailure;
 }
 
 interface VersionDiffSummary {
@@ -242,6 +260,8 @@ interface VersionDiffSummary {
   done: number;
   failed: number;
   total: number;
+  /** One entry per failed native package, in API response order */
+  failures: VersionDiffFailureItem[];
 }
 
 interface AuditLog {

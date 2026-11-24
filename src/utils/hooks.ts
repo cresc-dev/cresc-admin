@@ -7,6 +7,7 @@ import { api } from '@/services/api';
 import { hasSession } from '@/services/session';
 import { getWorkspaceAccountId } from '@/services/workspace';
 import { findActiveWorkspace } from '@/utils/active-workspace';
+import { summarizeDiffStatusByVersion } from '@/utils/diff-status';
 import {
   auditKeys,
   memberKeys,
@@ -375,21 +376,10 @@ export const useDiffStatus = ({
         : false,
   });
 
-  const diffStatusByVersion = useMemo(() => {
-    const map = new Map<number, VersionDiffSummary>();
-    for (const item of data?.data ?? []) {
-      const summary = map.get(item.versionId) ?? {
-        pending: 0,
-        done: 0,
-        failed: 0,
-        total: 0,
-      };
-      summary[item.status] += 1;
-      summary.total += 1;
-      map.set(item.versionId, summary);
-    }
-    return map;
-  }, [data?.data]);
+  const diffStatusByVersion = useMemo(
+    () => summarizeDiffStatusByVersion(data?.data ?? []),
+    [data?.data],
+  );
 
   return { diffStatusByVersion };
 };

@@ -1150,7 +1150,28 @@
     "generating_tip": "正在为绑定的原生包生成增量补丁。",
     "done": "补丁已就绪",
     "failed": "{{num}} 个补丁生成失败",
-    "failed_tip": "部分增量补丁生成失败，受影响的用户将回退为全量包下载，不影响更新可用性。"
+    "failed_tip": "部分增量补丁生成失败，受影响的用户将改为下载全量包；未上报构建时间的旧版客户端收不到本次更新。",
+    "failed_reason_item": "原生包 {{name}}：{{reason}}",
+    "failed_reason_package_fallback": "#{{id}}",
+    "failed_reason_more": "另有 {{num}} 个原生包未列出。",
+    "reason": {
+      "not_generated": "绑定超过 1 分钟仍未开始生成，补丁任务可能未入队或已丢失。",
+      "entry_bytes_sized": "包内单个文件（通常是 JS bundle）解压后 {{actual}}，超过 {{limit}} 上限。若是 JS bundle，可开启 Hermes 字节码或精简 bundle。",
+      "entry_bytes_limit": "包内单个文件（通常是 JS bundle）解压后超过 {{limit}} 上限。若是 JS bundle，可开启 Hermes 字节码或精简 bundle。",
+      "entry_bytes": "包内单个文件（通常是 JS bundle）解压后超过大小上限。可开启 Hermes 字节码或精简 bundle。",
+      "archive_bytes_sized": "包解压后总大小 {{actual}}，超过 {{limit}} 上限。请精简包内资源。",
+      "archive_bytes_limit": "包解压后总大小超过 {{limit}} 上限。请精简包内资源。",
+      "archive_bytes": "包解压后总大小超过上限。请精简包内资源。",
+      "archive_structure": "包内文件数量、目录层级或压缩比超过限制。请精简包内资源。",
+      "source_missing": "原生包文件缺失，无法生成补丁。",
+      "target_missing": "热更包文件缺失，无法生成补丁。",
+      "target_deleted": "热更包已被删除，无法生成补丁。",
+      "source_and_target_missing": "原生包与热更包文件均缺失，无法生成补丁。",
+      "attempts_exhausted": "多次重试后仍生成失败。",
+      "server_error": "服务端处理出错（{{kind}}）。如持续出现请联系我们。",
+      "unrecorded": "未记录失败原因。",
+      "unknown": "未知原因（{{kind}}）"
+    }
   },
   "dangerous_modal": {
     "warning_title": "高风险操作提示",
